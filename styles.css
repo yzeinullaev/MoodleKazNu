@@ -1,0 +1,238 @@
+/* KazNU demo — course + payment page */
+:root {
+    --kaznu-primary: #003366;
+    --kaznu-accent: #e8b923;
+    --kaznu-light: #f0f6fc;
+}
+
+body.path-local-kaznu .navbar,
+#page-course-view-topics[data-course-shortname="SUMMER2026"] {
+    --kaznu-primary: #003366;
+    --kaznu-accent: #e8b923;
+}
+
+.local-kaznu-hero {
+    background: linear-gradient(135deg, #003366 0%, #005599 55%, #0077b6 100%);
+    color: #fff;
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 24px rgba(0, 51, 102, 0.25);
+}
+
+.local-kaznu-hero h2 {
+    color: #fff;
+    margin: 0 0 0.75rem;
+    font-size: 1.75rem;
+}
+
+.local-kaznu-hero p {
+    margin: 0.25rem 0;
+    opacity: 0.95;
+}
+
+.local-kaznu-badge {
+    display: inline-block;
+    background: var(--kaznu-accent);
+    color: #1a1a1a;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.local-kaznu-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.local-kaznu-step {
+    background: var(--kaznu-light);
+    border-left: 4px solid var(--kaznu-primary);
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+}
+
+.local-kaznu-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.local-kaznu-card h3 {
+    color: var(--kaznu-primary);
+    margin-top: 0;
+}
+
+.local-kaznu-section-label {
+    margin: 0.5rem 0 1rem;
+}
+
+.local-kaznu-mod-title {
+    color: var(--kaznu-primary);
+    margin: 0 0 0.35rem;
+    font-size: 1.25rem;
+}
+
+.local-kaznu-media {
+    background: var(--kaznu-light);
+    border-radius: 12px;
+    padding: 1.25rem;
+}
+
+.local-kaznu-audio audio {
+    margin-top: 0.75rem;
+}
+
+.local-kaznu-cta {
+    margin-top: 1.5rem;
+}
+
+.local-kaznu-btn-link,
+a.local-kaznu-btn {
+    display: inline-block;
+    background: var(--kaznu-primary) !important;
+    color: #fff !important;
+    padding: 0.65rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none !important;
+}
+
+.local-kaznu-btn-link:hover,
+a.local-kaznu-btn:hover {
+    background: #004080 !important;
+    color: #fff !important;
+}
+
+.local-kaznu-checklist ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.local-kaznu-checklist li {
+    padding: 0.35rem 0;
+}
+
+.course-content .section .sectionname {
+    color: var(--kaznu-primary);
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.activity.quiz .activityname a {
+    color: #b45309;
+    font-weight: 600;
+}
+
+.activity.url .activityname a::before {
+    content: "▶ ";
+}
+
+/* Payment page */
+.local-kaznu-pay {
+    max-width: 920px;
+    margin: 0 auto 2rem;
+}
+
+.local-kaznu-pay h2 {
+    color: var(--kaznu-primary);
+    margin-top: 0.5rem;
+}
+
+.local-kaznu-pay-lead {
+    font-size: 1.1rem;
+    color: #334155;
+}
+
+.local-kaznu-pay-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+    .local-kaznu-pay-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.local-kaznu-pay-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 4px 16px rgba(0, 51, 102, 0.08);
+}
+
+.local-kaznu-pay-price {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--kaznu-primary);
+    margin-bottom: 0.5rem;
+}
+
+.local-kaznu-pay-qr {
+    text-align: center;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: var(--kaznu-light);
+    border-radius: 12px;
+}
+
+.local-kaznu-pay-qr img {
+    border-radius: 8px;
+}
+
+.local-kaznu-pay-steps-card ol {
+    padding-left: 1.25rem;
+    line-height: 1.7;
+}
+
+.local-kaznu-muted {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.local-kaznu-pay-link {
+    word-break: break-all;
+    font-size: 0.8rem;
+}
+
+.local-kaznu-pay-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.local-kaznu-pay-feat {
+    background: var(--kaznu-light);
+    border-radius: 10px;
+    padding: 1rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.local-kaznu-pay-feat-icon {
+    display: block;
+    font-size: 1.75rem;
+    margin-bottom: 0.35rem;
+}
+
+.local-kaznu-btn.btn-primary {
+    background: var(--kaznu-primary);
+    border-color: var(--kaznu-primary);
+    margin-top: 1rem;
+}
+
+.local-kaznu-btn.btn-primary:hover {
+    background: #004080;
+    border-color: #004080;
+}
