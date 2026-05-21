@@ -63,24 +63,71 @@ function local_kaznu_enrol_user(stdClass $course, int $userid, string $roleshort
 }
 
 /**
- * Write pass-grade completion records for quiz CMs (fixes module unlock).
+ * Mark quiz CM complete with pass grade for one user (>= 60%).
+ */
+function local_kaznu_sync_user_quiz_completion(stdClass $course, int $userid, int $quizid): bool {
+    global $DB;
+
+    require_once($GLOBALS['CFG']->libdir . '/completionlib.php');
+
+    $cm = get_coursemodule_from_instance('quiz', $quizid, $course->id);
+    if (!$cm || (int) $cm->completion !== COMPLETION_TRACKING_AUTOMATIC) {
+        return false;
+    }
+
+    $gi = $DB->get_record('grade_items', [
+        'courseid' => $course->id,
+        'itemmodule' => 'quiz',
+        'iteminstance' => $quizid,
+    ]);
+    if (!$gi) {
+        return false;
+    }
+
+    $gg = $DB->get_record('grade_grades', ['itemid' => $gi->id, 'userid' => $userid]);
+    if (!$gg || $gg->finalgrade === null || (float) $gg->finalgrade < 60) {
+        return false;
+    }
+
+    $state = COMPLETION_COMPLETE_PASS;
+    $now = time();
+    $rec = $DB->get_record('course_modules_completion', [
+        'coursemoduleid' => $cm->id,
+        'userid' => $userid,
+    ]);
+    if ($rec) {
+        if ((int) $rec->completionstate === $state) {
+            return true;
+        }
+        $rec->completionstate = $state;
+        $rec->timemodified = $now;
+        $DB->update_record('course_modules_completion', $rec);
+    } else {
+        $DB->insert_record('course_modules_completion', (object) [
+            'coursemoduleid' => $cm->id,
+            'userid' => $userid,
+            'completionstate' => $state,
+            'timemodified' => $now,
+        ]);
+    }
+
+    $completion = new completion_info($course);
+    $completion->update_state($cm, $state, $userid, true);
+    rebuild_course_cache($course->id, true);
+
+    return true;
+}
+
+/**
+ * Write pass-grade completion for all users on all course quizzes.
  */
 function local_kaznu_sync_quiz_pass_completions(stdClass $course): void {
     global $DB;
 
-    require_once($GLOBALS['CFG']->libdir . '/completionlib.php');
-    $completion = new completion_info($course);
-    $now = time();
-
     foreach ($DB->get_records('quiz', ['course' => $course->id]) as $quiz) {
-        if (strpos($quiz->name, 'Тест модуля') === false && strpos($quiz->name, 'экзамен') === false) {
+        if (strpos($quiz->name, 'Тест модуля') === false && stripos($quiz->name, 'экзамен') === false) {
             continue;
         }
-        $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id);
-        if (!$cm) {
-            continue;
-        }
-
         $gi = $DB->get_record('grade_items', [
             'courseid' => $course->id,
             'itemmodule' => 'quiz',
@@ -89,30 +136,10 @@ function local_kaznu_sync_quiz_pass_completions(stdClass $course): void {
         if (!$gi) {
             continue;
         }
-
         foreach ($DB->get_records('grade_grades', ['itemid' => $gi->id]) as $gg) {
-            if ($gg->finalgrade === null || (float) $gg->finalgrade < 60) {
-                continue;
+            if ($gg->finalgrade !== null && (float) $gg->finalgrade >= 60) {
+                local_kaznu_sync_user_quiz_completion($course, (int) $gg->userid, (int) $quiz->id);
             }
-            $userid = (int) $gg->userid;
-            $state = COMPLETION_COMPLETE_PASS;
-            $rec = $DB->get_record('course_modules_completion', [
-                'coursemoduleid' => $cm->id,
-                'userid' => $userid,
-            ]);
-            if ($rec) {
-                $rec->completionstate = $state;
-                $rec->timemodified = $now;
-                $DB->update_record('course_modules_completion', $rec);
-            } else {
-                $DB->insert_record('course_modules_completion', (object) [
-                    'coursemoduleid' => $cm->id,
-                    'userid' => $userid,
-                    'completionstate' => $state,
-                    'timemodified' => $now,
-                ]);
-            }
-            $completion->update_state($cm, $state, $userid, true);
         }
     }
 }
