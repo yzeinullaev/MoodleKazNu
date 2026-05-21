@@ -3,6 +3,7 @@ define('CLI_SCRIPT', true);
 
 require(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir . '/clilib.php');
+require_once($CFG->libdir . '/completionlib.php');
 require_once(__DIR__ . '/../locallib.php');
 
 $admin = get_admin();
