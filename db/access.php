@@ -24,5 +24,6 @@ $capabilities = [
             'editingteacher' => CAP_ALLOW,
             'manager' => CAP_ALLOW,
         ],
+        'clonepermissionsfrom' => 'moodle/user:viewdetails',
     ],
 ];

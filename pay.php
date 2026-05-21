@@ -17,17 +17,21 @@ $payurl = new moodle_url('/local/kaznu/pay.php');
 $price = get_config('local_kaznu', 'paymentprice') ?: '25 000 ₸';
 $wwwconfirm = $confirmurl->out(false);
 
-// Confirm payment → enrol and open course.
+// Confirm payment → enrol and open course (QR opens this URL on phone).
 if ($action === 'confirm') {
-    require_capability('local/kaznu:enrolself', context_system::instance());
-
     if ($token !== local_kaznu_payment_token()) {
         throw new moodle_exception('invalidtoken', 'local_kaznu');
     }
 
-    if (!isloggedin() || isguestuser()) {
-        $SESSION->wantsurl = $confirmurl->out(false);
-        redirect(new moodle_url('/login/index.php', ['wantsurl' => $confirmurl->out(false)]));
+    // Must log in first (phone has no session) — before any capability check.
+    require_login(null, false, $confirmurl);
+
+    $syscontext = context_system::instance();
+    if (!has_capability('local/kaznu:enrolself', $syscontext)) {
+        // Demo fallback: any logged-in user may enrol after "payment".
+        if (isguestuser()) {
+            throw new moodle_exception('nopermissions', 'error', '', 'local/kaznu:enrolself');
+        }
     }
 
     local_kaznu_enrol_user($course, (int) $USER->id, 'student');
@@ -65,6 +69,7 @@ echo html_writer::start_div('local-kaznu-pay');
 echo html_writer::tag('span', get_string('paybadge', 'local_kaznu'), ['class' => 'local-kaznu-badge']);
 echo html_writer::tag('h2', format_string($course->fullname));
 echo html_writer::tag('p', get_string('payintro', 'local_kaznu'), ['class' => 'local-kaznu-pay-lead']);
+echo html_writer::tag('p', get_string('payloginhint', 'local_kaznu'), ['class' => 'local-kaznu-muted']);
 
 echo html_writer::start_div('local-kaznu-pay-grid');
 echo html_writer::start_div('local-kaznu-pay-card');
