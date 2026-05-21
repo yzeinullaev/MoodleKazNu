@@ -126,10 +126,10 @@ function local_kaznu_cli_add_url(stdClass $course, int $sectionnum, string $name
     return (int) $cm->coursemodule;
 }
 
-function local_kaznu_cli_grade_availability(int $gradeitemid, float $minpercent = 60): string {
+function local_kaznu_cli_completion_availability(int $cmid): string {
     return json_encode([
         'op' => '&',
-        'c' => [['type' => 'grade', 'id' => $gradeitemid, 'min' => $minpercent, 'max' => 100]],
+        'c' => [['type' => 'completion', 'cm' => $cmid, 'e' => 2]],
         'showc' => [true],
     ]);
 }
@@ -218,7 +218,10 @@ function local_kaznu_cli_add_quiz(
     $moduleinfo->timeopen = 0;
     $moduleinfo->timeclose = 0;
     $moduleinfo->quizpassword = '';
-    $moduleinfo->completion = COMPLETION_TRACKING_NONE;
+    $moduleinfo->completion = COMPLETION_TRACKING_AUTOMATIC;
+    $moduleinfo->completionusegrade = 1;
+    $moduleinfo->completionpassgrade = 1;
+    $moduleinfo->completiongradeitemnumber = 0;
     $moduleinfo->preferredbehaviour = 'deferredfeedback';
     $moduleinfo->questionsperpage = 1;
     $moduleinfo->navmethod = 'free';
@@ -247,7 +250,11 @@ function local_kaznu_cli_add_quiz(
         'iteminstance' => $quiz->id,
     ], '*', MUST_EXIST);
 
-    return ['quiz' => $quiz, 'gradeitemid' => (int) $gradeitem->id];
+    return [
+        'quiz' => $quiz,
+        'gradeitemid' => (int) $gradeitem->id,
+        'cmid' => (int) $cm->coursemodule,
+    ];
 }
 
 // --- Main ---
@@ -362,7 +369,7 @@ $mod1 = local_kaznu_cli_add_quiz(
     $mod1questions,
     $cat
 );
-$availaftermod1 = local_kaznu_cli_grade_availability($mod1['gradeitemid'], 60);
+$availaftermod1 = local_kaznu_cli_completion_availability($mod1['cmid']);
 
 // --- Section 3: Module 2 ---
 local_kaznu_cli_set_section_name($course, 3, 'Модуль 2 — Методики и практика');
@@ -418,7 +425,7 @@ $mod2 = local_kaznu_cli_add_quiz(
     $cat,
     $availaftermod1
 );
-$availaftermod2 = local_kaznu_cli_grade_availability($mod2['gradeitemid'], 60);
+$availaftermod2 = local_kaznu_cli_completion_availability($mod2['cmid']);
 
 // --- Section 4: Module 3 ---
 local_kaznu_cli_set_section_name($course, 4, 'Модуль 3 — Подготовка к экзамену');
