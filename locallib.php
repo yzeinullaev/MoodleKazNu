@@ -63,6 +63,30 @@ function local_kaznu_enrol_user(stdClass $course, int $userid, string $roleshort
 }
 
 /**
+ * Show grades and pass/fail after quiz attempt.
+ */
+function local_kaznu_apply_quiz_review_settings(int $quizid): void {
+    global $DB;
+
+    $reviewwhen = 4096 + 256 + 16; // IMMEDIATELY_AFTER | LATER_WHILE_OPEN | AFTER_CLOSE
+    $DB->update_record('quiz', (object) [
+        'id' => $quizid,
+        'reviewattempt' => 65536 + $reviewwhen,
+        'reviewmaxmarks' => $reviewwhen,
+        'reviewmarks' => $reviewwhen,
+        'reviewoverallfeedback' => $reviewwhen,
+        'reviewcorrectness' => $reviewwhen,
+        'reviewgeneralfeedback' => $reviewwhen,
+        'reviewspecificfeedback' => $reviewwhen,
+        'reviewrightanswer' => 0,
+    ]);
+    $DB->set_field('grade_items', 'gradepass', 60, [
+        'itemmodule' => 'quiz',
+        'iteminstance' => $quizid,
+    ]);
+}
+
+/**
  * URL for payment confirmation (used in QR and pay link).
  */
 function local_kaznu_confirm_url(): moodle_url {

@@ -238,6 +238,7 @@ function local_kaznu_cli_add_quiz(
     }
     quiz_update_sumgrades($quiz);
     $DB->set_field('quiz', 'grade', 100, ['id' => $quiz->id]);
+    local_kaznu_apply_quiz_review_settings((int) $quiz->id);
 
     $gradeitem = $DB->get_record('grade_items', [
         'courseid' => $course->id,
