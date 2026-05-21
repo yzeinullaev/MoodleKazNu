@@ -4,25 +4,52 @@ defined('MOODLE_INTERNAL') || die();
 require_once(__DIR__ . '/locallib.php');
 
 /**
- * Load demo styles on course and payment pages.
+ * Whether KazNU demo styles should load on the current page.
  */
-function local_kaznu_before_standard_html_head() {
+function local_kaznu_should_load_styles(): bool {
     global $PAGE, $COURSE;
 
-    $load = false;
     if (!empty($COURSE->shortname) && $COURSE->shortname === LOCAL_KAZNU_COURSE_SHORTNAME) {
-        $load = true;
+        return true;
     }
     if ($PAGE->pagetype === 'local-kaznu-pay') {
-        $load = true;
+        return true;
     }
-    if (strpos($PAGE->url->get_path(), '/local/kaznu/pay.php') !== false) {
-        $load = true;
+    $path = $PAGE->url->get_path();
+    return strpos($path, '/local/kaznu/') !== false;
+}
+
+/**
+ * Register plugin stylesheet (Moodle queue + direct link for reliability).
+ */
+function local_kaznu_load_styles(): void {
+    global $PAGE, $CFG;
+
+    if (!local_kaznu_should_load_styles()) {
+        return;
     }
 
-    if ($load) {
-        $PAGE->requires->css('/local/kaznu/styles.css');
+    $sheet = new moodle_url('/local/kaznu/styles.css', ['rev' => get_config('local_kaznu', 'version') ?: '1']);
+    $PAGE->requires->css($sheet);
+}
+
+function local_kaznu_before_standard_html_head() {
+    local_kaznu_load_styles();
+}
+
+/**
+ * Fallback: direct link tag when Moodle does not emit queued local CSS.
+ */
+function local_kaznu_before_standard_head_html() {
+    global $CFG;
+
+    if (!local_kaznu_should_load_styles()) {
+        return;
     }
+
+    $rev = get_config('local_kaznu', 'version') ?: '1';
+    $href = $CFG->wwwroot . '/local/kaznu/styles.css?rev=' . $rev;
+    echo '<link rel="stylesheet" type="text/css" href="' . s($href) . '" />' . "\n";
 }
 
 /**

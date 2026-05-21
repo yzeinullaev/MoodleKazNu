@@ -135,7 +135,13 @@ a.local-kaznu-btn:hover {
     content: "▶ ";
 }
 
-/* Payment page */
+/* Payment page — scoped for Boost theme */
+body.path-local-kaznu.local-kaznu-pay-page #region-main,
+body.path-local-kaznu .local-kaznu-pay {
+    max-width: 920px;
+    margin: 0 auto 2rem;
+}
+
 .local-kaznu-pay {
     max-width: 920px;
     margin: 0 auto 2rem;

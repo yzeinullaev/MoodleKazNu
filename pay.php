@@ -45,7 +45,15 @@ $PAGE->set_pagetype('local-kaznu-pay');
 $PAGE->set_pagelayout('standard');
 $PAGE->set_title(get_string('paytitle', 'local_kaznu'));
 $PAGE->set_heading(get_string('paytitle', 'local_kaznu'));
-$PAGE->requires->css('/local/kaznu/styles.css');
+$PAGE->add_body_class('path-local-kaznu');
+$PAGE->add_body_class('local-kaznu-pay-page');
+
+require_once(__DIR__ . '/lib.php');
+local_kaznu_load_styles();
+$cssfile = __DIR__ . '/styles.css';
+if (is_readable($cssfile)) {
+    $PAGE->requires->css_inline(file_get_contents($cssfile));
+}
 
 $already = isloggedin() && !isguestuser() && local_kaznu_is_enrolled((int) $USER->id);
 $qrencoded = urlencode($wwwconfirm);
