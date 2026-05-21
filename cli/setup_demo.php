@@ -221,7 +221,7 @@ function local_kaznu_cli_add_quiz(
     $moduleinfo->completion = COMPLETION_TRACKING_AUTOMATIC;
     $moduleinfo->completionusegrade = 1;
     $moduleinfo->completionpassgrade = 1;
-    $moduleinfo->completiongradeitemnumber = 0;
+    $moduleinfo->completiongradeitemnumber = null;
     $moduleinfo->preferredbehaviour = 'deferredfeedback';
     $moduleinfo->questionsperpage = 1;
     $moduleinfo->navmethod = 'free';

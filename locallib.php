@@ -63,6 +63,61 @@ function local_kaznu_enrol_user(stdClass $course, int $userid, string $roleshort
 }
 
 /**
+ * Write pass-grade completion records for quiz CMs (fixes module unlock).
+ */
+function local_kaznu_sync_quiz_pass_completions(stdClass $course): void {
+    global $DB;
+
+    require_once($GLOBALS['CFG']->libdir . '/completionlib.php');
+    $completion = new completion_info($course);
+    $now = time();
+
+    foreach ($DB->get_records('quiz', ['course' => $course->id]) as $quiz) {
+        if (strpos($quiz->name, 'Тест модуля') === false && strpos($quiz->name, 'экзамен') === false) {
+            continue;
+        }
+        $cm = get_coursemodule_from_instance('quiz', $quiz->id, $course->id);
+        if (!$cm) {
+            continue;
+        }
+
+        $gi = $DB->get_record('grade_items', [
+            'courseid' => $course->id,
+            'itemmodule' => 'quiz',
+            'iteminstance' => $quiz->id,
+        ]);
+        if (!$gi) {
+            continue;
+        }
+
+        foreach ($DB->get_records('grade_grades', ['itemid' => $gi->id]) as $gg) {
+            if ($gg->finalgrade === null || (float) $gg->finalgrade < 60) {
+                continue;
+            }
+            $userid = (int) $gg->userid;
+            $state = COMPLETION_COMPLETE_PASS;
+            $rec = $DB->get_record('course_modules_completion', [
+                'coursemoduleid' => $cm->id,
+                'userid' => $userid,
+            ]);
+            if ($rec) {
+                $rec->completionstate = $state;
+                $rec->timemodified = $now;
+                $DB->update_record('course_modules_completion', $rec);
+            } else {
+                $DB->insert_record('course_modules_completion', (object) [
+                    'coursemoduleid' => $cm->id,
+                    'userid' => $userid,
+                    'completionstate' => $state,
+                    'timemodified' => $now,
+                ]);
+            }
+            $completion->update_state($cm, $state, $userid, true);
+        }
+    }
+}
+
+/**
  * Show grades and pass/fail after quiz attempt.
  */
 function local_kaznu_apply_quiz_review_settings(int $quizid): void {

@@ -23,7 +23,7 @@ foreach ([$cm1, $cm2] as $cm) {
     $DB->update_record('course_modules', (object) [
         'id' => $cm->id,
         'completion' => COMPLETION_TRACKING_AUTOMATIC,
-        'completiongradeitemnumber' => 0,
+        'completiongradeitemnumber' => null,
         'completionpassgrade' => 1,
         'completionview' => 0,
     ]);
@@ -61,20 +61,7 @@ foreach ($DB->get_records('course_modules', ['course' => $course->id]) as $cm) {
     $updated++;
 }
 
-$completion = new completion_info($course);
-$gi = $DB->get_record('grade_items', [
-    'courseid' => $course->id,
-    'itemmodule' => 'quiz',
-    'iteminstance' => $quiz1->id,
-], '*', MUST_EXIST);
-
-foreach ($DB->get_records('grade_grades', ['itemid' => $gi->id]) as $gg) {
-    if ($gg->finalgrade !== null && $gg->finalgrade >= 60) {
-        $completion->update_state($cm1, COMPLETION_COMPLETE_PASS, (int) $gg->userid);
-        cli_writeln("Quiz1 pass completion for user {$gg->userid}");
-    }
-}
-
+local_kaznu_sync_quiz_pass_completions($course);
 rebuild_course_cache($course->id);
 purge_all_caches();
-cli_writeln("Updated {$updated} module restrictions.");
+cli_writeln("Updated {$updated} module restrictions. Completions synced.");
