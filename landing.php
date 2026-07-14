@@ -29,6 +29,7 @@ $cssurl = new moodle_url('/local/kaznu/styles_landing.css', [
     'rev' => get_config('local_kaznu', 'version') ?: '1',
 ]);
 
+// Standalone HTML — do not use $OUTPUT->standard_* (leaves %%ENDHTML%% placeholders).
 echo $OUTPUT->doctype();
 ?>
 <html <?php echo $OUTPUT->htmlattributes(); ?>>
@@ -39,10 +40,9 @@ echo $OUTPUT->doctype();
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="<?php echo $cssurl->out(false); ?>">
-    <?php echo $OUTPUT->standard_head_html(); ?>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
-<body <?php echo $OUTPUT->body_attributes('local-kaznu-landing-body'); ?>>
-<?php echo $OUTPUT->standard_top_of_body_html(); ?>
+<body class="local-kaznu-landing-body">
 
 <div class="kzn-landing">
     <header class="kzn-nav">
@@ -200,6 +200,5 @@ echo $OUTPUT->doctype();
     </footer>
 </div>
 
-<?php echo $OUTPUT->standard_end_of_body_html(); ?>
 </body>
 </html>
