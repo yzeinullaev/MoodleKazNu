@@ -7,26 +7,22 @@ require_once(__DIR__ . '/locallib.php');
  * Redirect Moodle site home to the branded Farabi landing.
  */
 function local_kaznu_before_http_headers() {
-    global $PAGE, $SCRIPT;
-
-    if (defined('CLI_SCRIPT') && CLI_SCRIPT) {
+    if ((defined('CLI_SCRIPT') && CLI_SCRIPT) || (defined('AJAX_SCRIPT') && AJAX_SCRIPT)) {
         return;
     }
-    if (during_initial_install()) {
-        return;
-    }
-
-    // Frontpage / site index → landing.
-    $isfront = (!empty($SCRIPT) && ($SCRIPT === '/index.php' || $SCRIPT === '/'))
-        || (!empty($PAGE->pagetype) && $PAGE->pagetype === 'site-index');
-
-    if (!$isfront) {
+    if (function_exists('during_initial_install') && during_initial_install()) {
         return;
     }
 
-    // Avoid redirect loop or interfering with login/AJAX.
-    $path = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
-    if (strpos($path, '/local/kaznu/') !== false || strpos($path, '/login/') !== false) {
+    global $SCRIPT;
+
+    $script = (string) ($SCRIPT ?? '');
+    if ($script === '') {
+        $script = (string) ($_SERVER['SCRIPT_NAME'] ?? '');
+    }
+
+    // Only the public site front page.
+    if ($script !== '/index.php' && $script !== 'index.php' && !preg_match('#(?:^|/)index\.php$#', $script)) {
         return;
     }
 
