@@ -56,7 +56,13 @@ require_once(__DIR__ . '/lib.php');
 local_kaznu_load_styles();
 
 $already = isloggedin() && !isguestuser() && local_kaznu_is_enrolled((int) $USER->id);
-$qrencoded = urlencode($wwwconfirm);
+$loggedin = isloggedin() && !isguestuser();
+
+// Guests: QR and button must open login first, then return to confirm.
+$loginforconfirm = new moodle_url('/login/index.php', ['wantsurl' => $confirmurl->out(false)]);
+$actionurl = $loggedin ? $confirmurl : $loginforconfirm;
+$qrdata = $actionurl->out(false);
+$qrencoded = urlencode($qrdata);
 $qrimg = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' . $qrencoded;
 
 echo $OUTPUT->header();
@@ -72,14 +78,17 @@ echo html_writer::start_div('local-kaznu-pay-card');
 echo html_writer::tag('div', $price, ['class' => 'local-kaznu-pay-price']);
 echo html_writer::tag('p', get_string('paydesc', 'local_kaznu'));
 echo html_writer::start_div('local-kaznu-pay-qr');
-echo html_writer::empty_tag('img', [
+echo html_writer::link($actionurl, html_writer::empty_tag('img', [
     'src' => $qrimg,
     'alt' => get_string('qralt', 'local_kaznu'),
     'width' => 220,
     'height' => 220,
-]);
+]), ['class' => 'local-kaznu-qr-link', 'title' => get_string('paybutton', 'local_kaznu')]);
 echo html_writer::end_div();
 echo html_writer::tag('p', get_string('qrhint', 'local_kaznu'), ['class' => 'local-kaznu-muted']);
+if (!$loggedin) {
+    echo html_writer::tag('p', get_string('payqrlogin', 'local_kaznu'), ['class' => 'local-kaznu-muted']);
+}
 echo html_writer::end_div();
 
 echo html_writer::start_div('local-kaznu-pay-card local-kaznu-pay-steps-card');
@@ -97,15 +106,12 @@ if ($already) {
         ['class' => 'btn btn-primary btn-lg local-kaznu-btn']
     );
 } else {
-    $btnurl = isloggedin() && !isguestuser()
-        ? $confirmurl
-        : new moodle_url('/login/index.php', ['wantsurl' => $confirmurl->out(false)]);
     echo html_writer::link(
-        $btnurl,
-        get_string('paybutton', 'local_kaznu'),
+        $actionurl,
+        $loggedin ? get_string('paybutton', 'local_kaznu') : get_string('payloginbutton', 'local_kaznu'),
         ['class' => 'btn btn-primary btn-lg local-kaznu-btn']
     );
-    echo html_writer::tag('p', get_string('paylinkhint', 'local_kaznu', $wwwconfirm), ['class' => 'local-kaznu-muted local-kaznu-pay-link']);
+    echo html_writer::tag('p', get_string('paylinkhint', 'local_kaznu', $actionurl->out(false)), ['class' => 'local-kaznu-muted local-kaznu-pay-link']);
 }
 echo html_writer::end_div();
 echo html_writer::end_div();

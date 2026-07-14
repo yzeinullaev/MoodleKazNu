@@ -21,8 +21,8 @@ function local_kaznu_before_http_headers() {
         $script = (string) ($_SERVER['SCRIPT_NAME'] ?? '');
     }
 
-    // Only the public site front page.
-    if ($script !== '/index.php' && $script !== 'index.php' && !preg_match('#(?:^|/)index\.php$#', $script)) {
+    // Only the public site front page — never /login/index.php or other scripts.
+    if ($script !== '/index.php' && $script !== 'index.php') {
         return;
     }
 

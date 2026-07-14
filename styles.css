@@ -193,7 +193,12 @@ body.path-local-kaznu .local-kaznu-pay {
     border-radius: 12px;
 }
 
-.local-kaznu-pay-qr img {
+.local-kaznu-qr-link {
+    display: inline-block;
+}
+
+.local-kaznu-qr-link img {
+    display: block;
     border-radius: 8px;
 }
 
