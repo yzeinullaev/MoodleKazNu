@@ -23,15 +23,11 @@ if ($action === 'confirm') {
         throw new moodle_exception('invalidtoken', 'local_kaznu');
     }
 
-    // Must log in first (phone has no session) — before any capability check.
-    require_login(null, false, $confirmurl);
-
-    $syscontext = context_system::instance();
-    if (!has_capability('local/kaznu:enrolself', $syscontext)) {
-        // Demo fallback: any logged-in user may enrol after "payment".
-        if (isguestuser()) {
-            throw new moodle_exception('nopermissions', 'error', '', 'local/kaznu:enrolself');
-        }
+    // Must log in first (phone has no session). Do not pass URL as $cm.
+    if (!isloggedin() || isguestuser()) {
+        redirect(new moodle_url('/login/index.php', [
+            'wantsurl' => $confirmurl->out(false),
+        ]));
     }
 
     local_kaznu_enrol_user($course, (int) $USER->id, 'student');
