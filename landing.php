@@ -15,6 +15,7 @@ $PAGE->add_body_class('local-kaznu-landing-body');
 $course = local_kaznu_get_demo_course();
 $payurl = new moodle_url('/local/kaznu/pay.php');
 $loginurl = new moodle_url('/login/index.php');
+$landingurl = new moodle_url('/local/kaznu/landing.php');
 $courseurl = $course
     ? new moodle_url('/course/view.php', ['id' => $course->id])
     : $payurl;
@@ -64,6 +65,12 @@ echo $OUTPUT->doctype();
             <a href="#program"><?php echo get_string('landing_nav_program', 'local_kaznu'); ?></a>
             <a href="#path"><?php echo get_string('landing_nav_path', 'local_kaznu'); ?></a>
             <a href="#modules"><?php echo get_string('landing_nav_modules', 'local_kaznu'); ?></a>
+            <span class="kzn-lang-switch" aria-label="Language switcher">
+                <a href="<?php echo (new moodle_url($landingurl, ['lang' => 'kk']))->out(false); ?>">Қаз</a>
+                <a href="<?php echo (new moodle_url($landingurl, ['lang' => 'ru']))->out(false); ?>">Рус</a>
+                <a href="<?php echo (new moodle_url($landingurl, ['lang' => 'en']))->out(false); ?>">Eng</a>
+                <a href="<?php echo (new moodle_url($landingurl, ['lang' => 'zh_cn']))->out(false); ?>">中文</a>
+            </span>
             <?php if ($loggedin): ?>
                 <a class="kzn-nav-btn" href="<?php echo $primaryurl->out(false); ?>"><?php echo $primarylabel; ?></a>
             <?php else: ?>

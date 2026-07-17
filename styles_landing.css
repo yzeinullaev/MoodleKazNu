@@ -115,6 +115,30 @@ body.local-kaznu-landing-body .navbar {
     color: var(--kzn-gold-soft);
 }
 
+.kzn-lang-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.45rem;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(2, 31, 51, 0.25);
+}
+
+.kzn-lang-switch a {
+    font-size: 0.78rem;
+    opacity: 0.88;
+}
+
+.kzn-lang-switch a + a::before {
+    content: "";
+    display: inline-block;
+    width: 1px;
+    height: 0.75rem;
+    margin-right: 0.35rem;
+    background: rgba(255, 255, 255, 0.25);
+    vertical-align: middle;
+}
+
 .kzn-nav-btn {
     background: var(--kzn-gold);
     color: var(--kzn-deep) !important;
@@ -134,7 +158,7 @@ body.local-kaznu-landing-body .navbar {
     min-height: 100vh;
     min-height: 100dvh;
     display: grid;
-    align-items: end;
+    align-items: center;
     color: var(--kzn-white);
     overflow: hidden;
 }
@@ -187,7 +211,7 @@ body.local-kaznu-landing-body .navbar {
     position: relative;
     z-index: 2;
     width: min(720px, calc(100% - 2.5rem));
-    margin: 0 auto 12vh;
+    margin: -8vh auto 0;
     text-align: center;
     animation: kzn-fade-up 0.9s 0.2s ease-out both;
 }
@@ -577,7 +601,7 @@ body.local-kaznu-landing-body .navbar {
     }
 
     .kzn-hero-content {
-        margin-bottom: 18vh;
+        margin: -4vh auto 0;
         text-align: left;
     }
 
@@ -588,6 +612,10 @@ body.local-kaznu-landing-body .navbar {
 
 @media (max-width: 560px) {
     .kzn-brand-text em {
+        display: none;
+    }
+
+    .kzn-lang-switch {
         display: none;
     }
 }
