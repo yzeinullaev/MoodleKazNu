@@ -1,141 +1,159 @@
-/* KazNU demo — course + payment page */
+/* Farabi IBS — course + payment + in-Moodle UX */
 :root {
-    --kaznu-primary: #003366;
-    --kaznu-accent: #e8b923;
-    --kaznu-light: #f0f6fc;
+    --kaznu-cream: #FFFBF7;
+    --kaznu-charcoal: #20262C;
+    --kaznu-coral: #F06543;
+    --kaznu-coral-deep: #d94f2f;
+    --kaznu-bronze: #A3927B;
+    --kaznu-primary: #20262C;
+    --kaznu-accent: #F06543;
+    --kaznu-light: #FFFBF7;
+    --kaznu-serif: "Cormorant Garamond", Georgia, serif;
+    --kaznu-sans: "Source Sans 3", "Aktiv Grotesk", "Helvetica Neue", sans-serif;
 }
 
-body.path-local-kaznu .navbar,
-#page-course-view-topics[data-course-shortname="SUMMER2026"] {
-    --kaznu-primary: #003366;
-    --kaznu-accent: #e8b923;
+body.path-local-kaznu,
+body.path-course,
+body.path-mod {
+    --primary: var(--kaznu-coral);
 }
 
-.local-kaznu-hero {
-    background: linear-gradient(135deg, #003366 0%, #005599 55%, #0077b6 100%);
-    color: #fff;
-    border-radius: 16px;
-    padding: 2rem 2.5rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 8px 24px rgba(0, 51, 102, 0.25);
-}
-
-.local-kaznu-hero h2 {
-    color: #fff;
-    margin: 0 0 0.75rem;
-    font-size: 1.75rem;
-}
-
-.local-kaznu-hero p {
-    margin: 0.25rem 0;
-    opacity: 0.95;
-}
-
-.local-kaznu-badge {
-    display: inline-block;
-    background: var(--kaznu-accent);
-    color: #1a1a1a;
-    font-weight: 600;
-    padding: 0.25rem 0.75rem;
-    border-radius: 999px;
+/* Sticky XP HUD */
+.local-kaznu-hud {
+    position: fixed;
+    z-index: 1200;
+    right: 1rem;
+    bottom: 1rem;
+    min-width: 220px;
+    max-width: 280px;
+    background: var(--kaznu-charcoal);
+    color: var(--kaznu-cream);
+    padding: 0.85rem 1rem;
+    border-radius: 2px;
+    box-shadow: 0 12px 32px rgba(32, 38, 44, 0.35);
+    font-family: var(--kaznu-sans);
     font-size: 0.85rem;
-    margin-bottom: 1rem;
 }
 
-.local-kaznu-steps {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
-    margin: 1.5rem 0;
+.local-kaznu-hud strong {
+    font-family: var(--kaznu-serif);
+    font-size: 1.05rem;
+    display: block;
+    margin-bottom: 0.2rem;
 }
 
-.local-kaznu-step {
-    background: var(--kaznu-light);
-    border-left: 4px solid var(--kaznu-primary);
-    padding: 1rem 1.25rem;
-    border-radius: 8px;
+.local-kaznu-hud-meta {
+    display: flex;
+    justify-content: space-between;
+    opacity: 0.85;
+    margin-bottom: 0.4rem;
 }
 
-.local-kaznu-card {
-    background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 12px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+.local-kaznu-hud-bar {
+    height: 5px;
+    background: rgba(255, 251, 247, 0.15);
+    border-radius: 99px;
+    overflow: hidden;
 }
 
-.local-kaznu-card h3 {
-    color: var(--kaznu-primary);
-    margin-top: 0;
+.local-kaznu-hud-bar span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--kaznu-bronze), var(--kaznu-coral));
 }
 
-.local-kaznu-section-label {
-    margin: 0.5rem 0 1rem;
-}
-
-.local-kaznu-mod-title {
-    color: var(--kaznu-primary);
-    margin: 0 0 0.35rem;
-    font-size: 1.25rem;
-}
-
-.local-kaznu-media {
-    background: var(--kaznu-light);
-    border-radius: 12px;
-    padding: 1.25rem;
-}
-
-.local-kaznu-audio audio {
-    margin-top: 0.75rem;
-}
-
-.local-kaznu-cta {
-    margin-top: 1.5rem;
-}
-
-.local-kaznu-btn-link,
-a.local-kaznu-btn {
+.local-kaznu-hud a {
     display: inline-block;
-    background: var(--kaznu-primary) !important;
-    color: #fff !important;
-    padding: 0.65rem 1.5rem;
-    border-radius: 8px;
+    margin-top: 0.55rem;
+    color: var(--kaznu-coral);
     font-weight: 600;
-    text-decoration: none !important;
+    text-decoration: none;
+    font-size: 0.8rem;
 }
 
-.local-kaznu-btn-link:hover,
-a.local-kaznu-btn:hover {
-    background: #004080 !important;
+/* Celebration toast */
+.local-kaznu-celebrate {
+    position: fixed;
+    z-index: 1300;
+    left: 50%;
+    top: 18%;
+    transform: translateX(-50%) scale(0.92);
+    background: var(--kaznu-charcoal);
+    color: var(--kaznu-cream);
+    padding: 1.25rem 1.75rem;
+    border-top: 3px solid var(--kaznu-coral);
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+    animation: kaznu-pop 0.45s ease forwards, kaznu-fade 0.5s 2.8s ease forwards;
+    pointer-events: none;
+    font-family: var(--kaznu-sans);
+}
+
+.local-kaznu-celebrate .lvl {
+    font-family: var(--kaznu-serif);
+    font-size: 1.6rem;
+    color: var(--kaznu-coral);
+    margin: 0 0 0.25rem;
+}
+
+.local-kaznu-celebrate .xp {
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+@keyframes kaznu-pop {
+    to { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+@keyframes kaznu-fade {
+    to { opacity: 0; transform: translateX(-50%) translateY(-12px) scale(0.98); }
+}
+
+/* Course chrome */
+body.path-course #page-header .page-header-headings h1,
+body.path-course .page-header-headings h1 {
+    font-family: var(--kaznu-serif) !important;
+    color: var(--kaznu-charcoal) !important;
+}
+
+body.path-course .course-content .sectionname,
+body.path-course .sectionname {
+    font-family: var(--kaznu-serif) !important;
+    color: var(--kaznu-charcoal) !important;
+    font-weight: 600 !important;
+}
+
+body.path-course .activity-item,
+body.path-course .activity {
+    border-radius: 2px !important;
+}
+
+body.path-course .btn-primary,
+body.path-mod .btn-primary,
+body.path-local-kaznu .btn-primary {
+    background: var(--kaznu-coral) !important;
+    border-color: var(--kaznu-coral) !important;
     color: #fff !important;
+    border-radius: 2px !important;
 }
 
-.local-kaznu-checklist ul {
-    list-style: none;
-    padding-left: 0;
-}
-
-.local-kaznu-checklist li {
-    padding: 0.35rem 0;
-}
-
-.course-content .section .sectionname {
-    color: var(--kaznu-primary);
-    font-weight: 600;
-    font-size: 1.1rem;
+body.path-course .btn-primary:hover,
+body.path-mod .btn-primary:hover,
+body.path-local-kaznu .btn-primary:hover {
+    background: var(--kaznu-coral-deep) !important;
+    border-color: var(--kaznu-coral-deep) !important;
 }
 
 .activity.quiz .activityname a {
-    color: #b45309;
+    color: var(--kaznu-coral) !important;
     font-weight: 600;
 }
 
 .activity.url .activityname a::before {
     content: "▶ ";
+    color: var(--kaznu-bronze);
 }
 
-/* Payment page — scoped for Boost theme */
+/* Pay page */
 body.path-local-kaznu.local-kaznu-pay-page #region-main,
 body.path-local-kaznu .local-kaznu-pay {
     max-width: 920px;
@@ -145,16 +163,31 @@ body.path-local-kaznu .local-kaznu-pay {
 .local-kaznu-pay {
     max-width: 920px;
     margin: 0 auto 2rem;
+    font-family: var(--kaznu-sans);
+}
+
+.local-kaznu-badge {
+    display: inline-block;
+    background: var(--kaznu-charcoal);
+    color: var(--kaznu-cream);
+    font-weight: 600;
+    padding: 0.3rem 0.75rem;
+    border-radius: 2px;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 1rem;
 }
 
 .local-kaznu-pay h2 {
-    color: var(--kaznu-primary);
+    font-family: var(--kaznu-serif);
+    color: var(--kaznu-charcoal);
     margin-top: 0.5rem;
+    font-size: 2rem;
 }
 
 .local-kaznu-pay-lead {
     font-size: 1.1rem;
-    color: #334155;
+    color: #4a453f;
 }
 
 .local-kaznu-pay-grid {
@@ -172,16 +205,17 @@ body.path-local-kaznu .local-kaznu-pay {
 
 .local-kaznu-pay-card {
     background: #fff;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
+    border: 1px solid rgba(32, 38, 44, 0.1);
+    border-radius: 2px;
     padding: 1.5rem 2rem;
-    box-shadow: 0 4px 16px rgba(0, 51, 102, 0.08);
+    box-shadow: 0 8px 24px rgba(32, 38, 44, 0.06);
 }
 
 .local-kaznu-pay-price {
-    font-size: 2.25rem;
-    font-weight: 700;
-    color: var(--kaznu-primary);
+    font-family: var(--kaznu-serif);
+    font-size: 2.4rem;
+    font-weight: 600;
+    color: var(--kaznu-coral);
     margin-bottom: 0.5rem;
 }
 
@@ -189,8 +223,8 @@ body.path-local-kaznu .local-kaznu-pay {
     text-align: center;
     margin: 1rem 0;
     padding: 1rem;
-    background: var(--kaznu-light);
-    border-radius: 12px;
+    background: var(--kaznu-cream);
+    border-radius: 2px;
 }
 
 .local-kaznu-qr-link {
@@ -199,7 +233,7 @@ body.path-local-kaznu .local-kaznu-pay {
 
 .local-kaznu-qr-link img {
     display: block;
-    border-radius: 8px;
+    border-radius: 2px;
 }
 
 .local-kaznu-pay-steps-card ol {
@@ -208,7 +242,7 @@ body.path-local-kaznu .local-kaznu-pay {
 }
 
 .local-kaznu-muted {
-    color: #64748b;
+    color: #6b645c;
     font-size: 0.9rem;
 }
 
@@ -224,8 +258,9 @@ body.path-local-kaznu .local-kaznu-pay {
 }
 
 .local-kaznu-pay-feat {
-    background: var(--kaznu-light);
-    border-radius: 10px;
+    background: var(--kaznu-cream);
+    border: 1px solid rgba(163, 146, 123, 0.35);
+    border-radius: 2px;
     padding: 1rem;
     text-align: center;
     font-weight: 500;
@@ -233,17 +268,26 @@ body.path-local-kaznu .local-kaznu-pay {
 
 .local-kaznu-pay-feat-icon {
     display: block;
-    font-size: 1.75rem;
+    font-size: 1.5rem;
     margin-bottom: 0.35rem;
+    color: var(--kaznu-coral);
 }
 
-.local-kaznu-btn.btn-primary {
-    background: var(--kaznu-primary);
-    border-color: var(--kaznu-primary);
+.local-kaznu-btn.btn-primary,
+a.local-kaznu-btn {
+    display: inline-block;
+    background: var(--kaznu-coral) !important;
+    border-color: var(--kaznu-coral) !important;
+    color: #fff !important;
+    padding: 0.65rem 1.5rem;
+    border-radius: 2px;
+    font-weight: 600;
+    text-decoration: none !important;
     margin-top: 1rem;
 }
 
-.local-kaznu-btn.btn-primary:hover {
-    background: #004080;
-    border-color: #004080;
+.local-kaznu-btn.btn-primary:hover,
+a.local-kaznu-btn:hover {
+    background: var(--kaznu-coral-deep) !important;
+    border-color: var(--kaznu-coral-deep) !important;
 }

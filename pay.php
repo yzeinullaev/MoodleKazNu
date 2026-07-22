@@ -114,15 +114,14 @@ echo html_writer::end_div();
 
 echo html_writer::start_div('local-kaznu-pay-features');
 $features = [
-    ['icon' => '🎬', 'text' => get_string('featvideo', 'local_kaznu')],
-    ['icon' => '🎧', 'text' => get_string('feataudio', 'local_kaznu')],
-    ['icon' => '📝', 'text' => get_string('feattests', 'local_kaznu')],
-    ['icon' => '🎓', 'text' => get_string('featcert', 'local_kaznu')],
+    get_string('featvideo', 'local_kaznu'),
+    get_string('feataudio', 'local_kaznu'),
+    get_string('feattests', 'local_kaznu'),
+    get_string('featcert', 'local_kaznu'),
 ];
-foreach ($features as $f) {
+foreach ($features as $text) {
     echo html_writer::start_div('local-kaznu-pay-feat');
-    echo html_writer::tag('span', $f['icon'], ['class' => 'local-kaznu-pay-feat-icon']);
-    echo html_writer::tag('span', $f['text']);
+    echo html_writer::tag('span', $text);
     echo html_writer::end_div();
 }
 echo html_writer::end_div();

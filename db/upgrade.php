@@ -6,6 +6,10 @@ defined('MOODLE_INTERNAL') || die();
  * @return bool
  */
 function xmldb_local_kaznu_upgrade($oldversion) {
+    global $DB;
+
+    $dbman = $DB->get_manager();
+
     if ($oldversion < 2026052103) {
         update_capabilities('local_kaznu');
         upgrade_plugin_savepoint(true, 2026052103, 'local', 'kaznu');
@@ -22,5 +26,24 @@ function xmldb_local_kaznu_upgrade($oldversion) {
     if ($oldversion < 2026071701) {
         upgrade_plugin_savepoint(true, 2026071701, 'local', 'kaznu');
     }
+
+    if ($oldversion < 2026072201) {
+        $table = new xmldb_table('local_kaznu_xp');
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('xp', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_field('level', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('badges', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+        $table->add_key('useriduk', XMLDB_KEY_UNIQUE, ['userid']);
+
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        upgrade_plugin_savepoint(true, 2026072201, 'local', 'kaznu');
+    }
+
     return true;
 }

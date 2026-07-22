@@ -6,7 +6,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once(__DIR__ . '/../locallib.php');
 
 /**
- * After quiz submit — unlock next module when pass grade received.
+ * Quiz submit / grade → unlock modules + award hard XP.
  */
 class observer {
 
@@ -25,7 +25,7 @@ class observer {
         global $DB;
 
         $course = $DB->get_record('course', ['id' => $event->courseid]);
-        if (!$course || $course->shortname !== LOCAL_KAZNU_COURSE_SHORTNAME) {
+        if (!$course || (int) $course->id <= 1) {
             return;
         }
 
@@ -34,6 +34,31 @@ class observer {
             return;
         }
 
-        local_kaznu_sync_user_quiz_completion($course, (int) $attempt->userid, (int) $attempt->quiz);
+        // Unlock path for summer school; XP for any catalogue course.
+        if ($course->shortname === LOCAL_KAZNU_COURSE_SHORTNAME) {
+            local_kaznu_sync_user_quiz_completion($course, (int) $attempt->userid, (int) $attempt->quiz);
+            return;
+        }
+
+        $gi = $DB->get_record('grade_items', [
+            'courseid' => $course->id,
+            'itemmodule' => 'quiz',
+            'iteminstance' => $attempt->quiz,
+        ]);
+        if (!$gi) {
+            return;
+        }
+        $gg = $DB->get_record('grade_grades', ['itemid' => $gi->id, 'userid' => $attempt->userid]);
+        if (!$gg || $gg->finalgrade === null || (float) $gg->finalgrade < 60) {
+            return;
+        }
+
+        $xp = LOCAL_KAZNU_XP_QUIZ_PASS;
+        $badge = 'quiz_pass';
+        if ((float) $gg->finalgrade >= 100) {
+            $xp += LOCAL_KAZNU_XP_QUIZ_PERFECT;
+            $badge = 'perfect_score';
+        }
+        local_kaznu_award_xp((int) $attempt->userid, $xp, 'quiz_pass', $badge);
     }
 }
