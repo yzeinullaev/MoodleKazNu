@@ -15,59 +15,63 @@
 
 body.path-local-kaznu,
 body.path-course,
-body.path-mod,
-body.local-kaznu-course-skin {
+body.path-mod {
     --primary: var(--kaznu-coral);
     font-family: var(--kaznu-sans);
 }
 
-/* —— Full course skin —— */
-body.local-kaznu-course-skin {
+/* —— Full course skin (uses Moodle path-* classes; no add_body_class) —— */
+body.path-course,
+body.path-mod {
     background: var(--kaznu-cream) !important;
 }
 
-body.local-kaznu-course-skin #page {
+body.path-course #page,
+body.path-mod #page {
     background: var(--kaznu-cream) !important;
 }
 
-body.local-kaznu-course-skin #page-header,
-body.local-kaznu-course-skin .header-maxwidth {
+body.path-course #page-header,
+body.path-course .header-maxwidth {
     display: none !important;
 }
 
-body.local-kaznu-course-skin #region-main {
+body.path-course #region-main {
     max-width: 920px;
     margin: 0 auto;
     padding: 0 1rem 4rem;
 }
 
-body.local-kaznu-course-skin .navbar {
+body.path-course .navbar,
+body.path-mod .navbar {
     background: var(--kaznu-charcoal) !important;
     border: none !important;
 }
 
-body.local-kaznu-course-skin .navbar .nav-link,
-body.local-kaznu-course-skin .navbar a {
+body.path-course .navbar .nav-link,
+body.path-course .navbar a,
+body.path-mod .navbar .nav-link,
+body.path-mod .navbar a {
     color: var(--kaznu-cream) !important;
 }
 
-body.local-kaznu-course-skin .secondary-navigation .navigation {
+body.path-course .secondary-navigation .navigation {
     background: transparent !important;
     border: none !important;
 }
 
-body.local-kaznu-course-skin .secondary-navigation .nav-tabs {
+body.path-course .secondary-navigation .nav-tabs {
     border: none !important;
     gap: 0.35rem;
 }
 
-body.local-kaznu-course-skin .secondary-navigation .nav-link {
+body.path-course .secondary-navigation .nav-link {
     border-radius: 2px !important;
     font-weight: 600;
     color: var(--kaznu-charcoal) !important;
 }
 
-body.local-kaznu-course-skin .secondary-navigation .nav-link.active {
+body.path-course .secondary-navigation .nav-link.active {
     background: var(--kaznu-charcoal) !important;
     color: var(--kaznu-cream) !important;
 }
@@ -406,16 +410,16 @@ body.local-kaznu-course-skin .secondary-navigation .nav-link.active {
 }
 
 /* Course sections as lesson list */
-body.local-kaznu-course-skin .course-content ul.sections,
-body.local-kaznu-course-skin .course-content .sections {
+body.path-course .course-content ul.sections,
+body.path-course .course-content .sections {
     list-style: none;
     padding: 0;
     margin: 0;
 }
 
-body.local-kaznu-course-skin .course-section,
-body.local-kaznu-course-skin li.section,
-body.local-kaznu-course-skin .section.main {
+body.path-course .course-section,
+body.path-course li.section,
+body.path-course .section.main {
     background: #fff !important;
     border: 1px solid rgba(32, 38, 44, 0.08) !important;
     border-radius: 2px !important;
@@ -424,17 +428,17 @@ body.local-kaznu-course-skin .section.main {
     box-shadow: 0 6px 18px rgba(32, 38, 44, 0.04);
 }
 
-body.local-kaznu-course-skin .sectionname,
-body.local-kaznu-course-skin .course-section-header .sectionname,
-body.local-kaznu-course-skin h3.sectionname {
+body.path-course .sectionname,
+body.path-course .course-section-header .sectionname,
+body.path-course h3.sectionname {
     font-family: var(--kaznu-serif) !important;
     color: var(--kaznu-charcoal) !important;
     font-weight: 600 !important;
     font-size: 1.35rem !important;
 }
 
-body.local-kaznu-course-skin .activity-item,
-body.local-kaznu-course-skin .activity {
+body.path-course .activity-item,
+body.path-course .activity {
     border: none !important;
     border-bottom: 1px dashed rgba(32, 38, 44, 0.1) !important;
     border-radius: 0 !important;
@@ -443,33 +447,33 @@ body.local-kaznu-course-skin .activity {
     transition: background 0.15s;
 }
 
-body.local-kaznu-course-skin .activity-item:hover,
-body.local-kaznu-course-skin .activity:hover {
+body.path-course .activity-item:hover,
+body.path-course .activity:hover {
     background: rgba(240, 101, 67, 0.04) !important;
 }
 
-body.local-kaznu-course-skin .activityname a,
-body.local-kaznu-course-skin .activity-item a.aalink {
+body.path-course .activityname a,
+body.path-course .activity-item a.aalink {
     color: var(--kaznu-charcoal) !important;
     font-weight: 600 !important;
     text-decoration: none !important;
 }
 
-body.local-kaznu-course-skin .activityname a:hover,
-body.local-kaznu-course-skin .activity-item a.aalink:hover {
+body.path-course .activityname a:hover,
+body.path-course .activity-item a.aalink:hover {
     color: var(--kaznu-coral) !important;
 }
 
-body.local-kaznu-course-skin .activity.quiz .activityname a {
+body.path-course .activity.quiz .activityname a {
     color: var(--kaznu-coral) !important;
 }
 
-body.local-kaznu-course-skin .activity.url .activityname a::before {
+body.path-course .activity.url .activityname a::before {
     content: "▶ ";
     color: var(--kaznu-bronze);
 }
 
-body.local-kaznu-course-skin .btn-primary,
+body.path-course .btn-primary,
 body.path-mod .btn-primary,
 body.path-local-kaznu .btn-primary {
     background: var(--kaznu-coral) !important;
@@ -478,7 +482,7 @@ body.path-local-kaznu .btn-primary {
     border-radius: 2px !important;
 }
 
-body.local-kaznu-course-skin .btn-primary:hover,
+body.path-course .btn-primary:hover,
 body.path-mod .btn-primary:hover,
 body.path-local-kaznu .btn-primary:hover {
     background: var(--kaznu-coral-deep) !important;

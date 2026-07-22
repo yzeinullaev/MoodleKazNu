@@ -105,19 +105,12 @@ function local_kaznu_load_styles(): void {
         return;
     }
 
-    $sheet = new moodle_url('/local/kaznu/styles.css', ['rev' => get_config('local_kaznu', 'version') ?: '2026072202']);
+    $sheet = new moodle_url('/local/kaznu/styles.css', ['rev' => get_config('local_kaznu', 'version') ?: '2026072204']);
     $PAGE->requires->css($sheet);
 }
 
 function local_kaznu_before_standard_html_head() {
-    global $PAGE, $COURSE;
-
     local_kaznu_load_styles();
-
-    if (!empty($COURSE->id) && (int) $COURSE->id > 1) {
-        $PAGE->add_body_class('local-kaznu-course-skin');
-        $PAGE->add_body_class('kzn-accent-' . local_kaznu_course_accent($COURSE));
-    }
 }
 
 /**
@@ -134,7 +127,7 @@ function local_kaznu_before_standard_head_html() {
     echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
     echo '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">' . "\n";
 
-    $rev = get_config('local_kaznu', 'version') ?: '2026072202';
+    $rev = get_config('local_kaznu', 'version') ?: '2026072204';
     $href = $CFG->wwwroot . '/local/kaznu/styles.css?rev=' . $rev;
     echo '<link rel="stylesheet" type="text/css" href="' . s($href) . '" />' . "\n";
 }
