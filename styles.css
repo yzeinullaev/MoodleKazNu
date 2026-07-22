@@ -48,32 +48,182 @@ body.path-mod .navbar {
     border: none !important;
 }
 
+/* Nav links: keep readable on hover / active / focus (Boost uses light hover bg). */
 body.path-course .navbar .nav-link,
-body.path-course .navbar a,
+body.path-course .navbar a.nav-link,
+body.path-course .navbar .dropdown-toggle,
 body.path-mod .navbar .nav-link,
-body.path-mod .navbar a {
+body.path-mod .navbar a.nav-link,
+body.path-mod .navbar .dropdown-toggle {
     color: var(--kaznu-cream) !important;
+    background: transparent !important;
+    border-radius: 2px !important;
+}
+
+body.path-course .navbar .nav-link:hover,
+body.path-course .navbar .nav-link:focus,
+body.path-course .navbar .nav-link:focus-visible,
+body.path-course .navbar .nav-link.active,
+body.path-course .navbar .nav-item.show > .nav-link,
+body.path-course .navbar .dropdown-toggle:hover,
+body.path-course .navbar .dropdown-toggle:focus,
+body.path-course .navbar .dropdown-toggle[aria-expanded="true"],
+body.path-mod .navbar .nav-link:hover,
+body.path-mod .navbar .nav-link:focus,
+body.path-mod .navbar .nav-link:focus-visible,
+body.path-mod .navbar .nav-link.active,
+body.path-mod .navbar .nav-item.show > .nav-link,
+body.path-mod .navbar .dropdown-toggle:hover,
+body.path-mod .navbar .dropdown-toggle:focus,
+body.path-mod .navbar .dropdown-toggle[aria-expanded="true"] {
+    color: var(--kaznu-charcoal) !important;
+    background: var(--kaznu-cream) !important;
+}
+
+body.path-course .navbar .navbar-brand,
+body.path-mod .navbar .navbar-brand {
+    color: var(--kaznu-cream) !important;
+}
+
+body.path-course .navbar .navbar-brand:hover,
+body.path-mod .navbar .navbar-brand:hover {
+    color: var(--kaznu-coral) !important;
+    background: transparent !important;
+}
+
+body.path-course .navbar .btn,
+body.path-course .navbar .btn-light,
+body.path-mod .navbar .btn,
+body.path-mod .navbar .btn-light {
+    color: var(--kaznu-cream) !important;
+    background: transparent !important;
+    border-color: rgba(255, 251, 247, 0.25) !important;
+}
+
+body.path-course .navbar .btn:hover,
+body.path-course .navbar .btn-light:hover,
+body.path-mod .navbar .btn:hover,
+body.path-mod .navbar .btn-light:hover {
+    color: var(--kaznu-charcoal) !important;
+    background: var(--kaznu-cream) !important;
+}
+
+body.path-course .navbar .usermenu .dropdown-toggle,
+body.path-mod .navbar .usermenu .dropdown-toggle {
+    color: var(--kaznu-cream) !important;
+}
+
+body.path-course .navbar .usermenu .dropdown-toggle:hover,
+body.path-course .navbar .usermenu .dropdown-toggle:focus,
+body.path-course .navbar .usermenu .dropdown-toggle[aria-expanded="true"],
+body.path-mod .navbar .usermenu .dropdown-toggle:hover,
+body.path-mod .navbar .usermenu .dropdown-toggle:focus,
+body.path-mod .navbar .usermenu .dropdown-toggle[aria-expanded="true"] {
+    color: var(--kaznu-charcoal) !important;
+    background: var(--kaznu-cream) !important;
+}
+
+body.path-course .navbar .dropdown-menu,
+body.path-mod .navbar .dropdown-menu {
+    background: #fff !important;
+    border: 1px solid rgba(32, 38, 44, 0.1) !important;
+    border-radius: 2px !important;
+}
+
+body.path-course .navbar .dropdown-item,
+body.path-mod .navbar .dropdown-item {
+    color: var(--kaznu-charcoal) !important;
+    background: transparent !important;
+}
+
+body.path-course .navbar .dropdown-item:hover,
+body.path-course .navbar .dropdown-item:focus,
+body.path-course .navbar .dropdown-item.active,
+body.path-mod .navbar .dropdown-item:hover,
+body.path-mod .navbar .dropdown-item:focus,
+body.path-mod .navbar .dropdown-item.active {
+    color: var(--kaznu-cream) !important;
+    background: var(--kaznu-charcoal) !important;
+}
+
+body.path-course .navbar .icon,
+body.path-course .navbar .fa,
+body.path-mod .navbar .icon,
+body.path-mod .navbar .fa {
+    color: inherit !important;
+}
+
+body.path-course .secondary-navigation {
+    background: transparent !important;
+    margin-bottom: 0.75rem !important;
 }
 
 body.path-course .secondary-navigation .navigation {
     background: transparent !important;
     border: none !important;
+    box-shadow: none !important;
 }
 
 body.path-course .secondary-navigation .nav-tabs {
     border: none !important;
     gap: 0.35rem;
+    background: transparent !important;
 }
 
 body.path-course .secondary-navigation .nav-link {
     border-radius: 2px !important;
+    border: none !important;
     font-weight: 600;
     color: var(--kaznu-charcoal) !important;
+    background: transparent !important;
+}
+
+body.path-course .secondary-navigation .nav-link:hover,
+body.path-course .secondary-navigation .nav-link:focus {
+    color: var(--kaznu-coral) !important;
+    background: rgba(240, 101, 67, 0.08) !important;
 }
 
 body.path-course .secondary-navigation .nav-link.active {
     background: var(--kaznu-charcoal) !important;
     color: var(--kaznu-cream) !important;
+}
+
+/* Drawer: replace default Moodle blue with Farabi accents */
+body.path-course #theme_boost-drawers-courseindex .list-group-item,
+body.path-course .courseindex .courseindex-item {
+    border-radius: 2px !important;
+}
+
+body.path-course .courseindex .courseindex-item.pageitem,
+body.path-course .courseindex .courseindex-item.active,
+body.path-course #theme_boost-drawers-courseindex a.active,
+body.path-course .list-group-item.active {
+    background: var(--kaznu-charcoal) !important;
+    border-color: var(--kaznu-charcoal) !important;
+    color: var(--kaznu-cream) !important;
+}
+
+body.path-course .courseindex .courseindex-item:hover,
+body.path-course .courseindex .courseindex-item:focus {
+    background: rgba(240, 101, 67, 0.1) !important;
+    color: var(--kaznu-charcoal) !important;
+}
+
+body.path-course .editmode-switch-form .custom-control-input:checked ~ .custom-control-label::before,
+body.path-course .custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+    background-color: var(--kaznu-coral) !important;
+    border-color: var(--kaznu-coral) !important;
+}
+
+body.path-course .btn-outline-secondary,
+body.path-course .btn-secondary {
+    border-radius: 2px !important;
+}
+
+body.path-course a:not(.btn):not(.nav-link):not(.dropdown-item):focus-visible {
+    outline: 2px solid var(--kaznu-coral);
+    outline-offset: 2px;
 }
 
 /* Arena hero */

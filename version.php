@@ -2,7 +2,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_kaznu';
-$plugin->version   = 2026072204;
+$plugin->version   = 2026072205;
 $plugin->requires  = 2024100700; // Moodle 4.5.
 $plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.2.3-demo';
+$plugin->release   = '0.2.4-demo';

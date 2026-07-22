@@ -105,7 +105,7 @@ function local_kaznu_load_styles(): void {
         return;
     }
 
-    $sheet = new moodle_url('/local/kaznu/styles.css', ['rev' => get_config('local_kaznu', 'version') ?: '2026072204']);
+    $sheet = new moodle_url('/local/kaznu/styles.css', ['rev' => get_config('local_kaznu', 'version') ?: '2026072205']);
     $PAGE->requires->css($sheet);
 }
 
@@ -127,7 +127,7 @@ function local_kaznu_before_standard_head_html() {
     echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
     echo '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">' . "\n";
 
-    $rev = get_config('local_kaznu', 'version') ?: '2026072204';
+    $rev = get_config('local_kaznu', 'version') ?: '2026072205';
     $href = $CFG->wwwroot . '/local/kaznu/styles.css?rev=' . $rev;
     echo '<link rel="stylesheet" type="text/css" href="' . s($href) . '" />' . "\n";
 }
