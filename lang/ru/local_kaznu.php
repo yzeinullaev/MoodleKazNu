@@ -80,6 +80,14 @@ $string['arena_back'] = 'Каталог';
 $string['arena_section_open'] = 'Открыто';
 $string['arena_section_locked'] = 'Закрыто';
 $string['arena_reward'] = 'Зачёт теста: +{$a} XP';
+$string['dash_title'] = 'Ваш прогресс';
+$string['dash_lead'] = 'Продолжайте обучение, копите XP и поднимайтесь в рейтинге Farabi IBS.';
+$string['dash_courses'] = 'Ваши курсы';
+$string['dash_empty'] = 'Пока нет курсов — откройте каталог и начните.';
+$string['dash_catalog'] = 'Каталог курсов';
+$string['dash_hello'] = 'С возвращением, {$a}';
+$string['dash_rank'] = 'Ранг';
+
 
 $string['xp_rank_novice'] = 'Новичок';
 $string['xp_rank_scholar'] = 'Ученик';

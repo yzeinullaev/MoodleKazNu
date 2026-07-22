@@ -77,6 +77,14 @@ $string['arena_back'] = 'Каталог';
 $string['arena_section_open'] = 'Ашық';
 $string['arena_section_locked'] = 'Жабық';
 $string['arena_reward'] = 'Тест өтуі: +{$a} XP';
+$string['dash_title'] = 'Сіздің прогресіңіз';
+$string['dash_lead'] = 'Оқуды жалғастырыңыз, XP жинап Farabi IBS рейтингінде өсіңіз.';
+$string['dash_courses'] = 'Сіздің курстарыңыз';
+$string['dash_empty'] = 'Әзірге курс жоқ — каталогты ашып бастаңыз.';
+$string['dash_catalog'] = 'Курс каталогы';
+$string['dash_hello'] = 'Қайта қош келдіңіз, {$a}';
+$string['dash_rank'] = 'Ранг';
+
 $string['xp_rank_novice'] = 'Жаңадан';
 $string['xp_rank_scholar'] = 'Шәкірт';
 $string['xp_rank_analyst'] = 'Талдаушы';

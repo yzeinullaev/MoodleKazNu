@@ -80,6 +80,14 @@ $string['arena_back'] = 'Catalogue';
 $string['arena_section_open'] = 'Open';
 $string['arena_section_locked'] = 'Locked';
 $string['arena_reward'] = 'Quiz pass: +{$a} XP';
+$string['dash_title'] = 'Your progress';
+$string['dash_lead'] = 'Keep learning, earn XP and climb the Farabi IBS ranks.';
+$string['dash_courses'] = 'Your courses';
+$string['dash_empty'] = 'No courses yet — open the catalogue and start.';
+$string['dash_catalog'] = 'Course catalogue';
+$string['dash_hello'] = 'Welcome back, {$a}';
+$string['dash_rank'] = 'Rank';
+
 
 $string['xp_rank_novice'] = 'Novice';
 $string['xp_rank_scholar'] = 'Scholar';

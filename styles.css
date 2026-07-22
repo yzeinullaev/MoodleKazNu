@@ -15,19 +15,32 @@
 
 body.path-local-kaznu,
 body.path-course,
-body.path-mod {
+body.path-mod,
+body.path-my,
+body.path-user,
+body.path-calendar,
+body.path-grade,
+body.path-message {
     --primary: var(--kaznu-coral);
+    --bs-primary: #F06543;
     font-family: var(--kaznu-sans);
 }
 
-/* —— Full course skin (uses Moodle path-* classes; no add_body_class) —— */
+/* —— Full course + student shell —— */
 body.path-course,
-body.path-mod {
+body.path-mod,
+body.path-my,
+body.path-user,
+body.path-calendar,
+body.path-grade,
+body.path-message {
     background: var(--kaznu-cream) !important;
 }
 
 body.path-course #page,
-body.path-mod #page {
+body.path-mod #page,
+body.path-my #page,
+body.path-user #page {
     background: var(--kaznu-cream) !important;
 }
 
@@ -43,7 +56,12 @@ body.path-course #region-main {
 }
 
 body.path-course .navbar,
-body.path-mod .navbar {
+body.path-mod .navbar,
+body.path-my .navbar,
+body.path-user .navbar,
+body.path-calendar .navbar,
+body.path-grade .navbar,
+body.path-message .navbar {
     background: var(--kaznu-charcoal) !important;
     border: none !important;
 }
@@ -54,7 +72,13 @@ body.path-course .navbar a.nav-link,
 body.path-course .navbar .dropdown-toggle,
 body.path-mod .navbar .nav-link,
 body.path-mod .navbar a.nav-link,
-body.path-mod .navbar .dropdown-toggle {
+body.path-mod .navbar .dropdown-toggle,
+body.path-my .navbar .nav-link,
+body.path-my .navbar a.nav-link,
+body.path-my .navbar .dropdown-toggle,
+body.path-user .navbar .nav-link,
+body.path-user .navbar a.nav-link,
+body.path-user .navbar .dropdown-toggle {
     color: var(--kaznu-cream) !important;
     background: transparent !important;
     border-radius: 2px !important;
@@ -75,7 +99,22 @@ body.path-mod .navbar .nav-link.active,
 body.path-mod .navbar .nav-item.show > .nav-link,
 body.path-mod .navbar .dropdown-toggle:hover,
 body.path-mod .navbar .dropdown-toggle:focus,
-body.path-mod .navbar .dropdown-toggle[aria-expanded="true"] {
+body.path-mod .navbar .dropdown-toggle[aria-expanded="true"],
+body.path-my .navbar .nav-link:hover,
+body.path-my .navbar .nav-link:focus,
+body.path-my .navbar .nav-link:focus-visible,
+body.path-my .navbar .nav-link.active,
+body.path-my .navbar .nav-item.show > .nav-link,
+body.path-my .navbar .dropdown-toggle:hover,
+body.path-my .navbar .dropdown-toggle:focus,
+body.path-my .navbar .dropdown-toggle[aria-expanded="true"],
+body.path-user .navbar .nav-link:hover,
+body.path-user .navbar .nav-link:focus,
+body.path-user .navbar .nav-link.active,
+body.path-user .navbar .nav-item.show > .nav-link,
+body.path-user .navbar .dropdown-toggle:hover,
+body.path-user .navbar .dropdown-toggle:focus,
+body.path-user .navbar .dropdown-toggle[aria-expanded="true"] {
     color: var(--kaznu-charcoal) !important;
     background: var(--kaznu-cream) !important;
 }
@@ -780,4 +819,241 @@ a.local-kaznu-btn {
 a.local-kaznu-btn:hover {
     background: var(--kaznu-coral-deep) !important;
     border-color: var(--kaznu-coral-deep) !important;
+}
+
+/* —— Student dashboard / my pages —— */
+body.path-my #page-header.kzn-hide-default-header,
+body.path-my .kzn-hide-default-header {
+    display: none !important;
+}
+
+body.path-my #region-main,
+body.path-user #region-main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1rem 3rem;
+}
+
+body.path-my .btn-primary,
+body.path-user .btn-primary,
+body.path-calendar .btn-primary,
+body.path-grade .btn-primary {
+    background: var(--kaznu-coral) !important;
+    border-color: var(--kaznu-coral) !important;
+    color: #fff !important;
+    border-radius: 2px !important;
+}
+
+body.path-my .btn-primary:hover,
+body.path-user .btn-primary:hover {
+    background: var(--kaznu-coral-deep) !important;
+    border-color: var(--kaznu-coral-deep) !important;
+}
+
+body.path-my .card,
+body.path-my .block,
+body.path-user .card {
+    border-radius: 2px !important;
+    border: 1px solid rgba(32, 38, 44, 0.08) !important;
+    box-shadow: 0 6px 18px rgba(32, 38, 44, 0.04) !important;
+}
+
+body.path-my .card-title,
+body.path-my h2,
+body.path-my h3,
+body.path-my .page-header-headings h1 {
+    font-family: var(--kaznu-serif) !important;
+    color: var(--kaznu-charcoal) !important;
+}
+
+body.path-my a:not(.btn):not(.nav-link):not(.dropdown-item) {
+    color: var(--kaznu-coral);
+}
+
+.local-kaznu-dash {
+    margin: 0 0 1.75rem;
+    font-family: var(--kaznu-sans);
+}
+
+.kzn-dash-hero {
+    background: linear-gradient(145deg, #20262C 0%, #3a2a24 55%, #F06543 140%);
+    color: var(--kaznu-cream);
+    padding: 1.75rem 1.5rem 1.5rem;
+    border-radius: 2px;
+    margin-bottom: 1.25rem;
+    animation: kaznu-rise 0.55s ease both;
+}
+
+.kzn-dash-hello {
+    margin: 0 0 0.35rem;
+    font-size: 0.9rem;
+    color: var(--kaznu-bronze-soft);
+    letter-spacing: 0.04em;
+}
+
+.kzn-dash-hero h1 {
+    font-family: var(--kaznu-serif) !important;
+    font-size: clamp(1.8rem, 4vw, 2.6rem) !important;
+    font-weight: 600 !important;
+    color: var(--kaznu-cream) !important;
+    margin: 0 0 0.5rem !important;
+}
+
+.kzn-dash-lead {
+    margin: 0 0 1.1rem;
+    opacity: 0.88;
+    max-width: 36rem;
+}
+
+.kzn-dash-xp {
+    max-width: 420px;
+    margin-bottom: 1rem;
+}
+
+.kzn-dash-xp-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+}
+
+.kzn-dash-xp em {
+    display: block;
+    margin-top: 0.35rem;
+    font-style: normal;
+    font-size: 0.8rem;
+    opacity: 0.75;
+}
+
+.kzn-dash-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 900px) {
+    .kzn-dash-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kzn-dash-panel {
+    background: #fff;
+    border: 1px solid rgba(32, 38, 44, 0.08);
+    border-radius: 2px;
+    padding: 1.15rem 1.2rem 1.25rem;
+}
+
+.kzn-dash-panel h2 {
+    font-family: var(--kaznu-serif);
+    font-size: 1.35rem;
+    margin: 0 0 0.9rem;
+    color: var(--kaznu-charcoal);
+}
+
+.kzn-dash-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+.kzn-dash-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-height: 120px;
+    padding: 0.9rem;
+    text-decoration: none !important;
+    color: var(--kaznu-cream) !important;
+    border-radius: 2px;
+    background: var(--kaznu-charcoal);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kzn-dash-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(32, 38, 44, 0.18);
+    color: var(--kaznu-cream) !important;
+}
+
+.kzn-dash-tile.kzn-accent-1 { background: linear-gradient(145deg, #3a2a24, #F06543); }
+.kzn-dash-tile.kzn-accent-2 { background: linear-gradient(145deg, #20262C, #A3927B); }
+.kzn-dash-tile.kzn-accent-3 { background: linear-gradient(160deg, #2c333a, #8a5a48); }
+.kzn-dash-tile.kzn-accent-4 { background: linear-gradient(135deg, #1a1e22, #A3927B); }
+.kzn-dash-tile.kzn-accent-5 { background: linear-gradient(150deg, #20262C, #F06543); }
+
+.kzn-dash-tile-meta {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.kzn-dash-tile strong {
+    font-family: var(--kaznu-serif);
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.25;
+    flex: 1;
+}
+
+.kzn-dash-tile em {
+    font-style: normal;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 251, 247, 0.9);
+}
+
+.kzn-dash-empty {
+    margin: 0;
+    color: #6b645c;
+}
+
+.kzn-dash-lb ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.kzn-dash-lb li {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr auto;
+    gap: 0.5rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid rgba(32, 38, 44, 0.08);
+    font-size: 0.9rem;
+    color: var(--kaznu-charcoal);
+}
+
+.kzn-dash-lb li > span:first-child {
+    font-weight: 700;
+    color: var(--kaznu-coral);
+}
+
+.kzn-dash-lb li > span:last-child {
+    color: var(--kaznu-bronze);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.kzn-dash-empty-li {
+    border: none !important;
+    color: #6b645c !important;
+    display: block !important;
+}
+
+body.path-my .navbar .navbar-brand,
+body.path-my .navbar .usermenu .dropdown-toggle {
+    color: var(--kaznu-cream) !important;
+}
+
+body.path-my .navbar .dropdown-menu .dropdown-item {
+    color: var(--kaznu-charcoal) !important;
+}
+
+body.path-my .navbar .dropdown-menu .dropdown-item:hover,
+body.path-my .navbar .dropdown-menu .dropdown-item:focus {
+    color: var(--kaznu-cream) !important;
+    background: var(--kaznu-charcoal) !important;
 }

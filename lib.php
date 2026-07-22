@@ -16,13 +16,11 @@ function local_kaznu_after_config() {
 
     $script = (string) ($_SERVER['SCRIPT_NAME'] ?? '');
     if ($script === '' || substr($script, -strlen('/course/view.php')) !== '/course/view.php') {
-        // Also allow bare relative forms.
         if ($script !== '/course/view.php' && $script !== 'course/view.php') {
             return;
         }
     }
 
-    // Session may not be fully bootstrapped; treat missing login as guest.
     $loggedin = false;
     if (!empty($GLOBALS['USER']) && !empty($GLOBALS['USER']->id) && (int) $GLOBALS['USER']->id > 0) {
         $loggedin = empty($GLOBALS['USER']->username) || $GLOBALS['USER']->username !== 'guest';
@@ -35,15 +33,11 @@ function local_kaznu_after_config() {
         return;
     }
 
-    $courseid = 0;
-    if (isset($_GET['id'])) {
-        $courseid = (int) $_GET['id'];
-    }
+    $courseid = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     if ($courseid <= 1) {
         return;
     }
 
-    // Prefer moodle_url when available.
     if (class_exists('moodle_url')) {
         redirect(new moodle_url('/local/kaznu/course.php', ['id' => $courseid]));
     }
@@ -77,22 +71,51 @@ function local_kaznu_before_http_headers() {
 }
 
 /**
- * Whether Farabi IBS styles should load on the current page.
+ * Student-facing Moodle areas that get Farabi IBS skin.
  */
-function local_kaznu_should_load_styles(): bool {
+function local_kaznu_is_student_shell_page(): bool {
     global $PAGE, $COURSE;
 
     if (!empty($COURSE->id) && (int) $COURSE->id > 1) {
         return true;
     }
-    if (strpos((string) $PAGE->pagetype, 'mod-') === 0) {
+
+    $type = (string) ($PAGE->pagetype ?? '');
+    $path = $PAGE->url ? (string) $PAGE->url->get_path() : '';
+
+    $prefixes = ['mod-', 'my-', 'user-', 'calendar-', 'grade-', 'message-', 'blog-', 'notes-', 'badges-', 'report-'];
+    foreach ($prefixes as $p) {
+        if (strpos($type, $p) === 0) {
+            return true;
+        }
+    }
+
+    if (in_array($type, [
+        'local-kaznu-pay',
+        'local-kaznu-landing',
+        'local-kaznu-course',
+        'course-view-topics',
+        'course-view-tiles',
+        'mycourses-index',
+        'my-index',
+    ], true)) {
         return true;
     }
-    if (in_array($PAGE->pagetype, ['local-kaznu-pay', 'local-kaznu-landing', 'local-kaznu-course', 'course-view-topics', 'course-view-tiles'], true)) {
-        return true;
+
+    foreach (['/local/kaznu/', '/course/', '/mod/', '/my/', '/user/', '/calendar/', '/grade/', '/message/'] as $needle) {
+        if (strpos($path, $needle) !== false) {
+            return true;
+        }
     }
-    $path = $PAGE->url ? $PAGE->url->get_path() : '';
-    return strpos($path, '/local/kaznu/') !== false || strpos($path, '/course/') !== false || strpos($path, '/mod/') !== false;
+
+    return false;
+}
+
+/**
+ * Whether Farabi IBS styles should load.
+ */
+function local_kaznu_should_load_styles(): bool {
+    return local_kaznu_is_student_shell_page();
 }
 
 /**
@@ -105,7 +128,7 @@ function local_kaznu_load_styles(): void {
         return;
     }
 
-    $sheet = new moodle_url('/local/kaznu/styles.css', ['rev' => get_config('local_kaznu', 'version') ?: '2026072205']);
+    $sheet = new moodle_url('/local/kaznu/styles.css', ['rev' => get_config('local_kaznu', 'version') ?: '2026072206']);
     $PAGE->requires->css($sheet);
 }
 
@@ -127,13 +150,13 @@ function local_kaznu_before_standard_head_html() {
     echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
     echo '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">' . "\n";
 
-    $rev = get_config('local_kaznu', 'version') ?: '2026072205';
+    $rev = get_config('local_kaznu', 'version') ?: '2026072206';
     $href = $CFG->wwwroot . '/local/kaznu/styles.css?rev=' . $rev;
     echo '<link rel="stylesheet" type="text/css" href="' . s($href) . '" />' . "\n";
 }
 
 /**
- * Arena banner + XP HUD + celebration.
+ * Arena / dashboard / XP HUD / celebration.
  */
 function local_kaznu_before_footer() {
     global $USER, $COURSE, $SESSION, $PAGE;
@@ -161,34 +184,45 @@ function local_kaznu_before_footer() {
             . '</div>';
     }
 
-    if (empty($COURSE->id) || (int) $COURSE->id <= 1) {
-        return;
-    }
-
     $pagetype = (string) $PAGE->pagetype;
+    $ondash = ($pagetype === 'my-index' || $pagetype === 'mycourses-index' || strpos($pagetype, 'my-') === 0);
     $oncoursehome = (strpos($pagetype, 'course-view') === 0);
     $onmod = (strpos($pagetype, 'mod-') === 0);
 
-    if ($oncoursehome) {
+    if ($ondash) {
+        echo local_kaznu_render_dashboard_arena($USER);
+        echo '<script>(function(){var d=document.querySelector("[data-kaznu-dash]");var m=document.getElementById("region-main");if(d&&m){m.insertBefore(d,m.firstChild);}var h=document.querySelector("#page-header");if(h){h.classList.add("kzn-hide-default-header");}})();</script>';
+    }
+
+    if ($oncoursehome && !empty($COURSE->id) && (int) $COURSE->id > 1) {
         echo local_kaznu_render_course_arena($COURSE, (int) $USER->id);
         echo '<script>(function(){var a=document.querySelector("[data-kaznu-arena]");var m=document.getElementById("region-main");if(a&&m){m.insertBefore(a,m.firstChild);}})();</script>';
     }
 
+    // XP HUD on student shell pages.
+    if (!local_kaznu_is_student_shell_page()) {
+        return;
+    }
+
     $xp = local_kaznu_get_xp((int) $USER->id);
     $prog = local_kaznu_xp_progress($xp);
-    $hub = new moodle_url('/local/kaznu/course.php', ['id' => $COURSE->id]);
     $catalog = new moodle_url('/local/kaznu/landing.php');
+    $hub = (!empty($COURSE->id) && (int) $COURSE->id > 1)
+        ? new moodle_url('/local/kaznu/course.php', ['id' => $COURSE->id])
+        : new moodle_url('/my/');
+    $hublabel = (!empty($COURSE->id) && (int) $COURSE->id > 1)
+        ? get_string('hub_syllabus', 'local_kaznu')
+        : get_string('dash_title', 'local_kaznu');
 
     echo '<aside class="local-kaznu-hud" aria-label="XP">'
         . '<strong>' . s($prog['title']) . '</strong>'
         . '<div class="local-kaznu-hud-meta"><span>Lv ' . (int) $xp->level . '</span><span>' . (int) $xp->xp . ' XP</span></div>'
         . '<div class="local-kaznu-hud-bar"><span style="width:' . (int) $prog['pct'] . '%"></span></div>'
-        . '<a href="' . $hub->out(false) . '">' . get_string('hub_syllabus', 'local_kaznu') . '</a>'
+        . '<a href="' . $hub->out(false) . '">' . $hublabel . '</a>'
         . ' · <a href="' . $catalog->out(false) . '">' . get_string('landing_nav_courses', 'local_kaznu') . '</a>'
         . '</aside>';
 
-    if ($onmod) {
-        // Compact top strip on lesson pages.
+    if ($onmod && !empty($COURSE->id) && (int) $COURSE->id > 1) {
         echo '<div class="local-kaznu-lesson-strip" data-kaznu-strip="1">'
             . '<a href="' . (new moodle_url('/course/view.php', ['id' => $COURSE->id]))->out(false) . '">'
             . format_string($COURSE->fullname) . '</a>'

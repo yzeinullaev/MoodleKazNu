@@ -534,4 +534,85 @@ function local_kaznu_render_course_arena(stdClass $course, int $userid): string 
         . '</div></div>';
 }
 
+/**
+ * Enrolled courses for the current user (catalogue only).
+ *
+ * @return stdClass[]
+ */
+function local_kaznu_get_user_courses(int $userid): array {
+    $all = [];
+    foreach (enrol_get_users_courses($userid, true, 'id,shortname,fullname,visible,sortorder') as $c) {
+        if ((int) $c->id <= 1) {
+            continue;
+        }
+        $all[] = $c;
+    }
+    return $all;
+}
+
+/**
+ * Gamified dashboard banner for student pages.
+ */
+function local_kaznu_render_dashboard_arena(stdClass $user): string {
+    $xp = local_kaznu_get_xp((int) $user->id);
+    $xpprog = local_kaznu_xp_progress($xp);
+    $courses = local_kaznu_get_user_courses((int) $user->id);
+    $catalog = new moodle_url('/local/kaznu/landing.php');
+    $board = local_kaznu_leaderboard(5);
+
+    $firstname = !empty($user->firstname) ? $user->firstname : fullname($user);
+
+    $tiles = '';
+    foreach (array_slice($courses, 0, 6) as $c) {
+        $accent = local_kaznu_course_accent($c);
+        $url = new moodle_url('/course/view.php', ['id' => $c->id]);
+        $tiles .= '<a class="kzn-dash-tile kzn-accent-' . $accent . '" href="' . $url->out(false) . '">'
+            . '<span class="kzn-dash-tile-meta">' . s($c->shortname) . '</span>'
+            . '<strong>' . format_string($c->fullname) . '</strong>'
+            . '<em>' . get_string('landing_cta_continue', 'local_kaznu') . '</em>'
+            . '</a>';
+    }
+    if ($tiles === '') {
+        $tiles = '<p class="kzn-dash-empty">' . get_string('dash_empty', 'local_kaznu') . '</p>';
+    }
+
+    $lb = '';
+    foreach ($board as $i => $row) {
+        $lb .= '<li><span>' . ($i + 1) . '</span><span>' . fullname($row) . '</span>'
+            . '<span>' . (int) $row->xp . ' XP</span></li>';
+    }
+    if ($lb === '') {
+        $lb = '<li class="kzn-dash-empty-li">' . get_string('landing_leaderboard_empty', 'local_kaznu') . '</li>';
+    }
+
+    return '<div class="local-kaznu-dash" data-kaznu-dash="1">'
+        . '<div class="kzn-dash-hero">'
+        . '<p class="kzn-dash-hello">' . get_string('dash_hello', 'local_kaznu', s($firstname)) . '</p>'
+        . '<h1>' . get_string('dash_title', 'local_kaznu') . '</h1>'
+        . '<p class="kzn-dash-lead">' . get_string('dash_lead', 'local_kaznu') . '</p>'
+        . '<div class="kzn-dash-xp">'
+        . '<div class="kzn-dash-xp-meta">'
+        . '<strong>' . get_string('dash_rank', 'local_kaznu') . ': ' . s($xpprog['title']) . '</strong>'
+        . '<span>Lv ' . (int) $xp->level . ' · ' . (int) $xp->xp . ' XP</span>'
+        . '</div>'
+        . '<div class="kzn-arena-bar"><span style="width:' . (int) $xpprog['pct'] . '%"></span></div>'
+        . '<em>' . get_string('xp_to_next', 'local_kaznu', LOCAL_KAZNU_XP_PER_LEVEL - $xpprog['into']) . '</em>'
+        . '</div>'
+        . '<div class="kzn-arena-actions">'
+        . '<a class="kzn-arena-cta" href="' . $catalog->out(false) . '">' . get_string('dash_catalog', 'local_kaznu') . '</a>'
+        . '</div>'
+        . '</div>'
+        . '<div class="kzn-dash-grid">'
+        . '<section class="kzn-dash-panel">'
+        . '<h2>' . get_string('dash_courses', 'local_kaznu') . '</h2>'
+        . '<div class="kzn-dash-tiles">' . $tiles . '</div>'
+        . '</section>'
+        . '<aside class="kzn-dash-panel kzn-dash-lb">'
+        . '<h2>' . get_string('landing_leaderboard', 'local_kaznu') . '</h2>'
+        . '<ol>' . $lb . '</ol>'
+        . '</aside>'
+        . '</div>'
+        . '</div>';
+}
+
 

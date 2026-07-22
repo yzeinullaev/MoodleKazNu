@@ -77,6 +77,14 @@ $string['arena_back'] = '目录';
 $string['arena_section_open'] = '已开放';
 $string['arena_section_locked'] = '已锁定';
 $string['arena_reward'] = '通过测验：+{$a} XP';
+$string['dash_title'] = '你的进度';
+$string['dash_lead'] = '继续学习，积累 XP，提升 Farabi IBS 等级。';
+$string['dash_courses'] = '你的课程';
+$string['dash_empty'] = '暂无课程——打开目录开始学习。';
+$string['dash_catalog'] = '课程目录';
+$string['dash_hello'] = '欢迎回来，{$a}';
+$string['dash_rank'] = '等级';
+
 $string['xp_rank_novice'] = '新手';
 $string['xp_rank_scholar'] = '学员';
 $string['xp_rank_analyst'] = '分析师';
