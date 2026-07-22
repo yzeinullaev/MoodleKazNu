@@ -348,6 +348,144 @@ body.local-kaznu-landing-body .navbar {
     color: var(--kzn-bronze-soft);
 }
 
+.kzn-hero .kzn-eyebrow {
+    color: var(--kzn-coral);
+    margin-bottom: 0.35rem;
+    animation: kzn-rise 0.85s ease both;
+}
+
+/* —— Facts strip —— */
+.kzn-facts {
+    background: var(--kzn-cream);
+    border-bottom: 1px solid var(--kzn-line);
+    padding: 1.75rem 0;
+}
+
+.kzn-facts-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+.kzn-fact {
+    text-align: center;
+    padding: 0.5rem;
+}
+
+.kzn-fact strong {
+    display: block;
+    font-family: var(--kzn-serif);
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    color: var(--kzn-coral);
+    line-height: 1.1;
+}
+
+.kzn-fact span {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.82rem;
+    color: var(--kzn-muted);
+    line-height: 1.35;
+}
+
+@media (max-width: 720px) {
+    .kzn-facts-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* —— About —— */
+.kzn-about {
+    padding: 3rem 0;
+    background: #fff;
+}
+
+.kzn-about-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 2.5rem;
+    align-items: start;
+}
+
+.kzn-about p {
+    line-height: 1.6;
+    color: var(--kzn-muted);
+    margin: 0 0 1rem;
+}
+
+.kzn-checks {
+    list-style: none;
+    margin: 0;
+    padding: 1.25rem;
+    background: var(--kzn-cream);
+    border-left: 3px solid var(--kzn-coral);
+}
+
+.kzn-checks li {
+    padding: 0.45rem 0;
+    font-size: 0.95rem;
+    line-height: 1.45;
+}
+
+.kzn-checks li::before {
+    content: "✓";
+    color: var(--kzn-coral);
+    font-weight: 700;
+    margin-right: 0.5rem;
+}
+
+@media (max-width: 840px) {
+    .kzn-about-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* —— Path steps —— */
+.kzn-path {
+    padding: 3rem 0;
+    background: var(--kzn-cream);
+}
+
+.kzn-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.kzn-steps li {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.kzn-steps h3 {
+    font-family: var(--kzn-serif);
+    font-size: 1.25rem;
+    margin: 0 0 0.35rem;
+}
+
+.kzn-steps p {
+    margin: 0;
+    color: var(--kzn-muted);
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+@media (max-width: 840px) {
+    .kzn-steps {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kzn-footer-contact {
+    margin-top: 0.5rem !important;
+    font-size: 0.82rem !important;
+    opacity: 0.85;
+}
+
 /* —— Shelves —— */
 .kzn-shelf-section {
     padding: 2.5rem 0 1rem;

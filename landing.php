@@ -101,6 +101,7 @@ echo $OUTPUT->doctype();
             </span>
         </a>
         <nav class="kzn-nav-links" aria-label="Main">
+            <a href="#about"><?php echo get_string('landing_nav_program', 'local_kaznu'); ?></a>
             <a href="#courses"><?php echo get_string('landing_nav_courses', 'local_kaznu'); ?></a>
             <a href="#ranks"><?php echo get_string('landing_nav_ranks', 'local_kaznu'); ?></a>
             <span class="kzn-lang-switch" aria-label="Language">
@@ -126,6 +127,7 @@ echo $OUTPUT->doctype();
     <section class="kzn-hero" aria-label="Hero">
         <div class="kzn-hero-wash" aria-hidden="true"></div>
         <div class="kzn-hero-content">
+            <p class="kzn-eyebrow"><?php echo get_string('landing_eyebrow', 'local_kaznu'); ?></p>
             <p class="kzn-slogan"><?php echo get_string('landing_slogan', 'local_kaznu'); ?></p>
             <h1 class="kzn-logo-title"><?php echo get_string('landing_brand', 'local_kaznu'); ?></h1>
             <p class="kzn-lead"><?php echo get_string('landing_lead', 'local_kaznu'); ?></p>
@@ -159,6 +161,34 @@ echo $OUTPUT->doctype();
                 <em><?php echo $fenrolled ? get_string('landing_cta_continue', 'local_kaznu') : get_string('landing_cta_enrol', 'local_kaznu'); ?> →</em>
             </a>
         <?php endif; ?>
+    </section>
+
+    <section class="kzn-facts" aria-label="<?php echo get_string('landing_facts_title', 'local_kaznu'); ?>">
+        <div class="kzn-wrap kzn-facts-grid">
+            <?php for ($fi = 1; $fi <= 4; $fi++): ?>
+                <div class="kzn-fact">
+                    <strong><?php echo get_string('landing_fact' . $fi . '_value', 'local_kaznu'); ?></strong>
+                    <span><?php echo get_string('landing_fact' . $fi . '_label', 'local_kaznu'); ?></span>
+                </div>
+            <?php endfor; ?>
+        </div>
+    </section>
+
+    <section class="kzn-section kzn-about" id="about">
+        <div class="kzn-wrap kzn-about-grid">
+            <div>
+                <h2><?php echo get_string('landing_program_title', 'local_kaznu'); ?></h2>
+                <p class="kzn-section-lead"><?php echo get_string('landing_program_lead', 'local_kaznu'); ?></p>
+                <p><?php echo get_string('landing_program_p1', 'local_kaznu'); ?></p>
+                <p><?php echo get_string('landing_program_p2', 'local_kaznu'); ?></p>
+            </div>
+            <ul class="kzn-checks">
+                <li><?php echo get_string('landing_check1', 'local_kaznu'); ?></li>
+                <li><?php echo get_string('landing_check2', 'local_kaznu'); ?></li>
+                <li><?php echo get_string('landing_check3', 'local_kaznu'); ?></li>
+                <li><?php echo get_string('landing_check4', 'local_kaznu'); ?></li>
+            </ul>
+        </div>
     </section>
 
     <?php if ($continue): ?>
@@ -229,6 +259,24 @@ echo $OUTPUT->doctype();
     </section>
     <?php endif; ?>
 
+    <section class="kzn-section kzn-path" id="path">
+        <div class="kzn-wrap">
+            <h2><?php echo get_string('landing_path_title', 'local_kaznu'); ?></h2>
+            <p class="kzn-section-lead"><?php echo get_string('landing_path_lead', 'local_kaznu'); ?></p>
+            <ol class="kzn-steps">
+                <?php for ($si = 1; $si <= 3; $si++): ?>
+                    <li>
+                        <span class="kzn-step-num"><?php echo sprintf('%02d', $si); ?></span>
+                        <div>
+                            <h3><?php echo get_string('landing_step' . $si . '_title', 'local_kaznu'); ?></h3>
+                            <p><?php echo get_string('landing_step' . $si . '_text', 'local_kaznu'); ?></p>
+                        </div>
+                    </li>
+                <?php endfor; ?>
+            </ol>
+        </div>
+    </section>
+
     <section class="kzn-section kzn-ranks" id="ranks">
         <div class="kzn-wrap kzn-ranks-grid">
             <div>
@@ -265,9 +313,10 @@ echo $OUTPUT->doctype();
             <div>
                 <strong><?php echo get_string('landing_brand', 'local_kaznu'); ?></strong>
                 <p><?php echo get_string('landing_footer', 'local_kaznu'); ?></p>
+                <p class="kzn-footer-contact"><?php echo get_string('landing_footer_contact', 'local_kaznu'); ?></p>
             </div>
             <div class="kzn-footer-links">
-                <a href="<?php echo $payurl->out(false); ?>"><?php echo get_string('navpay', 'local_kaznu'); ?></a>
+                <a href="https://kaznu-mba.kz/" rel="noopener" target="_blank">kaznu-mba.kz</a>
                 <a href="<?php echo $loginurl->out(false); ?>"><?php echo get_string('login'); ?></a>
                 <a href="https://farabi.university/?lang=ru" rel="noopener" target="_blank">farabi.university</a>
             </div>

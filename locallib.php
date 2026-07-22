@@ -43,10 +43,17 @@ function local_kaznu_get_catalogue_courses(bool $includehidden = true): array {
  */
 function local_kaznu_course_shelf(stdClass $course): string {
     $sn = strtoupper($course->shortname);
-    if ($sn === 'SUMMER2026' || stripos($course->fullname, 'летн') !== false || stripos($course->fullname, 'summer') !== false) {
+    $name = $course->fullname;
+    if ($sn === 'SUMMER2026' || stripos($name, 'летн') !== false || stripos($name, 'summer') !== false) {
         return 'summer';
     }
-    if (in_array($sn, ['BRM', 'RM'], true) || stripos($course->fullname, 'research') !== false) {
+    if (stripos($sn, 'DBA') !== false || stripos($name, 'DBA') !== false || in_array($sn, ['BRM', 'RM'], true)) {
+        return 'research';
+    }
+    if (stripos($sn, 'EMBA') !== false || stripos($name, 'EMBA') !== false) {
+        return 'business';
+    }
+    if (stripos($name, 'research') !== false) {
         return 'research';
     }
     return 'business';
