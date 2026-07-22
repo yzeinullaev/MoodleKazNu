@@ -128,7 +128,7 @@ function local_kaznu_load_styles(): void {
         return;
     }
 
-    $sheet = new moodle_url('/local/kaznu/styles.css', ['rev' => get_config('local_kaznu', 'version') ?: '2026072206']);
+    $sheet = new moodle_url('/local/kaznu/styles.css', ['rev' => get_config('local_kaznu', 'version') ?: '2026072207']);
     $PAGE->requires->css($sheet);
 }
 
@@ -150,7 +150,7 @@ function local_kaznu_before_standard_head_html() {
     echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
     echo '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">' . "\n";
 
-    $rev = get_config('local_kaznu', 'version') ?: '2026072206';
+    $rev = get_config('local_kaznu', 'version') ?: '2026072207';
     $href = $CFG->wwwroot . '/local/kaznu/styles.css?rev=' . $rev;
     echo '<link rel="stylesheet" type="text/css" href="' . s($href) . '" />' . "\n";
 }
@@ -167,12 +167,15 @@ function local_kaznu_before_footer() {
 
     require_once(__DIR__ . '/locallib.php');
 
-    $dbman = $GLOBALS['DB']->get_manager();
-    if (!$dbman->table_exists('local_kaznu_xp')) {
-        return;
-    }
+    $pagetype = (string) $PAGE->pagetype;
+    $ondash = ($pagetype === 'my-index' || $pagetype === 'mycourses-index' || strpos($pagetype, 'my-') === 0);
+    $oncoursehome = (strpos($pagetype, 'course-view') === 0);
+    $onmod = (strpos($pagetype, 'mod-') === 0);
 
-    if (!empty($SESSION->local_kaznu_celebrate)) {
+    $dbman = $GLOBALS['DB']->get_manager();
+    $hasxp = $dbman->table_exists('local_kaznu_xp');
+
+    if ($hasxp && !empty($SESSION->local_kaznu_celebrate)) {
         $c = $SESSION->local_kaznu_celebrate;
         unset($SESSION->local_kaznu_celebrate);
         $title = $c['levelup']
@@ -184,51 +187,55 @@ function local_kaznu_before_footer() {
             . '</div>';
     }
 
-    $pagetype = (string) $PAGE->pagetype;
-    $ondash = ($pagetype === 'my-index' || $pagetype === 'mycourses-index' || strpos($pagetype, 'my-') === 0);
-    $oncoursehome = (strpos($pagetype, 'course-view') === 0);
-    $onmod = (strpos($pagetype, 'mod-') === 0);
-
-    if ($ondash) {
+    if ($hasxp && $ondash) {
         echo local_kaznu_render_dashboard_arena($USER);
         echo '<script>(function(){var d=document.querySelector("[data-kaznu-dash]");var m=document.getElementById("region-main");if(d&&m){m.insertBefore(d,m.firstChild);}var h=document.querySelector("#page-header");if(h){h.classList.add("kzn-hide-default-header");}})();</script>';
     }
 
-    if ($oncoursehome && !empty($COURSE->id) && (int) $COURSE->id > 1) {
+    if ($hasxp && $oncoursehome && !empty($COURSE->id) && (int) $COURSE->id > 1) {
         echo local_kaznu_render_course_arena($COURSE, (int) $USER->id);
         echo '<script>(function(){var a=document.querySelector("[data-kaznu-arena]");var m=document.getElementById("region-main");if(a&&m){m.insertBefore(a,m.firstChild);}})();</script>';
     }
 
-    // XP HUD on student shell pages.
-    if (!local_kaznu_is_student_shell_page()) {
-        return;
+    if ($hasxp && local_kaznu_is_student_shell_page()) {
+        $xp = local_kaznu_get_xp((int) $USER->id);
+        $prog = local_kaznu_xp_progress($xp);
+        $catalog = new moodle_url('/local/kaznu/landing.php');
+        $hub = (!empty($COURSE->id) && (int) $COURSE->id > 1)
+            ? new moodle_url('/local/kaznu/course.php', ['id' => $COURSE->id])
+            : new moodle_url('/my/');
+        $hublabel = (!empty($COURSE->id) && (int) $COURSE->id > 1)
+            ? get_string('hub_syllabus', 'local_kaznu')
+            : get_string('dash_title', 'local_kaznu');
+
+        echo '<aside class="local-kaznu-hud" aria-label="XP">'
+            . '<strong>' . s($prog['title']) . '</strong>'
+            . '<div class="local-kaznu-hud-meta"><span>Lv ' . (int) $xp->level . '</span><span>' . (int) $xp->xp . ' XP</span></div>'
+            . '<div class="local-kaznu-hud-bar"><span style="width:' . (int) $prog['pct'] . '%"></span></div>'
+            . '<a href="' . $hub->out(false) . '">' . $hublabel . '</a>'
+            . ' · <a href="' . $catalog->out(false) . '">' . get_string('landing_nav_courses', 'local_kaznu') . '</a>'
+            . '</aside>';
+
+        if ($onmod && !empty($COURSE->id) && (int) $COURSE->id > 1) {
+            echo '<div class="local-kaznu-lesson-strip" data-kaznu-strip="1">'
+                . '<a href="' . (new moodle_url('/course/view.php', ['id' => $COURSE->id]))->out(false) . '">'
+                . format_string($COURSE->fullname) . '</a>'
+                . '<span>Lv ' . (int) $xp->level . ' · ' . (int) $xp->xp . ' XP</span>'
+                . '</div>';
+            echo '<script>(function(){var s=document.querySelector("[data-kaznu-strip]");var m=document.getElementById("region-main");if(s&&m){m.insertBefore(s,m.firstChild);}})();</script>';
+        }
     }
 
-    $xp = local_kaznu_get_xp((int) $USER->id);
-    $prog = local_kaznu_xp_progress($xp);
-    $catalog = new moodle_url('/local/kaznu/landing.php');
-    $hub = (!empty($COURSE->id) && (int) $COURSE->id > 1)
-        ? new moodle_url('/local/kaznu/course.php', ['id' => $COURSE->id])
-        : new moodle_url('/my/');
-    $hublabel = (!empty($COURSE->id) && (int) $COURSE->id > 1)
-        ? get_string('hub_syllabus', 'local_kaznu')
-        : get_string('dash_title', 'local_kaznu');
-
-    echo '<aside class="local-kaznu-hud" aria-label="XP">'
-        . '<strong>' . s($prog['title']) . '</strong>'
-        . '<div class="local-kaznu-hud-meta"><span>Lv ' . (int) $xp->level . '</span><span>' . (int) $xp->xp . ' XP</span></div>'
-        . '<div class="local-kaznu-hud-bar"><span style="width:' . (int) $prog['pct'] . '%"></span></div>'
-        . '<a href="' . $hub->out(false) . '">' . $hublabel . '</a>'
-        . ' · <a href="' . $catalog->out(false) . '">' . get_string('landing_nav_courses', 'local_kaznu') . '</a>'
-        . '</aside>';
-
-    if ($onmod && !empty($COURSE->id) && (int) $COURSE->id > 1) {
-        echo '<div class="local-kaznu-lesson-strip" data-kaznu-strip="1">'
-            . '<a href="' . (new moodle_url('/course/view.php', ['id' => $COURSE->id]))->out(false) . '">'
-            . format_string($COURSE->fullname) . '</a>'
-            . '<span>Lv ' . (int) $xp->level . ' · ' . (int) $xp->xp . ' XP</span>'
-            . '</div>';
-        echo '<script>(function(){var s=document.querySelector("[data-kaznu-strip]");var m=document.getElementById("region-main");if(s&&m){m.insertBefore(s,m.firstChild);}})();</script>';
+    if (local_kaznu_should_debrand()) {
+        $brand = get_string('landing_brand', 'local_kaznu');
+        $slogan = get_string('landing_slogan', 'local_kaznu');
+        echo '<script>(function(){'
+            . 'document.body.classList.add("local-kaznu-debrand");'
+            . 'var b=document.querySelector(".navbar-brand");'
+            . 'if(b){b.innerHTML=' . json_encode('<span class="kzn-nav-brand"><strong>' . $brand . '</strong><em>' . $slogan . '</em></span>') . ';'
+            . 'b.href=' . json_encode((new moodle_url('/local/kaznu/landing.php'))->out(false)) . ';}'
+            . 'document.title=document.title.replace(/Moodle LMS?/gi,' . json_encode($brand) . ');'
+            . '})();</script>';
     }
 }
 

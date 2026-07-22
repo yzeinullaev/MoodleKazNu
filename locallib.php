@@ -378,6 +378,20 @@ function local_kaznu_confirm_url(): moodle_url {
 }
 
 /**
+ * Hide Moodle branding for students (keep for site admins).
+ */
+function local_kaznu_should_debrand(): bool {
+    if (!isloggedin() || isguestuser()) {
+        return false;
+    }
+    $sys = context_system::instance();
+    if (has_capability('moodle/site:config', $sys)) {
+        return false;
+    }
+    return local_kaznu_is_student_shell_page();
+}
+
+/**
  * Make catalogue courses visible for the demo shelf.
  */
 function local_kaznu_ensure_catalogue_visible(): void {

@@ -1057,3 +1057,51 @@ body.path-my .navbar .dropdown-menu .dropdown-item:focus {
     color: var(--kaznu-cream) !important;
     background: var(--kaznu-charcoal) !important;
 }
+
+/* —— Debrand Moodle for students —— */
+body.local-kaznu-debrand #page-footer,
+body.local-kaznu-debrand .footer-popover,
+body.local-kaznu-debrand .footer-content-debugging,
+body.local-kaznu-debrand a[href*='moodle.org'],
+body.local-kaznu-debrand .footer-section {
+    display: none !important;
+}
+
+body.local-kaznu-debrand .editmode-switch-form,
+body.local-kaznu-debrand .navbar .editmode-switch-form {
+    display: none !important;
+}
+
+body.local-kaznu-debrand .kzn-nav-brand {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+    color: var(--kaznu-cream);
+    text-decoration: none;
+}
+
+body.local-kaznu-debrand .kzn-nav-brand strong {
+    font-family: var(--kaznu-serif);
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+body.local-kaznu-debrand .kzn-nav-brand em {
+    font-style: normal;
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.75;
+    color: var(--kaznu-bronze-soft);
+}
+
+body.local-kaznu-debrand .navbar-brand img,
+body.local-kaznu-debrand .navbar-brand .logo {
+    display: none !important;
+}
+
+body.local-kaznu-debrand .nav-link[href*='admin'],
+body.local-kaznu-debrand .nav-link[href*='reportbuilder'] {
+    display: none !important;
+}
