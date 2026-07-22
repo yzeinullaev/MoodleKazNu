@@ -4,7 +4,57 @@ defined('MOODLE_INTERNAL') || die();
 require_once(__DIR__ . '/locallib.php');
 
 /**
- * Redirect frontpage → landing; guests on course/view → branded hub.
+ * Early redirect: guests on course/view → branded hub (before require_login).
+ */
+function local_kaznu_after_config() {
+    if ((defined('CLI_SCRIPT') && CLI_SCRIPT) || (defined('AJAX_SCRIPT') && AJAX_SCRIPT)) {
+        return;
+    }
+    if (function_exists('during_initial_install') && during_initial_install()) {
+        return;
+    }
+
+    $script = (string) ($_SERVER['SCRIPT_NAME'] ?? '');
+    if ($script === '' || substr($script, -strlen('/course/view.php')) !== '/course/view.php') {
+        // Also allow bare relative forms.
+        if ($script !== '/course/view.php' && $script !== 'course/view.php') {
+            return;
+        }
+    }
+
+    // Session may not be fully bootstrapped; treat missing login as guest.
+    $loggedin = false;
+    if (!empty($GLOBALS['USER']) && !empty($GLOBALS['USER']->id) && (int) $GLOBALS['USER']->id > 0) {
+        $loggedin = empty($GLOBALS['USER']->username) || $GLOBALS['USER']->username !== 'guest';
+        if (function_exists('isloggedin') && function_exists('isguestuser')) {
+            $loggedin = isloggedin() && !isguestuser();
+        }
+    }
+
+    if ($loggedin) {
+        return;
+    }
+
+    $courseid = 0;
+    if (isset($_GET['id'])) {
+        $courseid = (int) $_GET['id'];
+    }
+    if ($courseid <= 1) {
+        return;
+    }
+
+    // Prefer moodle_url when available.
+    if (class_exists('moodle_url')) {
+        redirect(new moodle_url('/local/kaznu/course.php', ['id' => $courseid]));
+    }
+
+    $www = !empty($GLOBALS['CFG']->wwwroot) ? $GLOBALS['CFG']->wwwroot : '';
+    header('Location: ' . $www . '/local/kaznu/course.php?id=' . $courseid, true, 303);
+    exit;
+}
+
+/**
+ * Redirect frontpage → landing.
  */
 function local_kaznu_before_http_headers() {
     if ((defined('CLI_SCRIPT') && CLI_SCRIPT) || (defined('AJAX_SCRIPT') && AJAX_SCRIPT)) {
@@ -21,19 +71,8 @@ function local_kaznu_before_http_headers() {
         $script = (string) ($_SERVER['SCRIPT_NAME'] ?? '');
     }
 
-    // Only the public site front page — never /login/index.php.
     if ($script === '/index.php' || $script === 'index.php') {
         redirect(new moodle_url('/local/kaznu/landing.php'));
-    }
-
-    // Guests hitting Moodle course view → Farabi hub (no bare login wall).
-    $isscript = ($script === '/course/view.php' || $script === 'course/view.php'
-        || substr($script, -strlen('/course/view.php')) === '/course/view.php');
-    if ($isscript) {
-        $courseid = optional_param('id', 0, PARAM_INT);
-        if ($courseid > 1 && (!isloggedin() || isguestuser())) {
-            redirect(new moodle_url('/local/kaznu/course.php', ['id' => $courseid]));
-        }
     }
 }
 
