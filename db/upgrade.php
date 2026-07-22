@@ -69,6 +69,9 @@ function xmldb_local_kaznu_upgrade($oldversion) {
     if ($oldversion < 2026072209) {
         upgrade_plugin_savepoint(true, 2026072209, 'local', 'kaznu');
     }
+    if ($oldversion < 2026072210) {
+        upgrade_plugin_savepoint(true, 2026072210, 'local', 'kaznu');
+    }
 
     return true;
 }
