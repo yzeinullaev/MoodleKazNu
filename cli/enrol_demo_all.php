@@ -3,7 +3,7 @@
  * Enrol demo_student into all catalogue courses (demo UX).
  */
 define('CLI_SCRIPT', true);
-require(__DIR__ . '/../../config.php');
+require(__DIR__ . '/../../../config.php');
 require_once(__DIR__ . '/../locallib.php');
 
 $username = 'demo_student';
