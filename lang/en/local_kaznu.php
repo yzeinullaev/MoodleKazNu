@@ -70,6 +70,16 @@ $string['hub_lead'] = 'Course syllabus, progression and a clear path into lesson
 $string['hub_syllabus'] = 'Course syllabus';
 $string['hub_syllabus_lead'] = 'Sections and activities. Locked modules unlock after a passing grade.';
 $string['hub_locked'] = 'Locked';
+$string['arena_progress'] = 'Course progress';
+$string['arena_done'] = '{$a->done} / {$a->total} complete';
+$string['arena_continue'] = 'Continue lesson';
+$string['arena_start'] = 'Start course';
+$string['arena_path'] = 'Path';
+$string['arena_xp_label'] = 'Your rank';
+$string['arena_back'] = 'Catalogue';
+$string['arena_section_open'] = 'Open';
+$string['arena_section_locked'] = 'Locked';
+$string['arena_reward'] = 'Quiz pass: +{$a} XP';
 
 $string['xp_rank_novice'] = 'Novice';
 $string['xp_rank_scholar'] = 'Scholar';

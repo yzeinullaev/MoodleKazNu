@@ -70,6 +70,16 @@ $string['hub_lead'] = 'Силлабус курса, прогрессия и пе
 $string['hub_syllabus'] = 'Программа курса';
 $string['hub_syllabus_lead'] = 'Разделы и активности. Заблокированные модули откроются после проходного балла.';
 $string['hub_locked'] = 'Закрыто';
+$string['arena_progress'] = 'Прогресс курса';
+$string['arena_done'] = '{$a->done} / {$a->total} выполнено';
+$string['arena_continue'] = 'Продолжить урок';
+$string['arena_start'] = 'Начать курс';
+$string['arena_path'] = 'Траектория';
+$string['arena_xp_label'] = 'Ваш ранг';
+$string['arena_back'] = 'Каталог';
+$string['arena_section_open'] = 'Открыто';
+$string['arena_section_locked'] = 'Закрыто';
+$string['arena_reward'] = 'Зачёт теста: +{$a} XP';
 
 $string['xp_rank_novice'] = 'Новичок';
 $string['xp_rank_scholar'] = 'Ученик';

@@ -384,3 +384,154 @@ function local_kaznu_ensure_catalogue_visible(): void {
     global $DB;
     $DB->execute("UPDATE {course} SET visible = 1 WHERE id > 1 AND visible = 0");
 }
+
+/**
+ * Course completion progress for gamified arena.
+ *
+ * @return array{done:int,total:int,pct:int,nexturl:?moodle_url,nextname:string,sections:array}
+ */
+function local_kaznu_get_course_progress(stdClass $course, int $userid): array {
+    require_once($GLOBALS['CFG']->libdir . '/completionlib.php');
+
+    $modinfo = get_fast_modinfo($course, $userid);
+    $completion = new completion_info($course);
+    $done = 0;
+    $total = 0;
+    $nexturl = null;
+    $nextname = '';
+    $sections = [];
+
+    foreach ($modinfo->get_section_info_all() as $section) {
+        if ((int) $section->section === 0) {
+            continue;
+        }
+        $secdone = 0;
+        $sectotal = 0;
+        $cms = [];
+        if (!empty($modinfo->sections[$section->section])) {
+            foreach ($modinfo->sections[$section->section] as $cmid) {
+                $cm = $modinfo->cms[$cmid];
+                if (!$cm->uservisible && empty($cm->availableinfo)) {
+                    continue;
+                }
+                if (!$cm->url) {
+                    continue;
+                }
+                $sectotal++;
+                $total++;
+                $complete = false;
+                if ($completion->is_enabled($cm)) {
+                    $cdata = $completion->get_data($cm, false, $userid);
+                    $complete = in_array((int) $cdata->completionstate, [
+                        COMPLETION_COMPLETE,
+                        COMPLETION_COMPLETE_PASS,
+                    ], true);
+                }
+                if ($complete) {
+                    $secdone++;
+                    $done++;
+                } else if ($nexturl === null && $cm->uservisible) {
+                    $nexturl = $cm->url;
+                    $nextname = $cm->name;
+                }
+                $cms[] = (object) [
+                    'name' => $cm->name,
+                    'complete' => $complete,
+                    'available' => $cm->uservisible,
+                ];
+            }
+        }
+        $sections[] = (object) [
+            'num' => (int) $section->section,
+            'name' => get_section_name($course, $section),
+            'available' => !empty($section->available),
+            'done' => $secdone,
+            'total' => $sectotal,
+            'cms' => $cms,
+        ];
+    }
+
+    if ($nexturl === null) {
+        foreach ($modinfo->cms as $cm) {
+            if ($cm->uservisible && $cm->url) {
+                $nexturl = $cm->url;
+                $nextname = $cm->name;
+                break;
+            }
+        }
+    }
+
+    $pct = $total > 0 ? (int) round(($done / $total) * 100) : 0;
+    return [
+        'done' => $done,
+        'total' => $total,
+        'pct' => $pct,
+        'nexturl' => $nexturl,
+        'nextname' => $nextname,
+        'sections' => $sections,
+    ];
+}
+
+/**
+ * HTML for gamified course arena (injected on course/mod pages).
+ */
+function local_kaznu_render_course_arena(stdClass $course, int $userid): string {
+    $accent = local_kaznu_course_accent($course);
+    $progress = local_kaznu_get_course_progress($course, $userid);
+    $xp = local_kaznu_get_xp($userid);
+    $xpprog = local_kaznu_xp_progress($xp);
+    $catalog = new moodle_url('/local/kaznu/landing.php');
+    $hub = new moodle_url('/local/kaznu/course.php', ['id' => $course->id]);
+
+    $ctaurl = $progress['nexturl'] ?: new moodle_url('/course/view.php', ['id' => $course->id]);
+    $ctalabel = $progress['done'] > 0
+        ? get_string('arena_continue', 'local_kaznu')
+        : get_string('arena_start', 'local_kaznu');
+
+    $pathhtml = '';
+    foreach (array_slice($progress['sections'], 0, 8) as $sec) {
+        $state = $sec->available ? 'is-open' : 'is-locked';
+        if ($sec->total > 0 && $sec->done >= $sec->total) {
+            $state = 'is-done';
+        }
+        $pathhtml .= '<li class="' . $state . '">'
+            . '<span class="kzn-arena-dot"></span>'
+            . '<span class="kzn-arena-secname">' . format_string($sec->name) . '</span>'
+            . '</li>';
+    }
+
+    $doneobj = (object) ['done' => $progress['done'], 'total' => max(1, $progress['total'])];
+
+    return '<div class="local-kaznu-arena kzn-accent-' . $accent . '" data-kaznu-arena="1">'
+        . '<div class="kzn-arena-inner">'
+        . '<div class="kzn-arena-top">'
+        . '<a class="kzn-arena-back" href="' . $catalog->out(false) . '">' . get_string('arena_back', 'local_kaznu') . '</a>'
+        . '<span class="kzn-arena-short">' . s($course->shortname) . '</span>'
+        . '</div>'
+        . '<h1 class="kzn-arena-title">' . format_string($course->fullname) . '</h1>'
+        . '<p class="kzn-arena-reward">' . get_string('arena_reward', 'local_kaznu', LOCAL_KAZNU_XP_QUIZ_PASS) . '</p>'
+        . '<div class="kzn-arena-stats">'
+        . '<div class="kzn-arena-stat">'
+        . '<label>' . get_string('arena_progress', 'local_kaznu') . '</label>'
+        . '<strong>' . get_string('arena_done', 'local_kaznu', $doneobj) . '</strong>'
+        . '<div class="kzn-arena-bar"><span style="width:' . (int) $progress['pct'] . '%"></span></div>'
+        . '</div>'
+        . '<div class="kzn-arena-stat">'
+        . '<label>' . get_string('arena_xp_label', 'local_kaznu') . '</label>'
+        . '<strong>' . s($xpprog['title']) . ' · Lv ' . (int) $xp->level . '</strong>'
+        . '<div class="kzn-arena-bar kzn-arena-bar-xp"><span style="width:' . (int) $xpprog['pct'] . '%"></span></div>'
+        . '<em>' . (int) $xp->xp . ' XP</em>'
+        . '</div>'
+        . '</div>'
+        . '<div class="kzn-arena-actions">'
+        . '<a class="kzn-arena-cta" href="' . $ctaurl->out(false) . '">' . $ctalabel . '</a>'
+        . '<a class="kzn-arena-link" href="' . $hub->out(false) . '">' . get_string('hub_syllabus', 'local_kaznu') . '</a>'
+        . '</div>'
+        . '<div class="kzn-arena-path">'
+        . '<h2>' . get_string('arena_path', 'local_kaznu') . '</h2>'
+        . '<ol>' . $pathhtml . '</ol>'
+        . '</div>'
+        . '</div></div>';
+}
+
+
