@@ -13,6 +13,9 @@ const LOCAL_KAZNU_XP_QUIZ_PERFECT = 80;
 const LOCAL_KAZNU_XP_MODULE = 40;
 const LOCAL_KAZNU_XP_ENROL = 50;
 
+/** Max display level (Farabi Master). */
+const LOCAL_KAZNU_MAX_LEVEL = 10;
+
 /**
  * Demo / featured summer course or null.
  */
@@ -203,7 +206,8 @@ function local_kaznu_award_xp(int $userid, int $amount, string $reason = '', str
     $DB->update_record('local_kaznu_xp', $rec);
 
     $levelup = $rec->level > $oldlevel;
-    if (($levelup || $amount >= LOCAL_KAZNU_XP_QUIZ_PASS) && isset($GLOBALS['SESSION'])) {
+    // Always show XP toast after any award (tests, enrol, etc.).
+    if (isset($GLOBALS['SESSION'])) {
         $GLOBALS['SESSION']->local_kaznu_celebrate = [
             'gained' => $amount,
             'xp' => (int) $rec->xp,
@@ -407,6 +411,95 @@ function local_kaznu_ensure_catalogue_visible(): void {
 }
 
 /**
+ * Ordered visible activities with URLs in a course (for resume / prev-next).
+ *
+ * @return cm_info[]
+ */
+function local_kaznu_course_activity_sequence(stdClass $course, int $userid = 0): array {
+    $modinfo = get_fast_modinfo($course, $userid);
+    $list = [];
+    foreach ($modinfo->get_section_info_all() as $section) {
+        if ((int) $section->section === 0) {
+            continue;
+        }
+        if (empty($modinfo->sections[$section->section])) {
+            continue;
+        }
+        foreach ($modinfo->sections[$section->section] as $cmid) {
+            $cm = $modinfo->cms[$cmid];
+            if (!$cm->uservisible || !$cm->url) {
+                continue;
+            }
+            $list[] = $cm;
+        }
+    }
+    return $list;
+}
+
+/**
+ * Prev / next activity around the current CM.
+ *
+ * @return array{prev:?cm_info,next:?cm_info,index:int,total:int}
+ */
+function local_kaznu_activity_neighbours(stdClass $course, int $cmid, int $userid = 0): array {
+    $seq = local_kaznu_course_activity_sequence($course, $userid);
+    $prev = null;
+    $next = null;
+    $index = -1;
+    $total = count($seq);
+    foreach ($seq as $i => $cm) {
+        if ((int) $cm->id === $cmid) {
+            $index = $i;
+            if ($i > 0) {
+                $prev = $seq[$i - 1];
+            }
+            if ($i < $total - 1) {
+                $next = $seq[$i + 1];
+            }
+            break;
+        }
+    }
+    return ['prev' => $prev, 'next' => $next, 'index' => $index, 'total' => $total];
+}
+
+/**
+ * Resume URL for enrolled user: first incomplete activity, or course home.
+ */
+function local_kaznu_resume_url(stdClass $course, int $userid): moodle_url {
+    $progress = local_kaznu_get_course_progress($course, $userid);
+    if (!empty($progress['nexturl'])) {
+        return $progress['nexturl'];
+    }
+    return new moodle_url('/course/view.php', ['id' => $course->id]);
+}
+
+/**
+ * CTA label: start vs continue based on completed activities.
+ */
+function local_kaznu_resume_label(stdClass $course, int $userid): string {
+    $progress = local_kaznu_get_course_progress($course, $userid);
+    return $progress['done'] > 0
+        ? get_string('arena_continue', 'local_kaznu')
+        : get_string('arena_start', 'local_kaznu');
+}
+
+/**
+ * Human label for stored badge key.
+ */
+function local_kaznu_badge_label(string $key): string {
+    $map = [
+        'first_steps' => 'badge_first_steps',
+        'quiz_pass' => 'badge_quiz_pass',
+        'perfect_score' => 'badge_perfect',
+    ];
+    $stringkey = $map[$key] ?? '';
+    if ($stringkey !== '' && get_string_manager()->string_exists($stringkey, 'local_kaznu')) {
+        return get_string($stringkey, 'local_kaznu');
+    }
+    return $key;
+}
+
+/**
  * Course completion progress for gamified arena.
  *
  * @return array{done:int,total:int,pct:int,nexturl:?moodle_url,nextname:string,sections:array}
@@ -508,6 +601,10 @@ function local_kaznu_render_course_arena(stdClass $course, int $userid): string 
     $ctalabel = $progress['done'] > 0
         ? get_string('arena_continue', 'local_kaznu')
         : get_string('arena_start', 'local_kaznu');
+    $ctahint = '';
+    if ($progress['done'] > 0 && $progress['nextname'] !== '') {
+        $ctahint = '<span class="kzn-arena-cta-hint">' . get_string('arena_resume_hint', 'local_kaznu', format_string($progress['nextname'])) . '</span>';
+    }
 
     $pathhtml = '';
     foreach (array_slice($progress['sections'], 0, 8) as $sec) {
@@ -546,6 +643,7 @@ function local_kaznu_render_course_arena(stdClass $course, int $userid): string 
         . '</div>'
         . '<div class="kzn-arena-actions">'
         . '<a class="kzn-arena-cta" href="' . $ctaurl->out(false) . '">' . $ctalabel . '</a>'
+        . $ctahint
         . '<a class="kzn-arena-link" href="' . $hub->out(false) . '">' . get_string('hub_syllabus', 'local_kaznu') . '</a>'
         . '</div>'
         . '<div class="kzn-arena-path">'
@@ -580,17 +678,34 @@ function local_kaznu_render_dashboard_arena(stdClass $user): string {
     $courses = local_kaznu_get_user_courses((int) $user->id);
     $catalog = new moodle_url('/local/kaznu/landing.php');
     $board = local_kaznu_leaderboard(5);
+    $tonext = LOCAL_KAZNU_XP_PER_LEVEL - $xpprog['into'];
+    $level = (int) $xp->level;
+    $maxlevel = LOCAL_KAZNU_MAX_LEVEL;
+
+    $badges = json_decode($xp->badges ?: '[]', true);
+    if (!is_array($badges)) {
+        $badges = [];
+    }
+    $badgehtml = '';
+    if ($badges) {
+        foreach ($badges as $b) {
+            $badgehtml .= '<span class="kzn-dash-badge">' . s(local_kaznu_badge_label((string) $b)) . '</span>';
+        }
+    } else {
+        $badgehtml = '<span class="kzn-dash-badge is-empty">' . get_string('badge_none', 'local_kaznu') . '</span>';
+    }
 
     $firstname = !empty($user->firstname) ? $user->firstname : fullname($user);
 
     $tiles = '';
     foreach (array_slice($courses, 0, 6) as $c) {
         $accent = local_kaznu_course_accent($c);
-        $url = new moodle_url('/course/view.php', ['id' => $c->id]);
+        $url = local_kaznu_resume_url($c, (int) $user->id);
+        $label = local_kaznu_resume_label($c, (int) $user->id);
         $tiles .= '<a class="kzn-dash-tile kzn-accent-' . $accent . '" href="' . $url->out(false) . '">'
             . '<span class="kzn-dash-tile-meta">' . s($c->shortname) . '</span>'
             . '<strong>' . format_string($c->fullname) . '</strong>'
-            . '<em>' . get_string('landing_cta_continue', 'local_kaznu') . '</em>'
+            . '<em>' . $label . '</em>'
             . '</a>';
     }
     if ($tiles === '') {
@@ -606,6 +721,15 @@ function local_kaznu_render_dashboard_arena(stdClass $user): string {
         $lb = '<li class="kzn-dash-empty-li">' . get_string('landing_leaderboard_empty', 'local_kaznu') . '</li>';
     }
 
+    $rankstats = '<ul class="kzn-dash-rank-stats">'
+        . '<li><span>' . get_string('dash_level_current', 'local_kaznu') . '</span>'
+        . '<strong>Lv ' . $level . ' · ' . s($xpprog['title']) . '</strong></li>'
+        . '<li><span>' . get_string('dash_level_total', 'local_kaznu') . '</span>'
+        . '<strong>' . $maxlevel . '</strong></li>'
+        . '<li><span>' . get_string('dash_level_to_next', 'local_kaznu') . '</span>'
+        . '<strong>' . ($level >= $maxlevel ? get_string('dash_level_max', 'local_kaznu') : $tonext . ' XP') . '</strong></li>'
+        . '</ul>';
+
     return '<div class="local-kaznu-dash" data-kaznu-dash="1">'
         . '<div class="kzn-dash-hero">'
         . '<p class="kzn-dash-hello">' . get_string('dash_hello', 'local_kaznu', s($firstname)) . '</p>'
@@ -614,11 +738,25 @@ function local_kaznu_render_dashboard_arena(stdClass $user): string {
         . '<div class="kzn-dash-xp">'
         . '<div class="kzn-dash-xp-meta">'
         . '<strong>' . get_string('dash_rank', 'local_kaznu') . ': ' . s($xpprog['title']) . '</strong>'
-        . '<span>Lv ' . (int) $xp->level . ' · ' . (int) $xp->xp . ' XP</span>'
+        . '<span>Lv ' . $level . ' · ' . (int) $xp->xp . ' XP</span>'
         . '</div>'
         . '<div class="kzn-arena-bar"><span style="width:' . (int) $xpprog['pct'] . '%"></span></div>'
-        . '<em>' . get_string('xp_to_next', 'local_kaznu', LOCAL_KAZNU_XP_PER_LEVEL - $xpprog['into']) . '</em>'
+        . '<em>' . get_string('xp_to_next', 'local_kaznu', $tonext) . '</em>'
         . '</div>'
+        . $rankstats
+        . '<div class="kzn-dash-achievements">'
+        . '<h3>' . get_string('dash_achievements', 'local_kaznu') . '</h3>'
+        . '<div class="kzn-dash-badges">' . $badgehtml . '</div>'
+        . '</div>'
+        . '<details class="kzn-dash-ranks-info">'
+        . '<summary>' . get_string('dash_ranks_info', 'local_kaznu') . '</summary>'
+        . '<ul class="kzn-xp-rules">'
+        . '<li>' . get_string('xp_rule_quiz', 'local_kaznu', LOCAL_KAZNU_XP_QUIZ_PASS) . '</li>'
+        . '<li>' . get_string('xp_rule_perfect', 'local_kaznu', LOCAL_KAZNU_XP_QUIZ_PERFECT) . '</li>'
+        . '<li>' . get_string('xp_rule_enrol', 'local_kaznu', LOCAL_KAZNU_XP_ENROL) . '</li>'
+        . '<li>' . get_string('xp_rule_level', 'local_kaznu', LOCAL_KAZNU_XP_PER_LEVEL) . '</li>'
+        . '</ul>'
+        . '</details>'
         . '<div class="kzn-arena-actions">'
         . '<a class="kzn-arena-cta" href="' . $catalog->out(false) . '">' . get_string('dash_catalog', 'local_kaznu') . '</a>'
         . '</div>'
@@ -636,4 +774,46 @@ function local_kaznu_render_dashboard_arena(stdClass $user): string {
         . '</div>';
 }
 
+/**
+ * Prev / next strip + optional next-module CTA after quiz.
+ */
+function local_kaznu_render_lesson_nav(stdClass $course, int $cmid, int $userid, bool $afternext = false): string {
+    $n = local_kaznu_activity_neighbours($course, $cmid, $userid);
+    $html = '<nav class="local-kaznu-lesson-nav" data-kaznu-nav="1" aria-label="' . get_string('lesson_nav', 'local_kaznu') . '">';
+    if ($n['prev']) {
+        $html .= '<a class="kzn-lesson-prev" href="' . $n['prev']->url->out(false) . '">'
+            . get_string('lesson_prev', 'local_kaznu') . '</a>';
+    } else {
+        $html .= '<span class="kzn-lesson-prev is-disabled">' . get_string('lesson_prev', 'local_kaznu') . '</span>';
+    }
+    if ($n['index'] >= 0) {
+        $html .= '<span class="kzn-lesson-pos">' . ($n['index'] + 1) . ' / ' . $n['total'] . '</span>';
+    }
+    if ($n['next']) {
+        $nextlabel = $afternext
+            ? get_string('lesson_next_module', 'local_kaznu')
+            : get_string('lesson_next', 'local_kaznu');
+        $html .= '<a class="kzn-lesson-next" href="' . $n['next']->url->out(false) . '">' . $nextlabel . '</a>';
+    } else {
+        $html .= '<span class="kzn-lesson-next is-disabled">' . get_string('lesson_next', 'local_kaznu') . '</span>';
+    }
+    $html .= '</nav>';
+    return $html;
+}
 
+/**
+ * Extract YouTube embed HTML from a URL activity externalurl.
+ */
+function local_kaznu_youtube_embed_from_url(string $url): string {
+    $id = '';
+    if (preg_match('~(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/)([a-zA-Z0-9_-]{6,})~', $url, $m)) {
+        $id = $m[1];
+    }
+    if ($id === '') {
+        return '';
+    }
+    $src = 'https://www.youtube.com/embed/' . rawurlencode($id);
+    return '<div class="local-kaznu-yt" data-kaznu-yt="1">'
+        . '<iframe src="' . s($src) . '" title="YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>'
+        . '</div>';
+}

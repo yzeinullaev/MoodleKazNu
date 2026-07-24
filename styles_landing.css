@@ -11,7 +11,7 @@
     --kzn-line: rgba(32, 38, 44, 0.12);
     --kzn-white: #ffffff;
     --kzn-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
-    --kzn-sans: "Source Sans 3", "Aktiv Grotesk", "Helvetica Neue", sans-serif;
+    --kzn-sans: "Manrope", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
 *,
@@ -630,6 +630,25 @@ body.local-kaznu-landing-body .navbar {
     padding-left: 1.1rem;
     line-height: 1.7;
     color: var(--kzn-muted);
+}
+
+.kzn-ranks-details {
+    margin-top: 0.75rem;
+}
+
+.kzn-ranks-details summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--kzn-charcoal);
+    list-style: none;
+}
+
+.kzn-ranks-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.kzn-ranks-details .kzn-xp-rules {
+    margin-top: 0.75rem;
 }
 
 .kzn-leaderboard {

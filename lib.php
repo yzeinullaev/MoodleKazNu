@@ -146,9 +146,13 @@ function local_kaznu_before_standard_head_html() {
         return;
     }
 
+    $favicon = $CFG->wwwroot . '/local/kaznu/pix/favicon.svg';
+    echo '<link rel="icon" href="' . s($favicon) . '" type="image/svg+xml">' . "\n";
+
     echo '<link rel="preconnect" href="https://fonts.googleapis.com">' . "\n";
     echo '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>' . "\n";
-    echo '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">' . "\n";
+    // Manrope — readable Cyrillic; Cormorant for display headings.
+    echo '<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">' . "\n";
 
     $rev = get_config('local_kaznu', 'version') ?: '2026072207';
     $href = $CFG->wwwroot . '/local/kaznu/styles.css?rev=' . $rev;
@@ -183,7 +187,8 @@ function local_kaznu_before_footer() {
             : get_string('xp_gained', 'local_kaznu', $c['gained']);
         echo '<div class="local-kaznu-celebrate" role="status">'
             . '<div class="lvl">' . s($title) . '</div>'
-            . '<div class="xp">+' . (int) $c['gained'] . ' XP · Lv ' . (int) $c['level'] . '</div>'
+            . '<div class="xp">+' . (int) $c['gained'] . ' XP · Lv ' . (int) $c['level']
+            . ' · ' . s($c['title']) . '</div>'
             . '</div>';
     }
 
@@ -223,6 +228,33 @@ function local_kaznu_before_footer() {
                 . '<span>Lv ' . (int) $xp->level . ' · ' . (int) $xp->xp . ' XP</span>'
                 . '</div>';
             echo '<script>(function(){var s=document.querySelector("[data-kaznu-strip]");var m=document.getElementById("region-main");if(s&&m){m.insertBefore(s,m.firstChild);}})();</script>';
+
+            $cmid = 0;
+            if (!empty($PAGE->cm) && !empty($PAGE->cm->id)) {
+                $cmid = (int) $PAGE->cm->id;
+            } else if ($PAGE->context && $PAGE->context->contextlevel == CONTEXT_MODULE) {
+                $cmid = (int) $PAGE->context->instanceid;
+            }
+            if ($cmid > 0) {
+                $afternext = (strpos($pagetype, 'mod-quiz-review') === 0
+                    || strpos($pagetype, 'mod-quiz-summary') === 0
+                    || strpos($pagetype, 'mod-quiz-view') === 0);
+                echo local_kaznu_render_lesson_nav($COURSE, $cmid, (int) $USER->id, $afternext);
+                echo '<script>(function(){var n=document.querySelector("[data-kaznu-nav]");var m=document.getElementById("region-main");if(n&&m){m.appendChild(n);}})();</script>';
+
+                // Embed YouTube for URL activities.
+                if (strpos($pagetype, 'mod-url-view') === 0 && !empty($PAGE->cm)) {
+                    global $DB;
+                    $urlrec = $DB->get_record('url', ['id' => $PAGE->cm->instance], 'externalurl');
+                    if ($urlrec && !empty($urlrec->externalurl)) {
+                        $embed = local_kaznu_youtube_embed_from_url($urlrec->externalurl);
+                        if ($embed !== '') {
+                            echo $embed;
+                            echo '<script>(function(){var y=document.querySelector("[data-kaznu-yt]");var m=document.getElementById("region-main");if(y&&m){m.insertBefore(y,m.children[1]||null);}})();</script>';
+                        }
+                    }
+                }
+            }
         }
     }
 

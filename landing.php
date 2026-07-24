@@ -49,17 +49,19 @@ $cssurl = new moodle_url('/local/kaznu/styles_landing.css', [
 /**
  * Render one course tile.
  */
-$render_tile = function (stdClass $c, bool $enrolled = false) use ($payurl, $loggedin): string {
+$render_tile = function (stdClass $c, bool $enrolled = false) use ($payurl, $loggedin, $USER): string {
     $hub = new moodle_url('/local/kaznu/course.php', ['id' => $c->id]);
     $accent = local_kaznu_course_accent($c);
     $ispaid = ($c->shortname === LOCAL_KAZNU_COURSE_SHORTNAME);
     $href = $hub->out(false);
-    if ($ispaid && !$enrolled) {
+    $cta = $ispaid ? get_string('landing_cta_enrol', 'local_kaznu') : get_string('landing_cta_open', 'local_kaznu');
+    if ($enrolled && $loggedin) {
+        $href = local_kaznu_resume_url($c, (int) $USER->id)->out(false);
+        $cta = local_kaznu_resume_label($c, (int) $USER->id);
+    } else if ($ispaid && !$enrolled) {
         $href = $payurl->out(false);
+        $cta = get_string('landing_cta_enrol', 'local_kaznu');
     }
-    $cta = $enrolled
-        ? get_string('landing_cta_continue', 'local_kaznu')
-        : ($ispaid ? get_string('landing_cta_enrol', 'local_kaznu') : get_string('landing_cta_open', 'local_kaznu'));
     $name = format_string($c->fullname);
     $short = s($c->shortname);
     return '<a class="kzn-tile kzn-accent-' . $accent . ($enrolled ? ' is-enrolled' : '') . '" href="' . $href . '">'
@@ -79,7 +81,8 @@ echo $OUTPUT->doctype();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="<?php echo (new moodle_url('/local/kaznu/pix/favicon.svg'))->out(false); ?>" type="image/svg+xml">
     <link rel="stylesheet" href="<?php echo $cssurl->out(false); ?>">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 </head>
@@ -152,13 +155,16 @@ echo $OUTPUT->doctype();
             <?php
             $fenrolled = $loggedin && local_kaznu_user_enrolled_in((int) ($USER->id ?? 0), (int) $featured->id);
             $fhref = $fenrolled
-                ? (new moodle_url('/local/kaznu/course.php', ['id' => $featured->id]))->out(false)
+                ? local_kaznu_resume_url($featured, (int) $USER->id)->out(false)
                 : $payurl->out(false);
+            $flabel = $fenrolled
+                ? local_kaznu_resume_label($featured, (int) $USER->id)
+                : get_string('landing_cta_enrol', 'local_kaznu');
             ?>
             <a class="kzn-hero-feature" href="<?php echo $fhref; ?>">
                 <span class="kzn-hero-feature-label"><?php echo get_string('landing_featured', 'local_kaznu'); ?></span>
                 <strong><?php echo format_string($featured->fullname); ?></strong>
-                <em><?php echo $fenrolled ? get_string('landing_cta_continue', 'local_kaznu') : get_string('landing_cta_enrol', 'local_kaznu'); ?> →</em>
+                <em><?php echo $flabel; ?> →</em>
             </a>
         <?php endif; ?>
     </section>
@@ -282,12 +288,15 @@ echo $OUTPUT->doctype();
             <div>
                 <h2><?php echo get_string('landing_ranks_title', 'local_kaznu'); ?></h2>
                 <p class="kzn-section-lead"><?php echo get_string('landing_ranks_lead', 'local_kaznu'); ?></p>
-                <ul class="kzn-xp-rules">
-                    <li><?php echo get_string('xp_rule_quiz', 'local_kaznu', LOCAL_KAZNU_XP_QUIZ_PASS); ?></li>
-                    <li><?php echo get_string('xp_rule_perfect', 'local_kaznu', LOCAL_KAZNU_XP_QUIZ_PERFECT); ?></li>
-                    <li><?php echo get_string('xp_rule_enrol', 'local_kaznu', LOCAL_KAZNU_XP_ENROL); ?></li>
-                    <li><?php echo get_string('xp_rule_level', 'local_kaznu', LOCAL_KAZNU_XP_PER_LEVEL); ?></li>
-                </ul>
+                <details class="kzn-ranks-details">
+                    <summary><?php echo get_string('dash_ranks_info', 'local_kaznu'); ?></summary>
+                    <ul class="kzn-xp-rules">
+                        <li><?php echo get_string('xp_rule_quiz', 'local_kaznu', LOCAL_KAZNU_XP_QUIZ_PASS); ?></li>
+                        <li><?php echo get_string('xp_rule_perfect', 'local_kaznu', LOCAL_KAZNU_XP_QUIZ_PERFECT); ?></li>
+                        <li><?php echo get_string('xp_rule_enrol', 'local_kaznu', LOCAL_KAZNU_XP_ENROL); ?></li>
+                        <li><?php echo get_string('xp_rule_level', 'local_kaznu', LOCAL_KAZNU_XP_PER_LEVEL); ?></li>
+                    </ul>
+                </details>
             </div>
             <aside class="kzn-leaderboard" aria-label="<?php echo get_string('landing_leaderboard', 'local_kaznu'); ?>">
                 <h3><?php echo get_string('landing_leaderboard', 'local_kaznu'); ?></h3>

@@ -9,8 +9,8 @@
     --kaznu-primary: #20262C;
     --kaznu-accent: #F06543;
     --kaznu-light: #FFFBF7;
-    --kaznu-serif: "Cormorant Garamond", Georgia, serif;
-    --kaznu-sans: "Source Sans 3", "Aktiv Grotesk", "Helvetica Neue", sans-serif;
+    --kaznu-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+    --kaznu-sans: "Manrope", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
 
 body.path-local-kaznu,
@@ -506,6 +506,171 @@ body.path-course a:not(.btn):not(.nav-link):not(.dropdown-item):focus-visible {
     color: var(--kaznu-bronze-soft);
     font-weight: 600;
     white-space: nowrap;
+}
+
+/* Prev / next lesson nav */
+.local-kaznu-lesson-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.75rem 0 0.5rem;
+    padding: 1rem 0;
+    border-top: 1px solid rgba(32, 38, 44, 0.12);
+    font-family: var(--kaznu-sans);
+}
+
+.local-kaznu-lesson-nav a {
+    color: var(--kaznu-charcoal) !important;
+    font-weight: 600;
+    text-decoration: none !important;
+    padding: 0.55rem 1rem;
+    border: 1px solid rgba(32, 38, 44, 0.2);
+    background: #fff;
+}
+
+.local-kaznu-lesson-nav a:hover {
+    border-color: var(--kaznu-coral);
+    color: var(--kaznu-coral) !important;
+}
+
+.local-kaznu-lesson-nav a.kzn-lesson-next {
+    background: var(--kaznu-coral);
+    border-color: var(--kaznu-coral);
+    color: var(--kaznu-cream) !important;
+}
+
+.local-kaznu-lesson-nav .is-disabled {
+    opacity: 0.35;
+    pointer-events: none;
+    padding: 0.55rem 1rem;
+}
+
+.kzn-lesson-pos {
+    font-size: 0.85rem;
+    color: var(--kaznu-bronze);
+    font-weight: 600;
+}
+
+.local-kaznu-yt {
+    position: relative;
+    width: 100%;
+    margin: 0 0 1.25rem;
+    padding-top: 56.25%;
+    background: #111;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.local-kaznu-yt iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+.kzn-arena-cta-hint {
+    display: block;
+    width: 100%;
+    margin: 0.35rem 0 0.5rem;
+    font-size: 0.82rem;
+    color: rgba(255, 251, 247, 0.7);
+}
+
+.kzn-dash-rank-stats {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+    max-width: 520px;
+}
+
+.kzn-dash-rank-stats li {
+    background: rgba(255, 251, 247, 0.08);
+    padding: 0.65rem 0.75rem;
+    border-radius: 2px;
+}
+
+.kzn-dash-rank-stats span {
+    display: block;
+    font-size: 0.72rem;
+    opacity: 0.7;
+    margin-bottom: 0.2rem;
+}
+
+.kzn-dash-rank-stats strong {
+    font-size: 0.92rem;
+}
+
+.kzn-dash-achievements {
+    margin: 0 0 1rem;
+    max-width: 520px;
+}
+
+.kzn-dash-achievements h3 {
+    font-family: var(--kaznu-serif);
+    font-size: 1.05rem;
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+}
+
+.kzn-dash-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.kzn-dash-badge {
+    display: inline-block;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: rgba(240, 101, 67, 0.2);
+    color: var(--kaznu-cream);
+    border: 1px solid rgba(240, 101, 67, 0.45);
+}
+
+.kzn-dash-badge.is-empty {
+    background: transparent;
+    border-style: dashed;
+    opacity: 0.7;
+    font-weight: 500;
+}
+
+.kzn-dash-ranks-info {
+    margin: 0 0 1.1rem;
+    max-width: 420px;
+    font-size: 0.9rem;
+}
+
+.kzn-dash-ranks-info summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--kaznu-bronze-soft);
+    list-style: none;
+}
+
+.kzn-dash-ranks-info summary::-webkit-details-marker {
+    display: none;
+}
+
+.kzn-dash-ranks-info .kzn-xp-rules {
+    margin: 0.65rem 0 0;
+    padding-left: 1.1rem;
+    opacity: 0.85;
+    line-height: 1.55;
+}
+
+@media (max-width: 720px) {
+    .kzn-dash-rank-stats {
+        grid-template-columns: 1fr;
+    }
+    .local-kaznu-lesson-nav {
+        flex-wrap: wrap;
+    }
 }
 
 /* Sticky XP HUD */

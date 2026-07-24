@@ -65,10 +65,10 @@ $cssurl = new moodle_url('/local/kaznu/styles_landing.css', [
 $accent = local_kaznu_course_accent($course);
 
 $primary = $enrolled
-    ? $moodlecourse
+    ? local_kaznu_resume_url($course, (int) $USER->id)
     : ($ispaid ? $payurl : $loginurl);
 $primarylabel = $enrolled
-    ? get_string('landing_cta_continue', 'local_kaznu')
+    ? local_kaznu_resume_label($course, (int) $USER->id)
     : ($ispaid ? get_string('landing_cta_enrol', 'local_kaznu') : get_string('login'));
 
 echo $OUTPUT->doctype();
@@ -79,7 +79,8 @@ echo $OUTPUT->doctype();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="<?php echo (new moodle_url('/local/kaznu/pix/favicon.svg'))->out(false); ?>" type="image/svg+xml">
     <link rel="stylesheet" href="<?php echo $cssurl->out(false); ?>">
 </head>
 <body class="local-kaznu-landing-body">
@@ -105,7 +106,6 @@ echo $OUTPUT->doctype();
         <div class="kzn-wrap kzn-hub-hero-inner">
             <p class="kzn-eyebrow"><?php echo s($course->shortname); ?></p>
             <h1><?php echo format_string($course->fullname); ?></h1>
-            <p class="kzn-lead"><?php echo get_string('hub_lead', 'local_kaznu'); ?></p>
             <div class="kzn-hero-actions">
                 <a class="kzn-btn kzn-btn-accent" href="<?php echo $primary->out(false); ?>"><?php echo $primarylabel; ?></a>
                 <a class="kzn-btn kzn-btn-ghost" href="#syllabus"><?php echo get_string('hub_syllabus', 'local_kaznu'); ?></a>
@@ -125,7 +125,6 @@ echo $OUTPUT->doctype();
     <section class="kzn-section" id="syllabus">
         <div class="kzn-wrap">
             <h2><?php echo get_string('hub_syllabus', 'local_kaznu'); ?></h2>
-            <p class="kzn-section-lead"><?php echo get_string('hub_syllabus_lead', 'local_kaznu'); ?></p>
             <ol class="kzn-syllabus">
                 <?php foreach ($sections as $sec): ?>
                     <li class="<?php echo $sec->available ? '' : 'is-locked'; ?>">
