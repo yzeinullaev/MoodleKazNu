@@ -261,13 +261,32 @@ function local_kaznu_before_footer() {
     if (local_kaznu_should_debrand()) {
         $brand = get_string('landing_brand', 'local_kaznu');
         $slogan = get_string('landing_slogan', 'local_kaznu');
+        $langdd = local_kaznu_render_lang_dropdown();
+        echo $langdd;
         echo '<script>(function(){'
-            . 'document.body.classList.add("local-kaznu-debrand");'
+            . 'document.body.classList.add("local-kaznu-debrand","local-kaznu-hide-temp");'
             . 'var b=document.querySelector(".navbar-brand");'
             . 'if(b){b.innerHTML=' . json_encode('<span class="kzn-nav-brand"><strong>' . $brand . '</strong><em>' . $slogan . '</em></span>') . ';'
             . 'b.href=' . json_encode((new moodle_url('/local/kaznu/landing.php'))->out(false)) . ';}'
             . 'document.title=document.title.replace(/Moodle LMS?/gi,' . json_encode($brand) . ');'
+            // Move language dropdown into navbar.
+            . 'var dd=document.querySelector("[data-kaznu-lang]");'
+            . 'var nav=document.querySelector(".primary-navigation .nav, .navbar-nav, .usermenu");'
+            . 'if(dd&&nav&&nav.parentNode){nav.parentNode.insertBefore(dd,nav);}'
+            // Hide temporary Moodle clutter on student dashboard.
+            . 'document.querySelectorAll(".block_timeline,.block_calendar_month,.block_calendar_upcoming,'
+            . '.block_recentlyaccessedcourses,.block_recentlyaccesseditems,.block_myoverview .btn-group,'
+            . '.activity-navigation").forEach(function(el){el.classList.add("kzn-temp-hidden");});'
             . '})();</script>';
+        echo '<script>(function(){'
+            . 'document.querySelectorAll("[data-kaznu-lang]").forEach(function(root){'
+            . 'var btn=root.querySelector(".kzn-lang-btn");var menu=root.querySelector(".kzn-lang-menu");'
+            . 'if(!btn||!menu)return;'
+            . 'btn.addEventListener("click",function(e){e.stopPropagation();'
+            . 'var open=btn.getAttribute("aria-expanded")==="true";'
+            . 'btn.setAttribute("aria-expanded",open?"false":"true");menu.hidden=open;});'
+            . 'document.addEventListener("click",function(){btn.setAttribute("aria-expanded","false");menu.hidden=true;});'
+            . '});})();</script>';
     }
 }
 

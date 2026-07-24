@@ -670,6 +670,131 @@ function local_kaznu_get_user_courses(int $userid): array {
 }
 
 /**
+ * Language dropdown HTML (adway-style).
+ */
+function local_kaznu_render_lang_dropdown(?moodle_url $baseurl = null): string {
+    global $CFG, $PAGE;
+
+    $current = current_language();
+    $langs = [
+        'kk' => 'Қаз',
+        'ru' => 'Рус',
+        'en' => 'Eng',
+        'zh_cn' => '中文',
+    ];
+    $currentlabel = $langs[$current] ?? strtoupper($current);
+
+    if ($baseurl === null) {
+        $baseurl = $PAGE->url ?: new moodle_url('/local/kaznu/landing.php');
+    }
+
+    $items = '';
+    foreach ($langs as $code => $label) {
+        $url = new moodle_url($baseurl, ['lang' => $code]);
+        $active = ($code === $current) ? ' is-active' : '';
+        $items .= '<a class="kzn-lang-item' . $active . '" href="' . $url->out(false) . '" lang="' . s($code) . '">'
+            . s($label) . '</a>';
+    }
+
+    return '<div class="kzn-lang-dd" data-kaznu-lang>'
+        . '<button type="button" class="kzn-lang-btn" aria-haspopup="listbox" aria-expanded="false">'
+        . '<span>' . s($currentlabel) . '</span>'
+        . '<svg width="10" height="6" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.4" fill="none"/></svg>'
+        . '</button>'
+        . '<div class="kzn-lang-menu" hidden role="listbox">' . $items . '</div>'
+        . '</div>';
+}
+
+/**
+ * Mock calendar events for demo tab.
+ *
+ * @return array<int,object>
+ */
+function local_kaznu_mock_calendar_events(): array {
+    $now = time();
+    return [
+        (object) [
+            'date' => userdate($now + DAYSECS * 2, '%d.%m.%Y'),
+            'title' => get_string('dash_cal_mock1', 'local_kaznu'),
+            'meta' => get_string('dash_cal_webinar', 'local_kaznu'),
+        ],
+        (object) [
+            'date' => userdate($now + DAYSECS * 5, '%d.%m.%Y'),
+            'title' => get_string('dash_cal_mock2', 'local_kaznu'),
+            'meta' => get_string('dash_cal_deadline', 'local_kaznu'),
+        ],
+        (object) [
+            'date' => userdate($now + DAYSECS * 12, '%d.%m.%Y'),
+            'title' => get_string('dash_cal_mock3', 'local_kaznu'),
+            'meta' => get_string('dash_cal_exam', 'local_kaznu'),
+        ],
+    ];
+}
+
+/**
+ * Grade rows for dashboard tab (real if any, else mock).
+ *
+ * @return array<int,object>
+ */
+function local_kaznu_dashboard_grades(int $userid): array {
+    global $CFG;
+    require_once($CFG->libdir . '/gradelib.php');
+
+    $rows = [];
+    foreach (local_kaznu_get_user_courses($userid) as $course) {
+        $gis = grade_item::fetch_all(['courseid' => $course->id, 'itemtype' => 'mod']);
+        if (!$gis) {
+            continue;
+        }
+        foreach ($gis as $gi) {
+            $grade = new grade_grade(['itemid' => $gi->id, 'userid' => $userid]);
+            if ($grade->finalgrade === null) {
+                continue;
+            }
+            $pct = $gi->grademax > 0 ? round(((float) $grade->finalgrade / (float) $gi->grademax) * 100) : 0;
+            $rows[] = (object) [
+                'course' => format_string($course->fullname),
+                'item' => $gi->get_name(),
+                'grade' => $pct . '%',
+                'status' => $pct >= 60
+                    ? get_string('dash_grade_pass', 'local_kaznu')
+                    : get_string('dash_grade_fail', 'local_kaznu'),
+                'pass' => $pct >= 60,
+            ];
+        }
+    }
+
+    if ($rows) {
+        return array_slice($rows, 0, 12);
+    }
+
+    // Mock while gradebook is empty.
+    return [
+        (object) [
+            'course' => 'Farabi Summer School 2026',
+            'item' => get_string('dash_grade_mock1', 'local_kaznu'),
+            'grade' => '80%',
+            'status' => get_string('dash_grade_pass', 'local_kaznu'),
+            'pass' => true,
+        ],
+        (object) [
+            'course' => 'Farabi Summer School 2026',
+            'item' => get_string('dash_grade_mock2', 'local_kaznu'),
+            'grade' => '—',
+            'status' => get_string('dash_grade_pending', 'local_kaznu'),
+            'pass' => false,
+        ],
+        (object) [
+            'course' => 'EMBA Corporate Finance',
+            'item' => get_string('dash_grade_mock3', 'local_kaznu'),
+            'grade' => '65%',
+            'status' => get_string('dash_grade_pass', 'local_kaznu'),
+            'pass' => true,
+        ],
+    ];
+}
+
+/**
  * Gamified dashboard banner for student pages.
  */
 function local_kaznu_render_dashboard_arena(stdClass $user): string {
@@ -677,7 +802,6 @@ function local_kaznu_render_dashboard_arena(stdClass $user): string {
     $xpprog = local_kaznu_xp_progress($xp);
     $courses = local_kaznu_get_user_courses((int) $user->id);
     $catalog = new moodle_url('/local/kaznu/landing.php');
-    $board = local_kaznu_leaderboard(5);
     $tonext = LOCAL_KAZNU_XP_PER_LEVEL - $xpprog['into'];
     $level = (int) $xp->level;
     $maxlevel = LOCAL_KAZNU_MAX_LEVEL;
@@ -712,13 +836,23 @@ function local_kaznu_render_dashboard_arena(stdClass $user): string {
         $tiles = '<p class="kzn-dash-empty">' . get_string('dash_empty', 'local_kaznu') . '</p>';
     }
 
-    $lb = '';
-    foreach ($board as $i => $row) {
-        $lb .= '<li><span>' . ($i + 1) . '</span><span>' . fullname($row) . '</span>'
-            . '<span>' . (int) $row->xp . ' XP</span></li>';
+    $calevents = '';
+    foreach (local_kaznu_mock_calendar_events() as $ev) {
+        $calevents .= '<li class="kzn-cal-item">'
+            . '<time>' . s($ev->date) . '</time>'
+            . '<div><strong>' . s($ev->title) . '</strong><span>' . s($ev->meta) . '</span></div>'
+            . '</li>';
     }
-    if ($lb === '') {
-        $lb = '<li class="kzn-dash-empty-li">' . get_string('landing_leaderboard_empty', 'local_kaznu') . '</li>';
+
+    $graderows = '';
+    foreach (local_kaznu_dashboard_grades((int) $user->id) as $g) {
+        $tone = !empty($g->pass) ? 'is-pass' : 'is-pending';
+        $graderows .= '<tr class="' . $tone . '">'
+            . '<td>' . s($g->course) . '</td>'
+            . '<td>' . s($g->item) . '</td>'
+            . '<td>' . s($g->grade) . '</td>'
+            . '<td>' . s($g->status) . '</td>'
+            . '</tr>';
     }
 
     $rankstats = '<ul class="kzn-dash-rank-stats">'
@@ -729,6 +863,44 @@ function local_kaznu_render_dashboard_arena(stdClass $user): string {
         . '<li><span>' . get_string('dash_level_to_next', 'local_kaznu') . '</span>'
         . '<strong>' . ($level >= $maxlevel ? get_string('dash_level_max', 'local_kaznu') : $tonext . ' XP') . '</strong></li>'
         . '</ul>';
+
+    $tabs = '<div class="kzn-dash-tabs" data-kaznu-tabs>'
+        . '<div class="kzn-dash-tablist" role="tablist">'
+        . '<button type="button" role="tab" aria-selected="true" data-tab="courses">' . get_string('dash_tab_courses', 'local_kaznu') . '</button>'
+        . '<button type="button" role="tab" aria-selected="false" data-tab="calendar">' . get_string('dash_tab_calendar', 'local_kaznu') . '</button>'
+        . '<button type="button" role="tab" aria-selected="false" data-tab="grades">' . get_string('dash_tab_grades', 'local_kaznu') . '</button>'
+        . '</div>'
+        . '<div class="kzn-dash-tabpanel is-active" data-panel="courses" role="tabpanel">'
+        . '<h2>' . get_string('dash_courses', 'local_kaznu') . '</h2>'
+        . '<div class="kzn-dash-tiles">' . $tiles . '</div>'
+        . '</div>'
+        . '<div class="kzn-dash-tabpanel" data-panel="calendar" role="tabpanel" hidden>'
+        . '<h2>' . get_string('dash_tab_calendar', 'local_kaznu') . '</h2>'
+        . '<p class="kzn-dash-tab-lead">' . get_string('dash_cal_lead', 'local_kaznu') . '</p>'
+        . '<ul class="kzn-cal-list">' . $calevents . '</ul>'
+        . '</div>'
+        . '<div class="kzn-dash-tabpanel" data-panel="grades" role="tabpanel" hidden>'
+        . '<h2>' . get_string('dash_tab_grades', 'local_kaznu') . '</h2>'
+        . '<p class="kzn-dash-tab-lead">' . get_string('dash_grades_lead', 'local_kaznu') . '</p>'
+        . '<div class="kzn-grades-wrap"><table class="kzn-grades-table">'
+        . '<thead><tr>'
+        . '<th>' . get_string('dash_grade_course', 'local_kaznu') . '</th>'
+        . '<th>' . get_string('dash_grade_item', 'local_kaznu') . '</th>'
+        . '<th>' . get_string('dash_grade_score', 'local_kaznu') . '</th>'
+        . '<th>' . get_string('dash_grade_status', 'local_kaznu') . '</th>'
+        . '</tr></thead><tbody>' . $graderows . '</tbody></table></div>'
+        . '</div>'
+        . '</div>';
+
+    $tabscript = '<script>(function(){var root=document.querySelector("[data-kaznu-tabs]");if(!root)return;'
+        . 'var btns=root.querySelectorAll("[data-tab]");var panels=root.querySelectorAll("[data-panel]");'
+        . 'btns.forEach(function(b){b.addEventListener("click",function(){'
+        . 'btns.forEach(function(x){x.setAttribute("aria-selected","false");});'
+        . 'panels.forEach(function(p){p.hidden=true;p.classList.remove("is-active");});'
+        . 'b.setAttribute("aria-selected","true");'
+        . 'var p=root.querySelector("[data-panel=\\""+b.getAttribute("data-tab")+"\\"]");'
+        . 'if(p){p.hidden=false;p.classList.add("is-active");}'
+        . '});});})();</script>';
 
     return '<div class="local-kaznu-dash" data-kaznu-dash="1">'
         . '<div class="kzn-dash-hero">'
@@ -761,16 +933,8 @@ function local_kaznu_render_dashboard_arena(stdClass $user): string {
         . '<a class="kzn-arena-cta" href="' . $catalog->out(false) . '">' . get_string('dash_catalog', 'local_kaznu') . '</a>'
         . '</div>'
         . '</div>'
-        . '<div class="kzn-dash-grid">'
-        . '<section class="kzn-dash-panel">'
-        . '<h2>' . get_string('dash_courses', 'local_kaznu') . '</h2>'
-        . '<div class="kzn-dash-tiles">' . $tiles . '</div>'
-        . '</section>'
-        . '<aside class="kzn-dash-panel kzn-dash-lb">'
-        . '<h2>' . get_string('landing_leaderboard', 'local_kaznu') . '</h2>'
-        . '<ol>' . $lb . '</ol>'
-        . '</aside>'
-        . '</div>'
+        . $tabs
+        . $tabscript
         . '</div>';
 }
 

@@ -107,12 +107,7 @@ echo $OUTPUT->doctype();
             <a href="#about"><?php echo get_string('landing_nav_program', 'local_kaznu'); ?></a>
             <a href="#courses"><?php echo get_string('landing_nav_courses', 'local_kaznu'); ?></a>
             <a href="#ranks"><?php echo get_string('landing_nav_ranks', 'local_kaznu'); ?></a>
-            <span class="kzn-lang-switch" aria-label="Language">
-                <a href="<?php echo (new moodle_url($landingurl, ['lang' => 'kk']))->out(false); ?>">Қаз</a>
-                <a href="<?php echo (new moodle_url($landingurl, ['lang' => 'ru']))->out(false); ?>">Рус</a>
-                <a href="<?php echo (new moodle_url($landingurl, ['lang' => 'en']))->out(false); ?>">Eng</a>
-                <a href="<?php echo (new moodle_url($landingurl, ['lang' => 'zh_cn']))->out(false); ?>">中文</a>
-            </span>
+            <?php echo local_kaznu_render_lang_dropdown($landingurl); ?>
             <?php if ($loggedin): ?>
                 <?php if ($xp): ?>
                     <span class="kzn-nav-xp" title="<?php echo s($xpprogress['title']); ?>">
@@ -301,15 +296,18 @@ echo $OUTPUT->doctype();
             <aside class="kzn-leaderboard" aria-label="<?php echo get_string('landing_leaderboard', 'local_kaznu'); ?>">
                 <h3><?php echo get_string('landing_leaderboard', 'local_kaznu'); ?></h3>
                 <?php if ($board): ?>
-                    <ol>
-                        <?php foreach ($board as $i => $row): ?>
-                            <li>
-                                <span class="kzn-lb-rank"><?php echo $i + 1; ?></span>
-                                <span class="kzn-lb-name"><?php echo fullname($row); ?></span>
-                                <span class="kzn-lb-xp"><?php echo (int) $row->xp; ?> XP · Lv <?php echo (int) $row->level; ?></span>
-                            </li>
-                        <?php endforeach; ?>
-                    </ol>
+                    <details class="kzn-lb-details">
+                        <summary><?php echo get_string('landing_leaderboard', 'local_kaznu'); ?></summary>
+                        <ol>
+                            <?php foreach ($board as $i => $row): ?>
+                                <li>
+                                    <span class="kzn-lb-rank"><?php echo $i + 1; ?></span>
+                                    <span class="kzn-lb-name"><?php echo fullname($row); ?></span>
+                                    <span class="kzn-lb-xp"><?php echo (int) $row->xp; ?> XP · Lv <?php echo (int) $row->level; ?></span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ol>
+                    </details>
                 <?php else: ?>
                     <p class="kzn-muted"><?php echo get_string('landing_leaderboard_empty', 'local_kaznu'); ?></p>
                 <?php endif; ?>
@@ -333,5 +331,24 @@ echo $OUTPUT->doctype();
     </footer>
 </div>
 
+<script>
+(function () {
+    document.querySelectorAll('[data-kaznu-lang]').forEach(function (root) {
+        var btn = root.querySelector('.kzn-lang-btn');
+        var menu = root.querySelector('.kzn-lang-menu');
+        if (!btn || !menu) return;
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var open = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+            menu.hidden = open;
+        });
+        document.addEventListener('click', function () {
+            btn.setAttribute('aria-expanded', 'false');
+            menu.hidden = true;
+        });
+    });
+})();
+</script>
 </body>
 </html>

@@ -147,10 +147,7 @@ body.local-kaznu-landing-body .navbar {
 }
 
 .kzn-lang-switch {
-    display: inline-flex;
-    gap: 0.45rem;
-    font-size: 0.78rem;
-    opacity: 0.85;
+    display: none;
 }
 
 /* —— Hero —— */
@@ -649,6 +646,85 @@ body.local-kaznu-landing-body .navbar {
 
 .kzn-ranks-details .kzn-xp-rules {
     margin-top: 0.75rem;
+}
+
+.kzn-lb-details summary {
+    cursor: pointer;
+    font-family: var(--kzn-serif);
+    font-size: 1.35rem;
+    list-style: none;
+    color: var(--kzn-cream);
+}
+
+.kzn-lb-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.kzn-lb-details[open] summary {
+    margin-bottom: 0.75rem;
+}
+
+.kzn-lb-details ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+/* Language dropdown on landing */
+.kzn-lang-dd {
+    position: relative;
+    display: inline-block;
+    z-index: 50;
+}
+
+.kzn-lang-btn {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.7rem;
+    border: 1px solid rgba(255, 251, 247, 0.35);
+    background: transparent;
+    color: var(--kzn-cream);
+    font-family: var(--kzn-sans);
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.kzn-nav-solid .kzn-lang-btn {
+    border-color: rgba(32, 38, 44, 0.2);
+    color: var(--kzn-charcoal);
+}
+
+.kzn-lang-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    min-width: 7.5rem;
+    background: #fff;
+    border: 1px solid var(--kzn-line);
+    display: flex;
+    flex-direction: column;
+    padding: 0.25rem 0;
+}
+
+.kzn-lang-menu[hidden] {
+    display: none !important;
+}
+
+.kzn-lang-item {
+    padding: 0.45rem 0.85rem;
+    color: var(--kzn-charcoal) !important;
+    text-decoration: none !important;
+    font-size: 0.88rem;
+}
+
+.kzn-lang-item:hover,
+.kzn-lang-item.is-active {
+    background: rgba(240, 101, 67, 0.1);
+    color: var(--kzn-coral) !important;
 }
 
 .kzn-leaderboard {

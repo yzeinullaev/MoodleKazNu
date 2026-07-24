@@ -664,12 +664,207 @@ body.path-course a:not(.btn):not(.nav-link):not(.dropdown-item):focus-visible {
     line-height: 1.55;
 }
 
+/* Dashboard tabs */
+.kzn-dash-tabs {
+    margin-top: 0.5rem;
+    background: #fff;
+    border: 1px solid rgba(32, 38, 44, 0.08);
+    border-radius: 2px;
+    padding: 0.85rem 1rem 1.25rem;
+}
+
+.kzn-dash-tablist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(32, 38, 44, 0.1);
+    padding-bottom: 0.65rem;
+}
+
+.kzn-dash-tablist button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    font-family: var(--kaznu-sans);
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 0.45rem 0.85rem;
+    color: #6b645c;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.kzn-dash-tablist button[aria-selected="true"] {
+    color: var(--kaznu-charcoal);
+    border-bottom-color: var(--kaznu-coral);
+}
+
+.kzn-dash-tabpanel h2 {
+    font-family: var(--kaznu-serif);
+    font-size: 1.35rem;
+    margin: 0 0 0.5rem;
+    color: var(--kaznu-charcoal);
+}
+
+.kzn-dash-tab-lead {
+    margin: 0 0 1rem;
+    color: #5c564f;
+    font-size: 0.92rem;
+}
+
+.kzn-cal-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.kzn-cal-item {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 0.85rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid rgba(32, 38, 44, 0.08);
+}
+
+.kzn-cal-item time {
+    font-weight: 700;
+    color: var(--kaznu-coral);
+    font-size: 0.88rem;
+}
+
+.kzn-cal-item strong {
+    display: block;
+    color: var(--kaznu-charcoal);
+    margin-bottom: 0.15rem;
+}
+
+.kzn-cal-item span {
+    color: #6b645c;
+    font-size: 0.85rem;
+}
+
+/* Grades on dark panel — high contrast */
+.kzn-grades-wrap {
+    background: var(--kaznu-charcoal);
+    color: var(--kaznu-cream);
+    border-radius: 2px;
+    overflow: auto;
+}
+
+.kzn-grades-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.kzn-grades-table th,
+.kzn-grades-table td {
+    padding: 0.75rem 0.9rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 251, 247, 0.12);
+    color: rgba(255, 251, 247, 0.92);
+}
+
+.kzn-grades-table th {
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--kaznu-bronze-soft);
+    font-weight: 600;
+}
+
+.kzn-grades-table tr.is-pass td:last-child {
+    color: #7dcea0;
+    font-weight: 600;
+}
+
+.kzn-grades-table tr.is-pending td:last-child {
+    color: var(--kaznu-bronze-soft);
+}
+
+/* Language dropdown */
+.kzn-lang-dd {
+    position: relative;
+    display: inline-block;
+    z-index: 40;
+    margin: 0 0.35rem;
+}
+
+.kzn-lang-btn {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.65rem;
+    border: 1px solid rgba(32, 38, 44, 0.2);
+    background: #fff;
+    color: var(--kaznu-charcoal);
+    font-family: var(--kaznu-sans);
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.navbar .kzn-lang-btn,
+.local-kaznu-debrand .kzn-lang-btn {
+    border-color: rgba(255, 251, 247, 0.25);
+    background: transparent;
+    color: inherit;
+}
+
+.kzn-lang-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    min-width: 7.5rem;
+    background: #fff;
+    border: 1px solid rgba(32, 38, 44, 0.12);
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    padding: 0.25rem 0;
+}
+
+.kzn-lang-menu[hidden] {
+    display: none !important;
+}
+
+.kzn-lang-item {
+    padding: 0.45rem 0.85rem;
+    color: var(--kaznu-charcoal) !important;
+    text-decoration: none !important;
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.kzn-lang-item:hover,
+.kzn-lang-item.is-active {
+    background: rgba(240, 101, 67, 0.1);
+    color: var(--kaznu-coral) !important;
+}
+
+/* Temporarily hide Moodle clutter */
+.kzn-temp-hidden,
+body.local-kaznu-hide-temp .block_timeline,
+body.local-kaznu-hide-temp .block_calendar_month,
+body.local-kaznu-hide-temp .block_calendar_upcoming,
+body.local-kaznu-hide-temp .block_recentlyaccessedcourses,
+body.local-kaznu-hide-temp .block_recentlyaccesseditems,
+body.local-kaznu-hide-temp .activity-navigation {
+    display: none !important;
+}
+
 @media (max-width: 720px) {
     .kzn-dash-rank-stats {
         grid-template-columns: 1fr;
     }
     .local-kaznu-lesson-nav {
         flex-wrap: wrap;
+    }
+    .kzn-cal-item {
+        grid-template-columns: 1fr;
     }
 }
 
