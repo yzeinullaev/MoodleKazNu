@@ -267,9 +267,10 @@ function local_kaznu_leaderboard(int $limit = 10): array {
  * Mark quiz CM complete with pass grade for one user (>= 60%).
  */
 function local_kaznu_sync_user_quiz_completion(stdClass $course, int $userid, int $quizid): bool {
-    global $DB;
+    global $CFG, $DB;
 
-    require_once($GLOBALS['CFG']->libdir . '/completionlib.php');
+    // Must import $CFG into function scope — completionlib.php reads $CFG->dirroot locally.
+    require_once($CFG->libdir . '/completionlib.php');
 
     $cm = get_coursemodule_from_instance('quiz', $quizid, $course->id);
     if (!$cm || (int) $cm->completion !== COMPLETION_TRACKING_AUTOMATIC) {
@@ -466,9 +467,13 @@ function local_kaznu_activity_neighbours(stdClass $course, int $cmid, int $useri
  * Resume URL for enrolled user: first incomplete activity, or course home.
  */
 function local_kaznu_resume_url(stdClass $course, int $userid): moodle_url {
-    $progress = local_kaznu_get_course_progress($course, $userid);
-    if (!empty($progress['nexturl'])) {
-        return $progress['nexturl'];
+    try {
+        $progress = local_kaznu_get_course_progress($course, $userid);
+        if (!empty($progress['nexturl'])) {
+            return $progress['nexturl'];
+        }
+    } catch (Throwable $e) {
+        debugging('local_kaznu_resume_url: ' . $e->getMessage(), DEBUG_DEVELOPER);
     }
     return new moodle_url('/course/view.php', ['id' => $course->id]);
 }
@@ -477,10 +482,14 @@ function local_kaznu_resume_url(stdClass $course, int $userid): moodle_url {
  * CTA label: start vs continue based on completed activities.
  */
 function local_kaznu_resume_label(stdClass $course, int $userid): string {
-    $progress = local_kaznu_get_course_progress($course, $userid);
-    return $progress['done'] > 0
-        ? get_string('arena_continue', 'local_kaznu')
-        : get_string('arena_start', 'local_kaznu');
+    try {
+        $progress = local_kaznu_get_course_progress($course, $userid);
+        return $progress['done'] > 0
+            ? get_string('arena_continue', 'local_kaznu')
+            : get_string('arena_start', 'local_kaznu');
+    } catch (Throwable $e) {
+        return get_string('landing_cta_continue', 'local_kaznu');
+    }
 }
 
 /**
@@ -505,7 +514,10 @@ function local_kaznu_badge_label(string $key): string {
  * @return array{done:int,total:int,pct:int,nexturl:?moodle_url,nextname:string,sections:array}
  */
 function local_kaznu_get_course_progress(stdClass $course, int $userid): array {
-    require_once($GLOBALS['CFG']->libdir . '/completionlib.php');
+    global $CFG;
+
+    // Must import $CFG into function scope — completionlib.php reads $CFG->dirroot locally.
+    require_once($CFG->libdir . '/completionlib.php');
 
     $modinfo = get_fast_modinfo($course, $userid);
     $completion = new completion_info($course);
