@@ -18,6 +18,7 @@ const LOCAL_KAZNU_MAX_LEVEL = 10;
 
 /**
  * Demo / featured summer course or null.
+ * Note: summer school is retired for students — kept for admin/setup only.
  */
 function local_kaznu_get_demo_course(): ?stdClass {
     global $DB;
@@ -25,17 +26,28 @@ function local_kaznu_get_demo_course(): ?stdClass {
 }
 
 /**
+ * Whether course is retired / hidden from the student catalogue.
+ */
+function local_kaznu_is_retired_course(stdClass $course): bool {
+    return strtoupper((string) $course->shortname) === LOCAL_KAZNU_COURSE_SHORTNAME;
+}
+
+/**
  * All catalogue courses (site courses except frontpage).
  *
  * @return stdClass[]
  */
-function local_kaznu_get_catalogue_courses(bool $includehidden = true): array {
+function local_kaznu_get_catalogue_courses(bool $includehidden = true, bool $includeretired = false): array {
     global $DB;
 
     $params = [];
     $sql = "SELECT * FROM {course} WHERE id > 1";
     if (!$includehidden) {
         $sql .= " AND visible = 1";
+    }
+    if (!$includeretired) {
+        $sql .= " AND shortname <> :retired";
+        $params['retired'] = LOCAL_KAZNU_COURSE_SHORTNAME;
     }
     $sql .= " ORDER BY sortorder ASC, fullname ASC";
     return array_values($DB->get_records_sql($sql, $params));
@@ -67,6 +79,76 @@ function local_kaznu_course_shelf(stdClass $course): string {
  */
 function local_kaznu_course_accent(stdClass $course): int {
     return ((int) $course->id % 5) + 1;
+}
+
+/**
+ * First YouTube URL activity in a course, if any.
+ */
+function local_kaznu_find_course_youtube_url(int $courseid): string {
+    global $DB;
+
+    if ($courseid <= 1) {
+        return '';
+    }
+
+    $sql = "SELECT u.externalurl
+              FROM {url} u
+              JOIN {course_modules} cm ON cm.instance = u.id AND cm.course = u.course
+              JOIN {modules} m ON m.id = cm.module AND m.name = 'url'
+             WHERE u.course = :courseid
+               AND cm.deletioninprogress = 0
+               AND (u.externalurl LIKE :yt1 OR u.externalurl LIKE :yt2)
+          ORDER BY cm.section ASC, cm.id ASC";
+    $url = $DB->get_field_sql($sql, [
+        'courseid' => $courseid,
+        'yt1' => '%youtube.com%',
+        'yt2' => '%youtu.be%',
+    ]);
+    return is_string($url) ? $url : '';
+}
+
+/**
+ * Demo trailer YouTube IDs (rotated per course).
+ *
+ * @return string[]
+ */
+function local_kaznu_mock_trailer_ids(): array {
+    return [
+        'qp0HIF3SfI4', // TED: How great leaders inspire action
+        'UF8uR6Z6KLc', // Steve Jobs Stanford
+        'arj7oStGLkU', // TED: Inside the mind of a master procrastinator
+        'i9KEU97utPw',
+        '8CwoCtBZn9k',
+        '3QIfkeA6HBY',
+        'RLal0oX3s6s',
+        'ZXsQAXx_ao0',
+    ];
+}
+
+/**
+ * Resolve course trailer YouTube watch/embed URL (real activity or mock).
+ */
+function local_kaznu_course_trailer_url(stdClass $course): string {
+    $found = local_kaznu_find_course_youtube_url((int) $course->id);
+    if ($found !== '') {
+        return $found;
+    }
+    $ids = local_kaznu_mock_trailer_ids();
+    $id = $ids[((int) $course->id) % count($ids)];
+    return 'https://www.youtube.com/embed/' . $id . '?rel=0&modestbranding=1';
+}
+
+/**
+ * Hero trailer embed HTML for course landing.
+ */
+function local_kaznu_render_course_trailer(stdClass $course): string {
+    $embed = local_kaznu_youtube_embed_from_url(local_kaznu_course_trailer_url($course));
+    if ($embed === '') {
+        return '';
+    }
+    // Prefer accessible title for course trailer.
+    $embed = str_replace('title="YouTube"', 'title="' . s(get_string('hub_trailer', 'local_kaznu')) . '"', $embed);
+    return '<div class="kzn-class-trailer" data-kaznu-trailer="1">' . $embed . '</div>';
 }
 
 /**
@@ -243,24 +325,147 @@ function local_kaznu_xp_progress(stdClass $rec): array {
 }
 
 /**
- * Leaderboard top N.
+ * Demo leaderboard names (used when real XP rows are scarce).
+ *
+ * @return array<int,array{firstname:string,lastname:string,xp:int}>
+ */
+function local_kaznu_mock_leaderboard_seed(): array {
+    return [
+        ['firstname' => 'Айгерим', 'lastname' => 'Нурланова', 'xp' => 1240],
+        ['firstname' => 'Данияр', 'lastname' => 'Сериков', 'xp' => 980],
+        ['firstname' => 'Сабина', 'lastname' => 'Касымова', 'xp' => 760],
+        ['firstname' => 'Ерлан', 'lastname' => 'Токтаров', 'xp' => 620],
+        ['firstname' => 'Камила', 'lastname' => 'Жумабаева', 'xp' => 480],
+        ['firstname' => 'Нурсултан', 'lastname' => 'Ибраев', 'xp' => 360],
+        ['firstname' => 'Алина', 'lastname' => 'Мухамедова', 'xp' => 260],
+        ['firstname' => 'Тимур', 'lastname' => 'Алиев', 'xp' => 140],
+    ];
+}
+
+/**
+ * Build a leaderboard row object (real or mock).
+ */
+function local_kaznu_leaderboard_row(string $firstname, string $lastname, int $xp, int $userid = 0): stdClass {
+    $level = max(1, (int) floor($xp / LOCAL_KAZNU_XP_PER_LEVEL) + 1);
+    return (object) [
+        'userid' => $userid,
+        'xp' => $xp,
+        'level' => $level,
+        'firstname' => $firstname,
+        'lastname' => $lastname,
+        'firstnamephonetic' => '',
+        'lastnamephonetic' => '',
+        'middlename' => '',
+        'alternatename' => '',
+        'timemodified' => time(),
+        'ismock' => $userid <= 0,
+    ];
+}
+
+/**
+ * Leaderboard top N (pads with demo names if the table is sparse).
  *
  * @return array<int,stdClass>
  */
 function local_kaznu_leaderboard(int $limit = 10): array {
     global $DB;
 
+    $rows = [];
     $dbman = $DB->get_manager();
-    if (!$dbman->table_exists('local_kaznu_xp')) {
-        return [];
+    if ($dbman->table_exists('local_kaznu_xp')) {
+        $sql = "SELECT x.*, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename
+                  FROM {local_kaznu_xp} x
+                  JOIN {user} u ON u.id = x.userid
+                 WHERE u.deleted = 0 AND u.suspended = 0 AND x.xp > 0
+              ORDER BY x.xp DESC, x.timemodified ASC";
+        foreach ($DB->get_records_sql($sql, [], 0, $limit) as $row) {
+            $row->ismock = false;
+            $rows[] = $row;
+        }
     }
 
-    $sql = "SELECT x.*, u.firstname, u.lastname, u.firstnamephonetic, u.lastnamephonetic, u.middlename, u.alternatename
-              FROM {local_kaznu_xp} x
-              JOIN {user} u ON u.id = x.userid
-             WHERE u.deleted = 0 AND u.suspended = 0 AND x.xp > 0
-          ORDER BY x.xp DESC, x.timemodified ASC";
-    return array_values($DB->get_records_sql($sql, [], 0, $limit));
+    if (count($rows) >= $limit) {
+        return array_slice($rows, 0, $limit);
+    }
+
+    $seen = [];
+    foreach ($rows as $row) {
+        $seen[core_text::strtolower($row->firstname . '|' . $row->lastname)] = true;
+    }
+
+    $mockid = -1;
+    foreach (local_kaznu_mock_leaderboard_seed() as $seed) {
+        $key = core_text::strtolower($seed['firstname'] . '|' . $seed['lastname']);
+        if (isset($seen[$key])) {
+            continue;
+        }
+        $rows[] = local_kaznu_leaderboard_row($seed['firstname'], $seed['lastname'], $seed['xp'], $mockid--);
+        $seen[$key] = true;
+        if (count($rows) >= $limit) {
+            break;
+        }
+    }
+
+    usort($rows, static function ($a, $b) {
+        if ((int) $a->xp !== (int) $b->xp) {
+            return (int) $b->xp <=> (int) $a->xp;
+        }
+        return (int) ($a->timemodified ?? 0) <=> (int) ($b->timemodified ?? 0);
+    });
+
+    return array_slice(array_values($rows), 0, $limit);
+}
+
+/**
+ * Award quiz XP once per quiz (idempotent). Pass if grade ≥ 60% of max.
+ *
+ * @return bool True if XP was awarded now.
+ */
+function local_kaznu_award_quiz_xp(int $userid, int $quizid, float $finalgrade, float $grademax = 100.0): bool {
+    global $DB;
+
+    if ($userid <= 0 || $quizid <= 0) {
+        return false;
+    }
+
+    $max = $grademax > 0 ? $grademax : 100.0;
+    $pct = ($finalgrade / $max) * 100.0;
+    if ($pct < 60.0 && $finalgrade < 60.0) {
+        return false;
+    }
+
+    $key = 'quiz:' . $quizid;
+    $rec = local_kaznu_get_xp($userid);
+    $badges = json_decode($rec->badges ?: '[]', true);
+    if (!is_array($badges)) {
+        $badges = [];
+    }
+    if (in_array($key, $badges, true)) {
+        return false; // Already awarded for this quiz.
+    }
+
+    $xp = LOCAL_KAZNU_XP_QUIZ_PASS;
+    $badge = 'quiz_pass';
+    if ($pct >= 99.5 || $finalgrade >= $max) {
+        $xp += LOCAL_KAZNU_XP_QUIZ_PERFECT;
+        $badge = 'perfect_score';
+    }
+
+    local_kaznu_award_xp($userid, $xp, 'quiz_pass', $badge);
+
+    // Persist per-quiz lock after award (award_xp may have rewritten badges).
+    $rec = local_kaznu_get_xp($userid);
+    $badges = json_decode($rec->badges ?: '[]', true);
+    if (!is_array($badges)) {
+        $badges = [];
+    }
+    if (!in_array($key, $badges, true)) {
+        $badges[] = $key;
+        $rec->badges = json_encode(array_values($badges));
+        $DB->update_record('local_kaznu_xp', $rec);
+    }
+
+    return true;
 }
 
 /**
@@ -272,11 +477,6 @@ function local_kaznu_sync_user_quiz_completion(stdClass $course, int $userid, in
     // Must import $CFG into function scope — completionlib.php reads $CFG->dirroot locally.
     require_once($CFG->libdir . '/completionlib.php');
 
-    $cm = get_coursemodule_from_instance('quiz', $quizid, $course->id);
-    if (!$cm || (int) $cm->completion !== COMPLETION_TRACKING_AUTOMATIC) {
-        return false;
-    }
-
     $gi = $DB->get_record('grade_items', [
         'courseid' => $course->id,
         'itemmodule' => 'quiz',
@@ -287,8 +487,23 @@ function local_kaznu_sync_user_quiz_completion(stdClass $course, int $userid, in
     }
 
     $gg = $DB->get_record('grade_grades', ['itemid' => $gi->id, 'userid' => $userid]);
-    if (!$gg || $gg->finalgrade === null || (float) $gg->finalgrade < 60) {
+    if (!$gg || $gg->finalgrade === null) {
         return false;
+    }
+
+    $final = (float) $gg->finalgrade;
+    $max = (float) ($gi->grademax ?: 100);
+    $pct = $max > 0 ? ($final / $max) * 100.0 : $final;
+    if ($pct < 60.0 && $final < 60.0) {
+        return false;
+    }
+
+    // Always award XP on pass (even if completion tracking is off).
+    local_kaznu_award_quiz_xp($userid, $quizid, $final, $max);
+
+    $cm = get_coursemodule_from_instance('quiz', $quizid, $course->id);
+    if (!$cm || (int) $cm->completion === COMPLETION_TRACKING_NONE) {
+        return true;
     }
 
     $state = COMPLETION_COMPLETE_PASS;
@@ -298,12 +513,14 @@ function local_kaznu_sync_user_quiz_completion(stdClass $course, int $userid, in
         'userid' => $userid,
     ]);
     if ($rec) {
-        if ((int) $rec->completionstate === $state) {
-            return true;
+        if ((int) $rec->completionstate !== $state) {
+            $rec->completionstate = $state;
+            $rec->timemodified = $now;
+            $DB->update_record('course_modules_completion', $rec);
+            $completion = new completion_info($course);
+            $completion->update_state($cm, $state, $userid, true);
+            rebuild_course_cache($course->id, true);
         }
-        $rec->completionstate = $state;
-        $rec->timemodified = $now;
-        $DB->update_record('course_modules_completion', $rec);
     } else {
         $DB->insert_record('course_modules_completion', (object) [
             'coursemoduleid' => $cm->id,
@@ -311,20 +528,10 @@ function local_kaznu_sync_user_quiz_completion(stdClass $course, int $userid, in
             'completionstate' => $state,
             'timemodified' => $now,
         ]);
+        $completion = new completion_info($course);
+        $completion->update_state($cm, $state, $userid, true);
+        rebuild_course_cache($course->id, true);
     }
-
-    $completion = new completion_info($course);
-    $completion->update_state($cm, $state, $userid, true);
-    rebuild_course_cache($course->id, true);
-
-    $grade = (float) $gg->finalgrade;
-    $xp = LOCAL_KAZNU_XP_QUIZ_PASS;
-    $badge = 'quiz_pass';
-    if ($grade >= 100) {
-        $xp += LOCAL_KAZNU_XP_QUIZ_PERFECT;
-        $badge = 'perfect_score';
-    }
-    local_kaznu_award_xp($userid, $xp, 'quiz_pass', $badge);
 
     return true;
 }
@@ -381,12 +588,45 @@ function local_kaznu_apply_quiz_review_settings(int $quizid): void {
 
 /**
  * URL for payment confirmation (used in QR and pay link).
+ *
+ * @param int $courseid Course to enrol into (0 = demo summer course).
  */
-function local_kaznu_confirm_url(): moodle_url {
-    return new moodle_url('/local/kaznu/pay.php', [
+function local_kaznu_confirm_url(int $courseid = 0): moodle_url {
+    $params = [
         'action' => 'confirm',
         'token' => local_kaznu_payment_token(),
-    ]);
+    ];
+    if ($courseid > 1) {
+        $params['id'] = $courseid;
+    }
+    return new moodle_url('/local/kaznu/pay.php', $params);
+}
+
+/**
+ * Plain-text course blurb from Moodle summary (for class landing).
+ */
+function local_kaznu_course_blurb(stdClass $course, int $maxlen = 280): string {
+    $raw = trim(html_to_text($course->summary ?? '', 0, false));
+    $raw = preg_replace('/\s+/u', ' ', $raw) ?? '';
+    if ($raw === '') {
+        return get_string('hub_blurb_default', 'local_kaznu');
+    }
+    if (\core_text::strlen($raw) > $maxlen) {
+        return \core_text::substr($raw, 0, $maxlen - 1) . '…';
+    }
+    return $raw;
+}
+
+/**
+ * Short marketing tagline under the class title.
+ */
+function local_kaznu_course_tagline(stdClass $course): string {
+    $shelf = local_kaznu_course_shelf($course);
+    $key = 'hub_tagline_' . $shelf;
+    if (get_string_manager()->string_exists($key, 'local_kaznu')) {
+        return get_string($key, 'local_kaznu');
+    }
+    return get_string('hub_tagline_default', 'local_kaznu');
 }
 
 /**
@@ -404,11 +644,64 @@ function local_kaznu_should_debrand(): bool {
 }
 
 /**
- * Make catalogue courses visible for the demo shelf.
+ * Make catalogue courses visible for the demo shelf (never unhide retired summer school).
  */
 function local_kaznu_ensure_catalogue_visible(): void {
     global $DB;
-    $DB->execute("UPDATE {course} SET visible = 1 WHERE id > 1 AND visible = 0");
+    $DB->execute(
+        "UPDATE {course} SET visible = 1 WHERE id > 1 AND visible = 0 AND shortname <> ?",
+        [LOCAL_KAZNU_COURSE_SHORTNAME]
+    );
+    // Keep summer school hidden from students.
+    $DB->set_field('course', 'visible', 0, ['shortname' => LOCAL_KAZNU_COURSE_SHORTNAME]);
+}
+
+/**
+ * Suspend student enrolments on the retired summer course.
+ */
+function local_kaznu_retire_summer_course(): void {
+    global $CFG, $DB;
+
+    require_once($CFG->libdir . '/enrollib.php');
+
+    $course = local_kaznu_get_demo_course();
+    if (!$course) {
+        return;
+    }
+
+    $DB->set_field('course', 'visible', 0, ['id' => $course->id]);
+
+    $role = $DB->get_record('role', ['shortname' => 'student']);
+    if (!$role) {
+        return;
+    }
+    $context = context_course::instance($course->id);
+    foreach (enrol_get_instances($course->id, true) as $instance) {
+        $enrolplugin = enrol_get_plugin($instance->enrol);
+        if (!$enrolplugin) {
+            continue;
+        }
+        $userids = $DB->get_fieldset_select(
+            'user_enrolments',
+            'userid',
+            'enrolid = ? AND status = ?',
+            [$instance->id, ENROL_USER_ACTIVE]
+        );
+        foreach ($userids as $userid) {
+            $userid = (int) $userid;
+            $roles = get_user_roles($context, $userid, false);
+            $keep = false;
+            foreach ($roles as $r) {
+                if (in_array($r->shortname, ['editingteacher', 'teacher', 'manager'], true)) {
+                    $keep = true;
+                    break;
+                }
+            }
+            if (!$keep) {
+                $enrolplugin->update_user_enrol($instance, $userid, ENROL_USER_SUSPENDED);
+            }
+        }
+    }
 }
 
 /**
@@ -464,7 +757,7 @@ function local_kaznu_activity_neighbours(stdClass $course, int $cmid, int $useri
 }
 
 /**
- * Resume URL for enrolled user: first incomplete activity, or course home.
+ * Resume URL for enrolled user: first incomplete activity, or course hub.
  */
 function local_kaznu_resume_url(stdClass $course, int $userid): moodle_url {
     try {
@@ -475,7 +768,8 @@ function local_kaznu_resume_url(stdClass $course, int $userid): moodle_url {
     } catch (Throwable $e) {
         debugging('local_kaznu_resume_url: ' . $e->getMessage(), DEBUG_DEVELOPER);
     }
-    return new moodle_url('/course/view.php', ['id' => $course->id]);
+    // Prefer branded hub over Moodle course home (which may auto-open first file).
+    return new moodle_url('/local/kaznu/course.php', ['id' => $course->id]);
 }
 
 /**
@@ -511,7 +805,7 @@ function local_kaznu_badge_label(string $key): string {
 /**
  * Course completion progress for gamified arena.
  *
- * @return array{done:int,total:int,pct:int,nexturl:?moodle_url,nextname:string,sections:array}
+ * @return array{done:int,total:int,pct:int,nexturl:?moodle_url,nextname:string,nextisfile:bool,sections:array}
  */
 function local_kaznu_get_course_progress(stdClass $course, int $userid): array {
     global $CFG;
@@ -525,6 +819,7 @@ function local_kaznu_get_course_progress(stdClass $course, int $userid): array {
     $total = 0;
     $nexturl = null;
     $nextname = '';
+    $nextisfile = false;
     $sections = [];
 
     foreach ($modinfo->get_section_info_all() as $section) {
@@ -553,12 +848,17 @@ function local_kaznu_get_course_progress(stdClass $course, int $userid): array {
                         COMPLETION_COMPLETE_PASS,
                     ], true);
                 }
+                $isfile = in_array($cm->modname, ['resource', 'folder', 'lightboxgallery'], true);
                 if ($complete) {
                     $secdone++;
                     $done++;
-                } else if ($nexturl === null && $cm->uservisible) {
-                    $nexturl = $cm->url;
-                    $nextname = $cm->name;
+                } else if ($cm->uservisible) {
+                    // First incomplete activity in syllabus order (PDF embeds in-page now).
+                    if ($nexturl === null) {
+                        $nexturl = $cm->url;
+                        $nextname = $cm->name;
+                        $nextisfile = $isfile;
+                    }
                 }
                 $cms[] = (object) [
                     'name' => $cm->name,
@@ -582,6 +882,7 @@ function local_kaznu_get_course_progress(stdClass $course, int $userid): array {
             if ($cm->uservisible && $cm->url) {
                 $nexturl = $cm->url;
                 $nextname = $cm->name;
+                $nextisfile = in_array($cm->modname, ['resource', 'folder', 'lightboxgallery'], true);
                 break;
             }
         }
@@ -594,6 +895,7 @@ function local_kaznu_get_course_progress(stdClass $course, int $userid): array {
         'pct' => $pct,
         'nexturl' => $nexturl,
         'nextname' => $nextname,
+        'nextisfile' => $nextisfile,
         'sections' => $sections,
     ];
 }
@@ -674,6 +976,9 @@ function local_kaznu_get_user_courses(int $userid): array {
     $all = [];
     foreach (enrol_get_users_courses($userid, true, 'id,shortname,fullname,visible,sortorder') as $c) {
         if ((int) $c->id <= 1) {
+            continue;
+        }
+        if (local_kaznu_is_retired_course($c)) {
             continue;
         }
         $all[] = $c;
@@ -825,9 +1130,14 @@ function local_kaznu_render_dashboard_arena(stdClass $user): string {
     $badgehtml = '';
     if ($badges) {
         foreach ($badges as $b) {
-            $badgehtml .= '<span class="kzn-dash-badge">' . s(local_kaznu_badge_label((string) $b)) . '</span>';
+            $b = (string) $b;
+            if (strpos($b, 'quiz:') === 0) {
+                continue; // Internal award lock, not a display badge.
+            }
+            $badgehtml .= '<span class="kzn-dash-badge">' . s(local_kaznu_badge_label($b)) . '</span>';
         }
-    } else {
+    }
+    if ($badgehtml === '') {
         $badgehtml = '<span class="kzn-dash-badge is-empty">' . get_string('badge_none', 'local_kaznu') . '</span>';
     }
 
@@ -836,7 +1146,8 @@ function local_kaznu_render_dashboard_arena(stdClass $user): string {
     $tiles = '';
     foreach (array_slice($courses, 0, 6) as $c) {
         $accent = local_kaznu_course_accent($c);
-        $url = local_kaznu_resume_url($c, (int) $user->id);
+        // Open class hub — avoid jumping into PDF/file activities from the dashboard.
+        $url = new moodle_url('/local/kaznu/course.php', ['id' => $c->id]);
         $label = local_kaznu_resume_label($c, (int) $user->id);
         $tiles .= '<a class="kzn-dash-tile kzn-accent-' . $accent . '" href="' . $url->out(false) . '">'
             . '<span class="kzn-dash-tile-meta">' . s($c->shortname) . '</span>'
@@ -988,8 +1299,246 @@ function local_kaznu_youtube_embed_from_url(string $url): string {
     if ($id === '') {
         return '';
     }
-    $src = 'https://www.youtube.com/embed/' . rawurlencode($id);
+    $src = 'https://www.youtube.com/embed/' . rawurlencode($id) . '?rel=0&modestbranding=1';
     return '<div class="local-kaznu-yt" data-kaznu-yt="1">'
-        . '<iframe src="' . s($src) . '" title="YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>'
+        . '<iframe src="' . s($src) . '" title="YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>'
         . '</div>';
+}
+
+/**
+ * Extract Vimeo embed HTML from a URL.
+ */
+function local_kaznu_vimeo_embed_from_url(string $url): string {
+    if (!preg_match('~vimeo\.com/(?:video/)?(\d+)~', $url, $m)) {
+        return '';
+    }
+    $src = 'https://player.vimeo.com/video/' . rawurlencode($m[1]);
+    return '<div class="local-kaznu-yt" data-kaznu-yt="1">'
+        . '<iframe src="' . s($src) . '" title="Vimeo" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>'
+        . '</div>';
+}
+
+/**
+ * Quiz page panel: how much XP you can earn / already earned / why none.
+ */
+function local_kaznu_render_quiz_xp_panel(stdClass $course, int $userid, int $quizid): string {
+    global $DB;
+
+    $pass = LOCAL_KAZNU_XP_QUIZ_PASS;
+    $perfect = LOCAL_KAZNU_XP_QUIZ_PERFECT;
+    $hint = get_string('xp_quiz_hint', 'local_kaznu', (object) [
+        'pass' => $pass,
+        'perfect' => $perfect,
+        'total' => $pass + $perfect,
+    ]);
+
+    $rec = local_kaznu_get_xp($userid);
+    $badges = json_decode($rec->badges ?: '[]', true);
+    if (!is_array($badges)) {
+        $badges = [];
+    }
+    $awarded = in_array('quiz:' . $quizid, $badges, true);
+
+    $status = '';
+    $cls = 'is-hint';
+    if ($awarded) {
+        $status = get_string('xp_quiz_awarded', 'local_kaznu');
+        $cls = 'is-ok';
+    } else {
+        $gi = $DB->get_record('grade_items', [
+            'courseid' => $course->id,
+            'itemmodule' => 'quiz',
+            'iteminstance' => $quizid,
+        ]);
+        $grade = null;
+        $max = 100.0;
+        if ($gi) {
+            $max = (float) ($gi->grademax ?: 100);
+            $gg = $DB->get_record('grade_grades', ['itemid' => $gi->id, 'userid' => $userid]);
+            if ($gg && $gg->finalgrade !== null) {
+                $grade = (float) $gg->finalgrade;
+            }
+        }
+        $openattempt = $DB->record_exists_select(
+            'quiz_attempts',
+            'quiz = ? AND userid = ? AND state <> ?',
+            [$quizid, $userid, 'finished']
+        );
+        if ($openattempt) {
+            $status = get_string('xp_quiz_need_submit', 'local_kaznu');
+            $cls = 'is-warn';
+        } else if ($grade !== null) {
+            $pct = $max > 0 ? ($grade / $max) * 100.0 : $grade;
+            if ($pct < 60.0 && $grade < 60.0) {
+                $status = get_string('xp_quiz_failed', 'local_kaznu');
+                $cls = 'is-warn';
+            }
+        }
+    }
+
+    $html = '<aside class="kzn-xp-panel ' . $cls . '" data-kaznu-xp-panel="1">'
+        . '<strong>' . get_string('xp_quiz_panel_title', 'local_kaznu') . '</strong>'
+        . '<p>' . $hint . '</p>';
+    if ($status !== '') {
+        $html .= '<p class="kzn-xp-panel-status">' . $status . '</p>';
+    }
+    $html .= '<p class="kzn-xp-panel-meta">Lv ' . (int) $rec->level . ' · ' . (int) $rec->xp . ' XP</p>'
+        . '</aside>';
+    return $html;
+}
+
+/**
+ * Force YouTube/Vimeo URL activities to Embed display (iframe, not new window / click link).
+ */
+function local_kaznu_fix_url_video_embed_display(): int {
+    global $CFG, $DB;
+
+    require_once($CFG->libdir . '/resourcelib.php');
+
+    $n = 0;
+    foreach ($DB->get_records('url', null, '', 'id,externalurl,display') as $rec) {
+        $url = (string) $rec->externalurl;
+        $isyoutube = (bool) preg_match('~youtube\.com|youtu\.be~i', $url);
+        $isvimeo = (bool) preg_match('~vimeo\.com~i', $url);
+        if (!$isyoutube && !$isvimeo) {
+            continue;
+        }
+        if ((int) $rec->display === RESOURCELIB_DISPLAY_EMBED) {
+            continue;
+        }
+        $DB->set_field('url', 'display', RESOURCELIB_DISPLAY_EMBED, ['id' => $rec->id]);
+        $n++;
+    }
+    return $n;
+}
+
+/**
+ * Main file URL for a resource activity (inline, not forcedownload).
+ */
+function local_kaznu_resource_main_file_url(int $cmid): string {
+    $cm = get_coursemodule_from_id('resource', $cmid, 0, false);
+    if (!$cm) {
+        return '';
+    }
+    $context = context_module::instance($cm->id);
+    $fs = get_file_storage();
+    $files = $fs->get_area_files($context->id, 'mod_resource', 'content', 0, 'sortorder DESC, id ASC', false);
+    if (!$files) {
+        return '';
+    }
+    $file = reset($files);
+    foreach ($files as $candidate) {
+        $mimetype = $candidate->get_mimetype();
+        if ($mimetype === 'application/pdf' || preg_match('~\.pdf$~i', $candidate->get_filename())) {
+            $file = $candidate;
+            break;
+        }
+    }
+    $url = moodle_url::make_pluginfile_url(
+        $file->get_contextid(),
+        $file->get_component(),
+        $file->get_filearea(),
+        $file->get_itemid(),
+        $file->get_filepath(),
+        $file->get_filename(),
+        false
+    );
+    return $url->out(false);
+}
+
+/**
+ * Whether a resource file should be shown in an iframe (PDF / Office / text / image).
+ */
+function local_kaznu_resource_is_embeddable(int $cmid): bool {
+    $cm = get_coursemodule_from_id('resource', $cmid, 0, false);
+    if (!$cm) {
+        return false;
+    }
+    $context = context_module::instance($cm->id);
+    $fs = get_file_storage();
+    $files = $fs->get_area_files($context->id, 'mod_resource', 'content', 0, 'sortorder DESC, id ASC', false);
+    if (!$files) {
+        return false;
+    }
+    $file = reset($files);
+    $name = core_text::strtolower($file->get_filename());
+    $mime = (string) $file->get_mimetype();
+    if (str_ends_with($name, '.pdf') || $mime === 'application/pdf') {
+        return true;
+    }
+    if (str_starts_with($mime, 'image/') || str_starts_with($mime, 'text/')) {
+        return true;
+    }
+    return (bool) preg_match('~\.(png|jpe?g|gif|webp|svg|txt|html?)$~', $name);
+}
+
+/**
+ * In-page PDF/file embed HTML for resource view.
+ */
+function local_kaznu_render_resource_embed(int $cmid, string $title = ''): string {
+    if (!local_kaznu_resource_is_embeddable($cmid)) {
+        return '';
+    }
+    $src = local_kaznu_resource_main_file_url($cmid);
+    if ($src === '') {
+        return '';
+    }
+    $label = $title !== '' ? $title : get_string('hub_pdf_viewer', 'local_kaznu');
+    return '<div class="local-kaznu-yt local-kaznu-pdf" data-kaznu-pdf="1">'
+        . '<iframe src="' . s($src) . '#view=FitH" title="' . s($label) . '" loading="lazy"></iframe>'
+        . '</div>';
+}
+
+/**
+ * Force resource files to Embed + enable "mark complete on view".
+ *
+ * @return array{display:int,completion:int}
+ */
+function local_kaznu_fix_resource_pdf_embed_display(): array {
+    global $CFG, $DB;
+
+    require_once($CFG->libdir . '/resourcelib.php');
+    require_once($CFG->libdir . '/completionlib.php');
+
+    $displayfixed = 0;
+    $completionfixed = 0;
+    $options = serialize(['printintro' => 0, 'printlastmodified' => 0]);
+
+    foreach ($DB->get_records('resource', null, '', 'id,display,displayoptions') as $rec) {
+        $need = false;
+        if ((int) $rec->display !== RESOURCELIB_DISPLAY_EMBED) {
+            $rec->display = RESOURCELIB_DISPLAY_EMBED;
+            $need = true;
+            $displayfixed++;
+        }
+        // Keep embed options lean so Moodle does not push "open in new window".
+        if ((string) $rec->displayoptions !== $options) {
+            $rec->displayoptions = $options;
+            $need = true;
+        }
+        if ($need) {
+            $DB->update_record('resource', $rec);
+        }
+    }
+
+    $sql = "SELECT cm.id, cm.completion, cm.completionview
+              FROM {course_modules} cm
+              JOIN {modules} m ON m.id = cm.module AND m.name = 'resource'";
+    foreach ($DB->get_records_sql($sql) as $cm) {
+        $changed = false;
+        if ((int) $cm->completion === COMPLETION_TRACKING_NONE) {
+            $cm->completion = COMPLETION_TRACKING_AUTOMATIC;
+            $changed = true;
+        }
+        if ((int) $cm->completionview !== 1) {
+            $cm->completionview = 1;
+            $changed = true;
+        }
+        if ($changed) {
+            $DB->update_record('course_modules', $cm);
+            $completionfixed++;
+        }
+    }
+
+    return ['display' => $displayfixed, 'completion' => $completionfixed];
 }

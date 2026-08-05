@@ -1,4 +1,9 @@
-/* Farabi IBS — course + payment + gamified Moodle UX */
+/* Farabi IBS — course + payment + gamified Moodle UX
+ *
+ * Phase 6A: global shell colours/contrast owned by theme_farabi (Boost child).
+ * Keep these rules for pages not yet themed; prefer reducing path-* hacks over time.
+ * Do not re-introduce black text on charcoal headers on path-grade/user without light text tokens.
+ */
 :root {
     --kaznu-cream: #FFFBF7;
     --kaznu-charcoal: #20262C;
@@ -12,6 +17,12 @@
     --kaznu-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
     --kaznu-sans: "Manrope", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
 }
+
+/* Cabinet profile (Phase 6C) */
+.local-kaznu-my-profile-head { gap: 1rem; flex-wrap: wrap; }
+.local-kaznu-my-fullname { color: var(--kaznu-charcoal); font-family: var(--kaznu-serif); }
+.local-kaznu-my-dl dt { font-weight: 600; color: var(--kaznu-charcoal); margin-top: 0.5rem; }
+.local-kaznu-my-dl dd { margin-left: 0; color: var(--kaznu-charcoal); }
 
 body.path-local-kaznu,
 body.path-course,
@@ -570,6 +581,60 @@ body.path-course a:not(.btn):not(.nav-link):not(.dropdown-item):focus-visible {
     border: 0;
 }
 
+/* Prefer in-page video frame over Moodle "click the link" workaround. */
+body.path-mod-url .urlworkaround,
+body.path-mod-url .resourceworkaround {
+    display: none !important;
+}
+
+.local-kaznu-pdf {
+    padding-top: 0;
+    min-height: min(78vh, 920px);
+    height: min(78vh, 920px);
+    background: #1a1e22;
+}
+
+.local-kaznu-pdf iframe,
+.kzn-pdf-native iframe,
+iframe.kzn-pdf-frame {
+    background: #fff;
+}
+
+.kzn-pdf-native {
+    position: relative;
+    width: 100%;
+    margin: 0 0 1.25rem;
+    min-height: min(78vh, 920px);
+    height: min(78vh, 920px);
+    background: #1a1e22;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.kzn-pdf-native iframe,
+.resourcecontent iframe.kzn-pdf-frame {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    border: 0;
+}
+
+body.path-mod-resource .resourceworkaround,
+body.path-mod-resource .urlworkaround {
+    display: none !important;
+}
+
+/* One media frame only — do not hide Moodle's native embed. */
+body.path-mod-url .mediaplugin iframe.kzn-media-frame,
+body.path-mod-url iframe.kzn-media-frame {
+    width: 100%;
+    min-height: min(56vw, 420px);
+    aspect-ratio: 16 / 9;
+    border: 0;
+    display: block;
+}
+
 .kzn-arena-cta-hint {
     display: block;
     width: 100%;
@@ -808,10 +873,25 @@ body.path-course a:not(.btn):not(.nav-link):not(.dropdown-item):focus-visible {
 }
 
 .navbar .kzn-lang-btn,
-.local-kaznu-debrand .kzn-lang-btn {
-    border-color: rgba(255, 251, 247, 0.25);
-    background: transparent;
-    color: inherit;
+.local-kaznu-debrand .kzn-lang-btn,
+body.path-my .navbar .kzn-lang-btn,
+body.path-course .navbar .kzn-lang-btn,
+body.path-mod .navbar .kzn-lang-btn,
+body.path-user .navbar .kzn-lang-btn,
+body.local-kaznu-debrand .navbar .kzn-lang-btn {
+    border-color: rgba(255, 251, 247, 0.35) !important;
+    background: transparent !important;
+    color: var(--kaznu-cream) !important;
+}
+
+.navbar .kzn-lang-btn:hover,
+.navbar .kzn-lang-btn:focus,
+.local-kaznu-debrand .navbar .kzn-lang-btn:hover,
+.local-kaznu-debrand .navbar .kzn-lang-btn:focus,
+body.path-my .navbar .kzn-lang-btn:hover {
+    color: var(--kaznu-charcoal) !important;
+    background: var(--kaznu-cream) !important;
+    border-color: var(--kaznu-cream) !important;
 }
 
 .kzn-lang-menu {
@@ -852,6 +932,8 @@ body.local-kaznu-hide-temp .block_calendar_month,
 body.local-kaznu-hide-temp .block_calendar_upcoming,
 body.local-kaznu-hide-temp .block_recentlyaccessedcourses,
 body.local-kaznu-hide-temp .block_recentlyaccesseditems,
+body.local-kaznu-hide-temp .block_myoverview,
+body.local-kaznu-hide-temp.page-mycourses .block_myoverview,
 body.local-kaznu-hide-temp .activity-navigation {
     display: none !important;
 }
@@ -926,29 +1008,81 @@ body.local-kaznu-hide-temp .activity-navigation {
     position: fixed;
     z-index: 1300;
     left: 50%;
-    top: 18%;
+    top: 14%;
     transform: translateX(-50%) scale(0.92);
+    min-width: min(92vw, 360px);
     background: var(--kaznu-charcoal);
     color: var(--kaznu-cream);
-    padding: 1.25rem 1.75rem;
-    border-top: 3px solid var(--kaznu-coral);
+    padding: 1.35rem 1.75rem 1.5rem;
+    border-top: 4px solid var(--kaznu-coral);
     text-align: center;
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
-    animation: kaznu-pop 0.45s ease forwards, kaznu-fade 0.5s 2.8s ease forwards;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    animation: kaznu-pop 0.45s ease forwards, kaznu-fade 0.6s 4.5s ease forwards;
     pointer-events: none;
     font-family: var(--kaznu-sans);
 }
 
 .local-kaznu-celebrate .lvl {
     font-family: var(--kaznu-serif);
-    font-size: 1.6rem;
+    font-size: 1.55rem;
     color: var(--kaznu-coral);
-    margin: 0 0 0.25rem;
+    margin: 0 0 0.35rem;
 }
 
 .local-kaznu-celebrate .xp {
     font-size: 0.95rem;
     opacity: 0.9;
+    margin-bottom: 0.35rem;
+}
+
+.local-kaznu-celebrate .gain {
+    font-family: var(--kaznu-serif);
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--kaznu-cream);
+    letter-spacing: 0.02em;
+}
+
+.kzn-xp-panel {
+    margin: 0 0 1.25rem;
+    padding: 1rem 1.15rem;
+    border-left: 3px solid var(--kaznu-coral);
+    background: rgba(32, 38, 44, 0.05);
+    font-family: var(--kaznu-sans);
+}
+
+.kzn-xp-panel strong {
+    display: block;
+    font-family: var(--kaznu-serif);
+    font-size: 1.15rem;
+    margin-bottom: 0.35rem;
+    color: var(--kaznu-charcoal);
+}
+
+.kzn-xp-panel p {
+    margin: 0 0 0.4rem;
+    font-size: 0.92rem;
+    color: var(--kaznu-charcoal);
+}
+
+.kzn-xp-panel-status {
+    font-weight: 600 !important;
+}
+
+.kzn-xp-panel.is-ok {
+    border-left-color: #2f7d4a;
+    background: rgba(47, 125, 74, 0.08);
+}
+
+.kzn-xp-panel.is-warn {
+    border-left-color: var(--kaznu-coral);
+    background: rgba(240, 101, 67, 0.08);
+}
+
+.kzn-xp-panel-meta {
+    opacity: 0.7;
+    font-size: 0.82rem !important;
+    margin-bottom: 0 !important;
 }
 
 @keyframes kaznu-pop {
@@ -1432,28 +1566,40 @@ body.local-kaznu-debrand .navbar .editmode-switch-form {
     display: none !important;
 }
 
+/* Keep Boost navbar one row: brand + moremenu + usermenu. */
+body.local-kaznu-debrand .navbar {
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    overflow: visible !important;
+    min-height: 60px;
+}
+
+body.local-kaznu-debrand .navbar .primary-navigation {
+    flex: 1 1 auto;
+    min-width: 0;
+    align-self: center;
+}
+
+body.local-kaznu-debrand .navbar .kzn-lang-dd {
+    flex-shrink: 0;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    margin: 0 0.5rem 0 0.25rem;
+}
+
 body.local-kaznu-debrand .kzn-nav-brand {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.15;
+    display: block;
+    line-height: 1.2;
     color: var(--kaznu-cream);
     text-decoration: none;
 }
 
 body.local-kaznu-debrand .kzn-nav-brand strong {
     font-family: var(--kaznu-serif);
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 600;
     letter-spacing: 0.02em;
-}
-
-body.local-kaznu-debrand .kzn-nav-brand em {
-    font-style: normal;
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    opacity: 0.75;
-    color: var(--kaznu-bronze-soft);
 }
 
 body.local-kaznu-debrand .navbar-brand img,
@@ -1464,4 +1610,75 @@ body.local-kaznu-debrand .navbar-brand .logo {
 body.local-kaznu-debrand .nav-link[href*='admin'],
 body.local-kaznu-debrand .nav-link[href*='reportbuilder'] {
     display: none !important;
+}
+
+/* My Univer cabinet */
+.local-kaznu-my-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.local-kaznu-my-section {
+    margin: 1.5rem 0 2rem;
+}
+
+.local-kaznu-my-section h3 {
+    font-family: var(--kaznu-serif);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--kaznu-charcoal);
+}
+
+.local-kaznu-my-dl {
+    display: grid;
+    grid-template-columns: minmax(8rem, 12rem) 1fr;
+    gap: 0.35rem 1rem;
+    margin: 0;
+}
+
+.local-kaznu-my-dl dt {
+    margin: 0;
+    font-weight: 600;
+    color: var(--kaznu-bronze);
+}
+
+.local-kaznu-my-dl dd {
+    margin: 0;
+}
+
+.local-kaznu-my-subjects {
+    width: 100%;
+}
+
+.local-kaznu-fresh {
+    margin: 0.5rem 0 1rem;
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid var(--kaznu-bronze);
+    background: rgba(163, 146, 123, 0.08);
+    font-size: 0.95rem;
+}
+
+.local-kaznu-fresh-fresh {
+    border-left-color: #2f6f4e;
+}
+
+.local-kaznu-fresh-stale,
+.local-kaznu-fresh-unavailable {
+    border-left-color: var(--kaznu-coral);
+}
+
+.local-kaznu-readonly {
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+    .local-kaznu-my-dl {
+        grid-template-columns: 1fr;
+    }
+
+    .local-kaznu-my-dl dt {
+        margin-top: 0.5rem;
+    }
 }

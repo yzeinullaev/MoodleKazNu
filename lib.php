@@ -58,7 +58,12 @@ function local_kaznu_before_http_headers() {
         return;
     }
 
-    global $SCRIPT;
+    global $SCRIPT, $DB, $USER;
+
+    // Phase 6A/C: portal student URL policy (server-side).
+    if (class_exists(\local_kaznu\local\access_guard::class)) {
+        \local_kaznu\local\access_guard::maybe_enforce();
+    }
 
     $script = (string) ($SCRIPT ?? '');
     if ($script === '') {
@@ -67,6 +72,38 @@ function local_kaznu_before_http_headers() {
 
     if ($script === '/index.php' || $script === 'index.php') {
         redirect(new moodle_url('/local/kaznu/landing.php'));
+    }
+
+    // Block student access to retired summer school (course + activities).
+    $iscourse = (substr($script, -strlen('/course/view.php')) === '/course/view.php'
+        || $script === '/course/view.php' || $script === 'course/view.php');
+    $ismod = (strpos($script, '/mod/') !== false);
+    if ($iscourse || $ismod) {
+        $courseid = 0;
+        if ($iscourse && isset($_GET['id'])) {
+            $courseid = (int) $_GET['id'];
+        } else if ($ismod && isset($_GET['id'])) {
+            // Activity cmid → course.
+            require_once(__DIR__ . '/locallib.php');
+            $cm = $DB->get_record('course_modules', ['id' => (int) $_GET['id']], 'course');
+            $courseid = $cm ? (int) $cm->course : 0;
+        }
+        if ($courseid > 1) {
+            require_once(__DIR__ . '/locallib.php');
+            $course = $DB->get_record('course', ['id' => $courseid], 'id,shortname');
+            if ($course && local_kaznu_is_retired_course($course)) {
+                $sys = context_system::instance();
+                $isadmin = isloggedin() && !isguestuser() && has_capability('moodle/site:config', $sys);
+                if (!$isadmin) {
+                    redirect(
+                        new moodle_url('/local/kaznu/landing.php'),
+                        get_string('course_retired', 'local_kaznu'),
+                        null,
+                        \core\output\notification::NOTIFY_INFO
+                    );
+                }
+            }
+        }
     }
 }
 
@@ -182,13 +219,18 @@ function local_kaznu_before_footer() {
     if ($hasxp && !empty($SESSION->local_kaznu_celebrate)) {
         $c = $SESSION->local_kaznu_celebrate;
         unset($SESSION->local_kaznu_celebrate);
-        $title = $c['levelup']
+        $title = !empty($c['levelup'])
             ? get_string('xp_levelup', 'local_kaznu', (object) ['level' => $c['level'], 'title' => $c['title']])
-            : get_string('xp_gained', 'local_kaznu', $c['gained']);
-        echo '<div class="local-kaznu-celebrate" role="status">'
+            : get_string('xp_gained_title', 'local_kaznu');
+        $detail = get_string('xp_gained_detail', 'local_kaznu', (object) [
+            'gained' => (int) $c['gained'],
+            'total' => (int) $c['xp'],
+            'level' => (int) $c['level'],
+        ]);
+        echo '<div class="local-kaznu-celebrate" role="status" aria-live="polite">'
             . '<div class="lvl">' . s($title) . '</div>'
-            . '<div class="xp">+' . (int) $c['gained'] . ' XP · Lv ' . (int) $c['level']
-            . ' · ' . s($c['title']) . '</div>'
+            . '<div class="xp">' . s($detail) . '</div>'
+            . '<div class="gain">+' . (int) $c['gained'] . ' XP</div>'
             . '</div>';
     }
 
@@ -242,15 +284,106 @@ function local_kaznu_before_footer() {
                 echo local_kaznu_render_lesson_nav($COURSE, $cmid, (int) $USER->id, $afternext);
                 echo '<script>(function(){var n=document.querySelector("[data-kaznu-nav]");var m=document.getElementById("region-main");if(n&&m){m.appendChild(n);}})();</script>';
 
-                // Embed YouTube for URL activities.
-                if (strpos($pagetype, 'mod-url-view') === 0 && !empty($PAGE->cm)) {
-                    global $DB;
-                    $urlrec = $DB->get_record('url', ['id' => $PAGE->cm->instance], 'externalurl');
+                // XP rules only on quiz intro / review — not while answering questions.
+                if (strpos($pagetype, 'mod-quiz-view') === 0
+                        || strpos($pagetype, 'mod-quiz-review') === 0) {
+                    $quizid = 0;
+                    if (!empty($PAGE->cm) && $PAGE->cm->modname === 'quiz') {
+                        $quizid = (int) $PAGE->cm->instance;
+                    } else {
+                        $cmquiz = get_coursemodule_from_id('quiz', $cmid, 0, false);
+                        $quizid = $cmquiz ? (int) $cmquiz->instance : 0;
+                    }
+                    if ($quizid > 0) {
+                        echo local_kaznu_render_quiz_xp_panel($COURSE, (int) $USER->id, $quizid);
+                        echo '<script>(function(){var p=document.querySelector("[data-kaznu-xp-panel]");var m=document.getElementById("region-main");if(p&&m){var s=m.querySelector("[data-kaznu-strip]");if(s&&s.nextSibling){m.insertBefore(p,s.nextSibling);}else{m.insertBefore(p,m.firstChild);}}})();</script>';
+                    }
+                }
+
+                // Embed YouTube/Vimeo only when Moodle did not already embed them.
+                if (strpos($pagetype, 'mod-url-view') === 0) {
+                    global $CFG, $DB;
+                    require_once($CFG->libdir . '/resourcelib.php');
+                    if (!empty($PAGE->cm) && !empty($PAGE->cm->instance)) {
+                        $urlrec = $DB->get_record('url', ['id' => (int) $PAGE->cm->instance], 'externalurl,display');
+                    } else {
+                        $cmrec = get_coursemodule_from_id('url', $cmid, 0, false);
+                        $urlrec = $cmrec
+                            ? $DB->get_record('url', ['id' => (int) $cmrec->instance], 'externalurl,display')
+                            : false;
+                    }
                     if ($urlrec && !empty($urlrec->externalurl)) {
-                        $embed = local_kaznu_youtube_embed_from_url($urlrec->externalurl);
+                        $alreadyembed = ((int) $urlrec->display === RESOURCELIB_DISPLAY_EMBED);
+                        $embed = '';
+                        if (!$alreadyembed) {
+                            $embed = local_kaznu_youtube_embed_from_url($urlrec->externalurl);
+                            if ($embed === '') {
+                                $embed = local_kaznu_vimeo_embed_from_url($urlrec->externalurl);
+                            }
+                        }
                         if ($embed !== '') {
                             echo $embed;
-                            echo '<script>(function(){var y=document.querySelector("[data-kaznu-yt]");var m=document.getElementById("region-main");if(y&&m){m.insertBefore(y,m.children[1]||null);}})();</script>';
+                        }
+                        echo '<script>(function(){'
+                            . 'var m=document.getElementById("region-main");if(!m)return;'
+                            . 'var native=m.querySelector(".mediaplugin iframe,iframe[src*=\\"youtube\\"],iframe[src*=\\"youtu.be\\"],iframe[src*=\\"vimeo\\"]");'
+                            . 'var y=document.querySelector("[data-kaznu-yt]:not([data-kaznu-pdf])");'
+                            . 'if(native){if(y){y.remove();}native.classList.add("kzn-media-frame");}'
+                            . 'else if(y){var box=m.querySelector(".activity-description")||m.querySelector("[role=main]")||m;'
+                            . 'var host=box.querySelector(".no-overflow")||box;host.insertBefore(y,host.firstChild);}'
+                            . 'document.querySelectorAll(".urlworkaround,.resourceworkaround").forEach(function(el){el.style.display="none";});'
+                            . '})();</script>';
+                    }
+                }
+
+                // PDF: use Moodle embed when already Embed; otherwise inject one frame only.
+                if (strpos($pagetype, 'mod-resource-view') === 0) {
+                    global $CFG, $DB;
+                    require_once($CFG->libdir . '/completionlib.php');
+                    require_once($CFG->libdir . '/resourcelib.php');
+                    $title = (!empty($PAGE->cm) && !empty($PAGE->cm->name)) ? format_string($PAGE->cm->name) : '';
+                    $resinstance = 0;
+                    if (!empty($PAGE->cm) && !empty($PAGE->cm->instance)) {
+                        $resinstance = (int) $PAGE->cm->instance;
+                    } else {
+                        $cmres = get_coursemodule_from_id('resource', $cmid, 0, false);
+                        $resinstance = $cmres ? (int) $cmres->instance : 0;
+                    }
+                    $resdisplay = $resinstance
+                        ? (int) $DB->get_field('resource', 'display', ['id' => $resinstance])
+                        : 0;
+                    $alreadyembed = ($resdisplay === RESOURCELIB_DISPLAY_EMBED);
+                    if (!$alreadyembed) {
+                        $pdfembed = local_kaznu_render_resource_embed($cmid, $title);
+                        if ($pdfembed !== '') {
+                            echo $pdfembed;
+                        }
+                    }
+                    echo '<script>(function(){'
+                        . 'var m=document.getElementById("region-main");if(!m)return;'
+                        . 'var box=m.querySelector(".resourcecontent")||m.querySelector(".activity-description")||m.querySelector("[role=main]")||m;'
+                        . 'var native=box.querySelector("iframe,object,embed");'
+                        . 'var p=document.querySelector("[data-kaznu-pdf]");'
+                        . 'if(native){if(p){p.remove();}'
+                        . 'if(native.tagName==="IFRAME"){native.classList.add("kzn-pdf-frame");'
+                        . 'var wrap=document.createElement("div");wrap.className="local-kaznu-pdf kzn-pdf-native";'
+                        . 'native.parentNode.insertBefore(wrap,native);wrap.appendChild(native);}'
+                        . '}else if(p){box.insertBefore(p,box.firstChild);}'
+                        . 'document.querySelectorAll(".resourceworkaround,.urlworkaround").forEach(function(el){el.style.display="none";});'
+                        . '})();</script>';
+                    if (isloggedin() && !isguestuser() && !empty($COURSE->id)) {
+                        $cmobj = null;
+                        if (!empty($PAGE->cm)) {
+                            $cmobj = $PAGE->cm;
+                        } else {
+                            $modinfo = get_fast_modinfo($COURSE);
+                            $cmobj = $modinfo->cms[$cmid] ?? null;
+                        }
+                        if ($cmobj) {
+                            $completion = new completion_info($COURSE);
+                            if ($completion->is_enabled($cmobj)) {
+                                $completion->set_module_viewed($cmobj);
+                            }
                         }
                     }
                 }
@@ -260,22 +393,23 @@ function local_kaznu_before_footer() {
 
     if (local_kaznu_should_debrand()) {
         $brand = get_string('landing_brand', 'local_kaznu');
-        $slogan = get_string('landing_slogan', 'local_kaznu');
         $langdd = local_kaznu_render_lang_dropdown();
         echo $langdd;
         echo '<script>(function(){'
             . 'document.body.classList.add("local-kaznu-debrand","local-kaznu-hide-temp");'
             . 'var b=document.querySelector(".navbar-brand");'
-            . 'if(b){b.innerHTML=' . json_encode('<span class="kzn-nav-brand"><strong>' . $brand . '</strong><em>' . $slogan . '</em></span>') . ';'
+            // Single-line brand — two-line + slogan breaks Boost navbar height/flex.
+            . 'if(b){b.innerHTML=' . json_encode('<span class="kzn-nav-brand"><strong>' . $brand . '</strong></span>') . ';'
             . 'b.href=' . json_encode((new moodle_url('/local/kaznu/landing.php'))->out(false)) . ';}'
             . 'document.title=document.title.replace(/Moodle LMS?/gi,' . json_encode($brand) . ');'
-            // Move language dropdown into navbar.
+            // Lang dropdown next to usermenu only — never inside primary-navigation.
             . 'var dd=document.querySelector("[data-kaznu-lang]");'
-            . 'var nav=document.querySelector(".primary-navigation .nav, .navbar-nav, .usermenu");'
-            . 'if(dd&&nav&&nav.parentNode){nav.parentNode.insertBefore(dd,nav);}'
+            . 'var um=document.querySelector(".navbar .usermenu");'
+            . 'var host=um?(um.closest(".navbar-nav")||um.parentNode):document.querySelector(".navbar .navbar-nav:last-of-type");'
+            . 'if(dd&&host&&host.parentNode){host.parentNode.insertBefore(dd,host);}'
             // Hide temporary Moodle clutter on student dashboard.
             . 'document.querySelectorAll(".block_timeline,.block_calendar_month,.block_calendar_upcoming,'
-            . '.block_recentlyaccessedcourses,.block_recentlyaccesseditems,.block_myoverview .btn-group,'
+            . '.block_recentlyaccessedcourses,.block_recentlyaccesseditems,.block_myoverview,'
             . '.activity-navigation").forEach(function(el){el.classList.add("kzn-temp-hidden");});'
             . '})();</script>';
         echo '<script>(function(){'
@@ -291,9 +425,38 @@ function local_kaznu_before_footer() {
 }
 
 /**
- * Landing + payment links in primary navigation.
+ * Landing + cabinet links in primary navigation.
  */
 function local_kaznu_extend_navigation(global_navigation $nav) {
+    global $PAGE;
+
+    $isportal = class_exists(\local_kaznu\access\portal_policy::class)
+        && \local_kaznu\access\portal_policy::is_portal_user();
+
+    // Portal primary bar is handled by primary_nav hook (home/my/courses hidden).
+    // Still add cabinet to global nav for legacy flat nav paths.
+    $oncabinet = false;
+    if (!empty($PAGE) && $PAGE->url) {
+        $path = $PAGE->url->get_path(false);
+        $oncabinet = str_contains($path, '/local/kaznu/my.php');
+    }
+
+    if ($isportal) {
+        $cab = $nav->add(
+            get_string('nav_my_cabinet', 'local_kaznu'),
+            new moodle_url('/local/kaznu/my.php'),
+            navigation_node::TYPE_CUSTOM,
+            null,
+            'local_kaznu_my_cabinet',
+            new pix_icon('i/home', '')
+        );
+        $cab->showinflatnavigation = false; // Primary hook owns the bar.
+        if ($oncabinet) {
+            $cab->make_active();
+        }
+        return;
+    }
+
     $home = $nav->add(
         get_string('landing_title', 'local_kaznu'),
         new moodle_url('/local/kaznu/landing.php'),
@@ -303,6 +466,21 @@ function local_kaznu_extend_navigation(global_navigation $nav) {
         new pix_icon('i/home', '')
     );
     $home->showinflatnavigation = true;
+
+    if (isloggedin() && !isguestuser()) {
+        $my = $nav->add(
+            get_string('nav_my_cabinet', 'local_kaznu'),
+            new moodle_url('/local/kaznu/my.php'),
+            navigation_node::TYPE_CUSTOM,
+            null,
+            'local_kaznu_my_cabinet',
+            new pix_icon('i/user', '')
+        );
+        $my->showinflatnavigation = true;
+        if ($oncabinet) {
+            $my->make_active();
+        }
+    }
 
     $node = $nav->add(
         get_string('navpay', 'local_kaznu'),

@@ -1,0 +1,102 @@
+{{!
+    @template core/loginform
+
+    Farabi School override (theme_farabi): single form — no vendor naming, no guest, no IDP.
+    Brand is provided by theme_farabi/login layout.
+}}
+<div class="loginform farabi-loginform">
+    {{#maintenance}}
+        <div class="alert alert-danger login-maintenance">
+            {{{maintenance}}}
+        </div>
+    {{/maintenance}}
+    {{#error}}
+        <div class="alert alert-danger" id="loginerrormessage" role="alert">{{error}}</div>
+    {{/error}}
+    {{#info}}
+        <div class="alert alert-info" id="logininfomessage" role="status">{{info}}</div>
+    {{/info}}
+    {{#showloginform}}
+        <form class="login-form" action="{{loginurl}}" method="post" id="login">
+            <input id="anchor" type="hidden" name="anchor" value="">
+            <script>document.getElementById('anchor').value = location.hash;</script>
+            <input type="hidden" name="logintoken" value="{{logintoken}}">
+            <div class="login-form-username mb-3">
+                <label for="username" class="form-label farabi-login-label">
+                    {{#str}} login_username, theme_farabi {{/str}}
+                </label>
+                <input type="text" name="username" id="username"
+                    class="form-control form-control-lg"
+                    value="{{username}}"
+                    autocomplete="username"
+                    autocapitalize="none"
+                    autocorrect="off"
+                    required>
+            </div>
+            <div class="login-form-password mb-3">
+                <label for="password" class="form-label farabi-login-label">
+                    {{#str}} login_password, theme_farabi {{/str}}
+                </label>
+                <input type="password" name="password" id="password" value=""
+                    class="form-control form-control-lg"
+                    autocomplete="current-password"
+                    required>
+            </div>
+            {{#recaptcha}}
+                <div class="login-form-recaptcha mb-3">
+                    {{{recaptcha}}}
+                </div>
+            {{/recaptcha}}
+            <div class="login-form-submit mb-0">
+                <button class="btn btn-primary btn-lg w-100" type="submit" id="loginbtn">
+                    {{#str}} login_submit, theme_farabi {{/str}}
+                </button>
+            </div>
+        </form>
+    {{/showloginform}}
+</div>
+
+{{#js}}
+    {{^error}}
+        {{#autofocusform}}
+            require(['core_form/events'], function(FormEvent) {
+                function autoFocus() {
+                    const userNameField = document.getElementById('username');
+                    const passwordField = document.getElementById('password');
+                    if (userNameField && userNameField.value.length == 0) {
+                        userNameField.focus();
+                    } else if (passwordField) {
+                        passwordField.focus();
+                    }
+                }
+                autoFocus();
+                window.addEventListener(FormEvent.eventTypes.fieldStructureChanged, autoFocus);
+            });
+        {{/autofocusform}}
+    {{/error}}
+    require(['core/pending'], function(Pending) {
+        const errorMessageDiv = document.getElementById('loginerrormessage');
+        const infoMessageDiv = document.getElementById('logininfomessage');
+        const errorMessage = errorMessageDiv?.textContent.trim();
+        const infoMessage = infoMessageDiv?.textContent.trim();
+        if (errorMessage || infoMessage) {
+            const pendingJS = new Pending('login-move-focus');
+            const usernameField = document.getElementById('username');
+            setTimeout(function() {
+                if (errorMessage && usernameField) {
+                    usernameField.focus();
+                }
+                if (errorMessage) {
+                    errorMessageDiv.innerHTML += "&nbsp;";
+                }
+                if (infoMessage) {
+                    infoMessageDiv.innerHTML += "&nbsp;";
+                }
+                pendingJS.resolve();
+            }, 500);
+        }
+    });
+    require(['core_form/submit'], function(Submit) {
+        Submit.init("loginbtn");
+    });
+{{/js}}

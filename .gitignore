@@ -3,3 +3,11 @@
 .vscode/
 *.swp
 *~
+
+# Host-specific ops scripts (may contain env-specific tooling)
+cli/verify_https_univer.sh
+cli/post_https_farabi.sh
+cli/setup_https_farabi.sh
+cli/deploy_https_gate.sh
+cli/try_https_ip.sh
+cli/inspect_https.sh

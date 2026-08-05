@@ -13,11 +13,17 @@ $PAGE->set_title(get_string('landing_title', 'local_kaznu'));
 $PAGE->add_body_class('local-kaznu-landing-body');
 
 local_kaznu_ensure_catalogue_visible();
+local_kaznu_retire_summer_course();
 
-$courses = local_kaznu_get_catalogue_courses(true);
-$featured = local_kaznu_get_demo_course();
-$payurl = new moodle_url('/local/kaznu/pay.php');
+$courses = local_kaznu_get_catalogue_courses(false);
+$featured = $courses[0] ?? null;
+$payurl = $featured
+    ? new moodle_url('/local/kaznu/course.php', ['id' => $featured->id])
+    : new moodle_url('/local/kaznu/landing.php', null, 'courses');
 $loginurl = new moodle_url('/login/index.php');
+$logouturl = new moodle_url('/login/logout.php', ['sesskey' => sesskey()]);
+$myurl = new moodle_url('/my/');
+$mycoursesurl = new moodle_url('/my/courses.php');
 $landingurl = new moodle_url('/local/kaznu/landing.php');
 $loggedin = isloggedin() && !isguestuser();
 
@@ -28,6 +34,9 @@ $shelves = [
     'research' => [],
 ];
 foreach ($courses as $c) {
+    if (local_kaznu_is_retired_course($c)) {
+        continue;
+    }
     $shelves[local_kaznu_course_shelf($c)][] = $c;
     if ($loggedin && local_kaznu_user_enrolled_in((int) $USER->id, (int) $c->id)) {
         $continue[] = $c;
@@ -43,24 +52,24 @@ if ($loggedin) {
 }
 
 $cssurl = new moodle_url('/local/kaznu/styles_landing.css', [
-    'rev' => get_config('local_kaznu', 'version') ?: '2026072201',
+    'rev' => get_config('local_kaznu', 'version') ?: '2026072421',
 ]);
 
 /**
  * Render one course tile.
  */
-$render_tile = function (stdClass $c, bool $enrolled = false) use ($payurl, $loggedin, $USER): string {
+$render_tile = function (stdClass $c, bool $enrolled = false) use ($loggedin, $USER, $landingurl): string {
+    // Always open the MasterClass hub — never jump straight into a file/PDF activity.
     $hub = new moodle_url('/local/kaznu/course.php', ['id' => $c->id]);
     $accent = local_kaznu_course_accent($c);
-    $ispaid = ($c->shortname === LOCAL_KAZNU_COURSE_SHORTNAME);
     $href = $hub->out(false);
-    $cta = $ispaid ? get_string('landing_cta_enrol', 'local_kaznu') : get_string('landing_cta_open', 'local_kaznu');
+    $cta = get_string('landing_cta_more', 'local_kaznu');
     if ($enrolled && $loggedin) {
-        $href = local_kaznu_resume_url($c, (int) $USER->id)->out(false);
         $cta = local_kaznu_resume_label($c, (int) $USER->id);
-    } else if ($ispaid && !$enrolled) {
-        $href = $payurl->out(false);
-        $cta = get_string('landing_cta_enrol', 'local_kaznu');
+    } else if (($c->shortname === LOCAL_KAZNU_COURSE_SHORTNAME) && !$enrolled) {
+        // Summer school retired — should not appear; keep safe fallback.
+        $href = $landingurl->out(false);
+        $cta = get_string('landing_cta_browse', 'local_kaznu');
     }
     $name = format_string($c->fullname);
     $short = s($c->shortname);
@@ -89,7 +98,7 @@ echo $OUTPUT->doctype();
 <body class="local-kaznu-landing-body">
 
 <div class="kzn-landing">
-    <header class="kzn-nav">
+    <header class="kzn-nav" data-kaznu-nav>
         <a class="kzn-brand" href="<?php echo $landingurl->out(false); ?>">
             <span class="kzn-mark" aria-hidden="true">
                 <svg viewBox="0 0 48 48" width="36" height="36" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -103,22 +112,29 @@ echo $OUTPUT->doctype();
                 <em><?php echo get_string('landing_brand_sub', 'local_kaznu'); ?></em>
             </span>
         </a>
-        <nav class="kzn-nav-links" aria-label="Main">
+        <button type="button" class="kzn-nav-toggle" aria-expanded="false" aria-controls="kzn-nav-menu"
+            aria-label="<?php echo get_string('landing_nav_menu', 'local_kaznu'); ?>">
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+        </button>
+        <nav id="kzn-nav-menu" class="kzn-nav-links" aria-label="Main">
             <a href="#about"><?php echo get_string('landing_nav_program', 'local_kaznu'); ?></a>
             <a href="#courses"><?php echo get_string('landing_nav_courses', 'local_kaznu'); ?></a>
             <a href="#ranks"><?php echo get_string('landing_nav_ranks', 'local_kaznu'); ?></a>
-            <?php echo local_kaznu_render_lang_dropdown($landingurl); ?>
             <?php if ($loggedin): ?>
                 <?php if ($xp): ?>
                     <span class="kzn-nav-xp" title="<?php echo s($xpprogress['title']); ?>">
                         Lv <?php echo (int) $xp->level; ?> · <?php echo (int) $xp->xp; ?> XP
                     </span>
                 <?php endif; ?>
-                <a class="kzn-nav-btn" href="#courses"><?php echo get_string('landing_nav_courses', 'local_kaznu'); ?></a>
+                <a class="kzn-nav-btn" href="<?php echo $myurl->out(false); ?>"><?php echo get_string('dash_title', 'local_kaznu'); ?></a>
+                <a href="<?php echo $logouturl->out(false); ?>"><?php echo get_string('logout'); ?></a>
             <?php else: ?>
                 <a href="<?php echo $loginurl->out(false); ?>"><?php echo get_string('login'); ?></a>
                 <a class="kzn-nav-btn" href="<?php echo $payurl->out(false); ?>"><?php echo get_string('landing_cta_enrol', 'local_kaznu'); ?></a>
             <?php endif; ?>
+            <?php echo local_kaznu_render_lang_dropdown($landingurl); ?>
         </nav>
     </header>
 
@@ -131,7 +147,11 @@ echo $OUTPUT->doctype();
             <p class="kzn-lead"><?php echo get_string('landing_lead', 'local_kaznu'); ?></p>
             <div class="kzn-hero-actions">
                 <a class="kzn-btn kzn-btn-accent" href="#courses"><?php echo get_string('landing_cta_browse', 'local_kaznu'); ?></a>
-                <a class="kzn-btn kzn-btn-ghost" href="<?php echo $payurl->out(false); ?>"><?php echo get_string('landing_cta_enrol', 'local_kaznu'); ?></a>
+                <?php if ($loggedin): ?>
+                    <a class="kzn-btn kzn-btn-ghost" href="<?php echo $myurl->out(false); ?>"><?php echo get_string('landing_nav_cabinet', 'local_kaznu'); ?></a>
+                <?php else: ?>
+                    <a class="kzn-btn kzn-btn-ghost" href="<?php echo $payurl->out(false); ?>"><?php echo get_string('landing_cta_enrol', 'local_kaznu'); ?></a>
+                <?php endif; ?>
             </div>
             <?php if ($loggedin && $xpprogress): ?>
                 <div class="kzn-hero-xp">
@@ -149,12 +169,10 @@ echo $OUTPUT->doctype();
         <?php if ($featured): ?>
             <?php
             $fenrolled = $loggedin && local_kaznu_user_enrolled_in((int) ($USER->id ?? 0), (int) $featured->id);
-            $fhref = $fenrolled
-                ? local_kaznu_resume_url($featured, (int) $USER->id)->out(false)
-                : $payurl->out(false);
+            $fhref = (new moodle_url('/local/kaznu/course.php', ['id' => $featured->id]))->out(false);
             $flabel = $fenrolled
                 ? local_kaznu_resume_label($featured, (int) $USER->id)
-                : get_string('landing_cta_enrol', 'local_kaznu');
+                : get_string('landing_cta_more', 'local_kaznu');
             ?>
             <a class="kzn-hero-feature" href="<?php echo $fhref; ?>">
                 <span class="kzn-hero-feature-label"><?php echo get_string('landing_featured', 'local_kaznu'); ?></span>
@@ -218,7 +236,7 @@ echo $OUTPUT->doctype();
         </div>
     </section>
 
-    <?php if ($shelves['summer']): ?>
+    <?php if (!empty($shelves['summer'])): ?>
     <section class="kzn-shelf-section">
         <div class="kzn-wrap">
             <h2><?php echo get_string('landing_shelf_summer', 'local_kaznu'); ?></h2>
@@ -296,18 +314,15 @@ echo $OUTPUT->doctype();
             <aside class="kzn-leaderboard" aria-label="<?php echo get_string('landing_leaderboard', 'local_kaznu'); ?>">
                 <h3><?php echo get_string('landing_leaderboard', 'local_kaznu'); ?></h3>
                 <?php if ($board): ?>
-                    <details class="kzn-lb-details">
-                        <summary><?php echo get_string('landing_leaderboard', 'local_kaznu'); ?></summary>
-                        <ol>
-                            <?php foreach ($board as $i => $row): ?>
-                                <li>
-                                    <span class="kzn-lb-rank"><?php echo $i + 1; ?></span>
-                                    <span class="kzn-lb-name"><?php echo fullname($row); ?></span>
-                                    <span class="kzn-lb-xp"><?php echo (int) $row->xp; ?> XP · Lv <?php echo (int) $row->level; ?></span>
-                                </li>
-                            <?php endforeach; ?>
-                        </ol>
-                    </details>
+                    <ol>
+                        <?php foreach ($board as $i => $row): ?>
+                            <li>
+                                <span class="kzn-lb-rank"><?php echo $i + 1; ?></span>
+                                <span class="kzn-lb-name"><?php echo fullname($row); ?></span>
+                                <span class="kzn-lb-xp"><?php echo (int) $row->xp; ?> XP · Lv <?php echo (int) $row->level; ?></span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ol>
                 <?php else: ?>
                     <p class="kzn-muted"><?php echo get_string('landing_leaderboard_empty', 'local_kaznu'); ?></p>
                 <?php endif; ?>
@@ -324,7 +339,13 @@ echo $OUTPUT->doctype();
             </div>
             <div class="kzn-footer-links">
                 <a href="https://kaznu-mba.kz/" rel="noopener" target="_blank">kaznu-mba.kz</a>
-                <a href="<?php echo $loginurl->out(false); ?>"><?php echo get_string('login'); ?></a>
+                <?php if ($loggedin): ?>
+                    <a href="<?php echo $myurl->out(false); ?>"><?php echo get_string('landing_nav_cabinet', 'local_kaznu'); ?></a>
+                    <a href="<?php echo $mycoursesurl->out(false); ?>"><?php echo get_string('mycourses'); ?></a>
+                    <a href="<?php echo $logouturl->out(false); ?>"><?php echo get_string('logout'); ?></a>
+                <?php else: ?>
+                    <a href="<?php echo $loginurl->out(false); ?>"><?php echo get_string('login'); ?></a>
+                <?php endif; ?>
                 <a href="https://farabi.university/?lang=ru" rel="noopener" target="_blank">farabi.university</a>
             </div>
         </div>
@@ -333,6 +354,32 @@ echo $OUTPUT->doctype();
 
 <script>
 (function () {
+    document.querySelectorAll('[data-kaznu-nav]').forEach(function (nav) {
+        var toggle = nav.querySelector('.kzn-nav-toggle');
+        var menu = nav.querySelector('.kzn-nav-links');
+        if (!toggle || !menu) return;
+        var setOpen = function (open) {
+            nav.classList.toggle('is-open', open);
+            toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            document.body.classList.toggle('kzn-nav-lock', open);
+        };
+        toggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            setOpen(!nav.classList.contains('is-open'));
+        });
+        menu.querySelectorAll('a[href^="#"], a[href]:not(.kzn-lang-item)').forEach(function (link) {
+            link.addEventListener('click', function () {
+                setOpen(false);
+            });
+        });
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') setOpen(false);
+        });
+        document.addEventListener('click', function (e) {
+            if (!nav.contains(e.target)) setOpen(false);
+        });
+    });
+
     document.querySelectorAll('[data-kaznu-lang]').forEach(function (root) {
         var btn = root.querySelector('.kzn-lang-btn');
         var menu = root.querySelector('.kzn-lang-menu');

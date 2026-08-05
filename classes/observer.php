@@ -7,6 +7,7 @@ require_once(__DIR__ . '/../locallib.php');
 
 /**
  * Quiz submit / grade → unlock modules + award hard XP.
+ * User delete → purge Univer cache / XP rows.
  */
 class observer {
 
@@ -16,6 +17,17 @@ class observer {
 
     public static function quiz_attempt_graded(\mod_quiz\event\attempt_graded $event): void {
         self::process_attempt($event);
+    }
+
+    /**
+     * Drop plugin data when a Moodle account is deleted.
+     */
+    public static function user_deleted(\core\event\user_deleted $event): void {
+        $userid = (int) $event->objectid;
+        if ($userid <= 0) {
+            return;
+        }
+        (new \local_kaznu\service\user_service())->purge_for_userid($userid);
     }
 
     /**
@@ -34,31 +46,28 @@ class observer {
             return;
         }
 
-        // Unlock path for summer school; XP for any catalogue course.
+        $userid = (int) $attempt->userid;
+        $quizid = (int) $attempt->quiz;
+
+        // Summer school: unlock next modules via completion + award XP.
         if ($course->shortname === LOCAL_KAZNU_COURSE_SHORTNAME) {
-            local_kaznu_sync_user_quiz_completion($course, (int) $attempt->userid, (int) $attempt->quiz);
+            local_kaznu_sync_user_quiz_completion($course, $userid, $quizid);
             return;
         }
 
         $gi = $DB->get_record('grade_items', [
             'courseid' => $course->id,
             'itemmodule' => 'quiz',
-            'iteminstance' => $attempt->quiz,
+            'iteminstance' => $quizid,
         ]);
         if (!$gi) {
             return;
         }
-        $gg = $DB->get_record('grade_grades', ['itemid' => $gi->id, 'userid' => $attempt->userid]);
-        if (!$gg || $gg->finalgrade === null || (float) $gg->finalgrade < 60) {
+        $gg = $DB->get_record('grade_grades', ['itemid' => $gi->id, 'userid' => $userid]);
+        if (!$gg || $gg->finalgrade === null) {
             return;
         }
 
-        $xp = LOCAL_KAZNU_XP_QUIZ_PASS;
-        $badge = 'quiz_pass';
-        if ((float) $gg->finalgrade >= 100) {
-            $xp += LOCAL_KAZNU_XP_QUIZ_PERFECT;
-            $badge = 'perfect_score';
-        }
-        local_kaznu_award_xp((int) $attempt->userid, $xp, 'quiz_pass', $badge);
+        local_kaznu_award_quiz_xp($userid, $quizid, (float) $gg->finalgrade, (float) ($gi->grademax ?: 100));
     }
 }

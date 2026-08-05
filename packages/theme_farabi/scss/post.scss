@@ -1,0 +1,290 @@
+// Farabi School — after Boost core.
+
+// Global surfaces: light body, dark navbar (Boost "navbar-dark" on charcoal).
+body {
+    background-color: $body-bg;
+    color: $body-color;
+    font-family: "Manrope", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+#page,
+#page-wrapper,
+#region-main,
+.main-inner,
+.path-mod #region-main {
+    background-color: $body-bg;
+    color: $body-color;
+}
+
+// Navbar: charcoal with light text (contrast).
+.navbar.fixed-top,
+.navbar.navbar-expand,
+nav.navbar {
+    background-color: $dark !important;
+    border-bottom: 1px solid rgba($light, 0.08);
+
+    .navbar-brand,
+    .navbar-brand .site-name,
+    .nav-link,
+    .usermenu .dropdown-toggle,
+    .usermenu .login,
+    .editmode-switch-form label,
+    a.nav-link {
+        color: $light !important;
+    }
+
+    .nav-link:hover,
+    .nav-link:focus,
+    .nav-link:focus-visible,
+    .nav-link.active,
+    .nav-item.show > .nav-link,
+    .dropdown-toggle:hover,
+    .dropdown-toggle:focus,
+    .dropdown-toggle[aria-expanded="true"] {
+        color: $white !important;
+        background-color: rgba($light, 0.1) !important;
+        outline: none;
+    }
+
+    .nav-link:focus-visible,
+    .dropdown-toggle:focus-visible {
+        box-shadow: 0 0 0 2px rgba($primary, 0.65);
+    }
+
+    .navbar-toggler {
+        border-color: rgba($light, 0.35);
+        color: $light;
+    }
+
+    .navbar-toggler-icon {
+        filter: invert(1) brightness(2);
+    }
+
+    // Dropdown panels stay light for WCAG on content actions.
+    .dropdown-menu {
+        background-color: $dropdown-bg;
+        color: $dropdown-link-color;
+        border: 1px solid $gray-300;
+
+        .dropdown-item,
+        a.dropdown-item {
+            color: $dropdown-link-color !important;
+            background-color: transparent !important;
+        }
+
+        .dropdown-item:hover,
+        .dropdown-item:focus,
+        a.dropdown-item:hover,
+        a.dropdown-item:focus {
+            color: $dropdown-link-hover-color !important;
+            background-color: $dropdown-link-hover-bg !important;
+        }
+
+        .dropdown-divider {
+            border-top-color: $gray-300;
+        }
+
+        .dropdown-header {
+            color: $dropdown-header-color;
+        }
+    }
+}
+
+// Content headings & links on cream.
+h1, h2, h3, h4, h5, h6,
+.page-header-headings h1,
+#page-header .page-header-headings {
+    color: $body-color;
+}
+
+a:not(.btn):not(.nav-link):not(.dropdown-item) {
+    color: $link-color;
+    &:hover,
+    &:focus {
+        color: $link-hover-color;
+    }
+}
+
+// Breadcrumb readable.
+.breadcrumb,
+.breadcrumb-item,
+.breadcrumb-item a {
+    color: $gray-700;
+}
+
+.breadcrumb-item.active {
+    color: $breadcrumb-active-color;
+}
+
+// Tables / forms / pagination contrast.
+.generaltable,
+table.flexible {
+    color: $table-color;
+    background: $white;
+
+    th, td {
+        color: $table-color;
+        border-color: $table-border-color;
+    }
+}
+
+.form-control,
+.custom-select,
+select.form-control {
+    color: $input-color;
+    background-color: $input-bg;
+    border-color: $input-border-color;
+}
+
+// Notifications.
+.alert {
+    color: $body-color;
+}
+
+// Login layout.
+body.pagelayout-login {
+    background:
+        radial-gradient(ellipse at 20% 0%, rgba($primary, 0.18), transparent 50%),
+        radial-gradient(ellipse at 100% 100%, rgba($dark, 0.12), transparent 45%),
+        $body-bg;
+
+    #page {
+        background: transparent;
+        min-height: 100vh;
+    }
+
+    .login-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        padding: 2rem 1rem 3rem;
+    }
+
+    .login-container {
+        width: 100%;
+        max-width: 440px;
+        background: $white;
+        border: 1px solid $gray-300;
+        border-radius: 4px;
+        padding: 1.75rem 1.5rem 2rem;
+        box-shadow: 0 12px 40px rgba($dark, 0.08);
+        color: $body-color;
+    }
+
+    .login-container h1,
+    .login-container .login-heading,
+    .login-container legend {
+        color: $dark;
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-weight: 600;
+    }
+
+    // Single-form login: hide multi-method / vendor UI if anything leaks in.
+    .login-heading,
+    .login-logo,
+    .login-identityproviders,
+    .login-instructions,
+    .login-signup,
+    .login-form-forgotpassword,
+    .login-divider,
+    .login-languagemenu,
+    .local-kaznu-univer-login-wrap,
+    .local-kaznu-login-admin-label,
+    .local-kaznu-univer-login-btn,
+    #guestlogin,
+    .loginguest,
+    .login-guest,
+    .login-form-guestbtn,
+    button[data-modal-title-str*="cookiesenabled"] {
+        display: none !important;
+    }
+
+    .farabi-login-label {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: $gray-700;
+        margin-bottom: 0.35rem;
+    }
+
+    .farabi-loginform .login-form-submit .btn {
+        width: 100%;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+    }
+}
+
+// Brand strip on login via template overlay class.
+.farabi-login-brand {
+    text-align: center;
+    margin-bottom: 1.25rem;
+
+    strong {
+        display: block;
+        font-family: "Cormorant Garamond", Georgia, serif;
+        font-size: 1.75rem;
+        color: $dark;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    span {
+        display: block;
+        font-size: 0.85rem;
+        color: $gray-600;
+        margin-top: 0.25rem;
+    }
+}
+
+// Local Kaznu cabinet pages keep cream + readable type.
+.path-local-kaznu {
+    background: $body-bg;
+    color: $body-color;
+}
+
+// Grade / user / calendar shells: ensure dark text on cream (fix black-on-black).
+.path-grade,
+.path-user,
+.path-calendar,
+.path-my,
+.path-report {
+    #page,
+    #region-main,
+    .page-context-header,
+    .page-header-headings,
+    .secondary-navigation .nav-link {
+        color: $body-color;
+    }
+
+    .page-context-header .page-header-headings h1,
+    #page-header h1,
+    .header-button-group .btn-link {
+        color: $body-color !important;
+    }
+}
+
+// Pagination / report tables.
+.path-grade .generaltable th,
+.path-grade .generaltable td {
+    color: $body-color;
+    background-color: $white;
+}
+
+// Focus rings for a11y.
+a:focus-visible,
+button:focus-visible,
+.btn:focus-visible,
+.form-control:focus-visible {
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+}
+
+// Mobile login.
+@media (max-width: 575.98px) {
+    body.pagelayout-login .login-container {
+        padding: 1.25rem 1rem 1.5rem;
+        border-radius: 0;
+        border-left: 0;
+        border-right: 0;
+    }
+}

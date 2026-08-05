@@ -10,6 +10,7 @@ require_once($CFG->dirroot . '/course/lib.php');
 require_once($CFG->dirroot . '/course/modlib.php');
 require_once($CFG->dirroot . '/user/lib.php');
 require_once($CFG->libdir . '/enrollib.php');
+require_once($CFG->libdir . '/resourcelib.php');
 require_once($CFG->dirroot . '/mod/quiz/lib.php');
 require_once($CFG->dirroot . '/question/type/multichoice/questiontype.php');
 require_once(__DIR__ . '/../locallib.php');
@@ -116,7 +117,7 @@ function local_kaznu_cli_add_url(stdClass $course, int $sectionnum, string $name
     $moduleinfo->introformat = FORMAT_HTML;
     $moduleinfo->visible = 1;
     $moduleinfo->externalurl = $url;
-    $moduleinfo->display = 0;
+    $moduleinfo->display = RESOURCELIB_DISPLAY_EMBED;
     $moduleinfo->displayoptions = 'a:1:{s:10:"printintro";i:0;}';
     if ($availability) {
         $moduleinfo->availability = $availability;

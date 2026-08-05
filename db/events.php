@@ -14,4 +14,10 @@ $observers = [
         'internal' => false,
         'priority' => 999,
     ],
+    [
+        'eventname' => '\core\event\user_deleted',
+        'callback' => '\local_kaznu\observer::user_deleted',
+        'internal' => false,
+        'priority' => 200,
+    ],
 ];

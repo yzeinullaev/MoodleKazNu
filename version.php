@@ -2,7 +2,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_kaznu';
-$plugin->version   = 2026072414;
-$plugin->requires  = 2024100700; // Moodle 4.5.
-$plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = '0.3.1-demo';
+$plugin->version   = 2026080704;
+$plugin->requires  = 2024100700; // Moodle 4.5 / 5.x compatible.
+$plugin->maturity  = MATURITY_RC;
+$plugin->release   = '1.0.0-portal-auth-staging';

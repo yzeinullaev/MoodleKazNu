@@ -1,0 +1,80 @@
+// Farabi School — design tokens (loaded before Boost preset).
+// Charcoal primary shell + coral accent; light cream content surfaces.
+
+$white:    #fff !default;
+$gray-100: #FFFBF7 !default;
+$gray-200: #f0ebe4 !default;
+$gray-300: #ddd4c8 !default;
+$gray-400: #c4b5a0 !default;
+$gray-500: #A3927B !default;
+$gray-600: #6b6560 !default;
+$gray-700: #3d4349 !default;
+$gray-800: #20262C !default;
+$gray-900: #14181c !default;
+$black:    #000 !default;
+
+$primary:       #F06543 !default;
+$secondary:     #A3927B !default;
+$success:       #2f6f4e !default;
+$info:          #3d5a80 !default;
+$warning:       #c48a2a !default;
+$danger:        #b33a2b !default;
+$light:         #FFFBF7 !default;
+$dark:          #20262C !default;
+
+$body-bg:                   #FFFBF7 !default;
+$body-color:                #20262C !default;
+$link-color:                #c44a2a !default;
+$link-hover-color:          #a33a20 !default;
+
+$navbar-dark-color:                rgba(#FFFBF7, .92) !default;
+$navbar-dark-hover-color:          #FFFBF7 !default;
+$navbar-dark-active-color:         #FFFBF7 !default;
+$navbar-dark-disabled-color:       rgba(#FFFBF7, .5) !default;
+$navbar-dark-toggler-border-color: rgba(#FFFBF7, .25) !default;
+
+$navbar-light-color:                rgba(#20262C, .85) !default;
+$navbar-light-hover-color:          #20262C !default;
+$navbar-light-active-color:         #20262C !default;
+
+$dropdown-bg:                       #FFFBF7 !default;
+$dropdown-link-color:               #20262C !default;
+$dropdown-link-hover-color:         #20262C !default;
+$dropdown-link-hover-bg:            #f0ebe4 !default;
+$dropdown-link-active-color:        #20262C !default;
+$dropdown-link-active-bg:           #e8dfd4 !default;
+$dropdown-header-color:             #6b6560 !default;
+
+$table-color:               #20262C !default;
+$table-border-color:        #ddd4c8 !default;
+$table-hover-bg:            rgba(#F06543, .06) !default;
+
+$card-bg:                   #fff !default;
+$card-color:                #20262C !default;
+$card-border-color:         #ddd4c8 !default;
+
+$breadcrumb-bg:             transparent !default;
+$breadcrumb-active-color:   #6b6560 !default;
+$breadcrumb-divider-color:  #A3927B !default;
+
+$input-bg:                  #fff !default;
+$input-color:               #20262C !default;
+$input-border-color:        #c4b5a0 !default;
+$input-focus-border-color:  #F06543 !default;
+$input-placeholder-color:   #A3927B !default;
+
+$pagination-color:                 #20262C !default;
+$pagination-bg:                    #fff !default;
+$pagination-border-color:          #ddd4c8 !default;
+$pagination-hover-color:           #20262C !default;
+$pagination-hover-bg:              #f0ebe4 !default;
+$pagination-active-color:          #fff !default;
+$pagination-active-bg:             #F06543 !default;
+$pagination-active-border-color:   #F06543 !default;
+
+$modal-content-bg:          #fff !default;
+$modal-content-color:       #20262C !default;
+
+// Moodle Boost variables.
+$drawer-bg:                 #fff !default;
+$drawer-bg-color:           #fff !default;

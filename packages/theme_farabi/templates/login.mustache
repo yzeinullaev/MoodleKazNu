@@ -1,0 +1,40 @@
+{{!
+    @template theme_farabi/login
+
+    Farabi School login layout (Boost child override).
+}}
+{{> theme_boost/head }}
+
+<body {{{ bodyattributes }}} class="theme-farabi">
+{{> core/local/toast/wrapper}}
+
+<div id="page-wrapper">
+
+    {{{ output.standard_top_of_body_html }}}
+
+    <div id="page" class="container-fluid pt-4 mt-0">
+        <div id="page-content" class="row">
+            <div id="region-main-box" class="col-12">
+                <div id="region-main" class="col-12 h-100">
+                <div class="login-wrapper">
+                    <div class="login-container">
+                        <div class="farabi-login-brand" role="banner">
+                            <strong>{{#str}} brand, theme_farabi {{/str}}</strong>
+                            <span>{{#str}} loginsubtitle, theme_farabi {{/str}}</span>
+                        </div>
+                    {{{ output.main_content }}}
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{> theme_boost/footer }}
+</div>
+
+</body>
+</html>
+{{#js}}
+require(['theme_boost/loader'], function() {
+});
+{{/js}}
