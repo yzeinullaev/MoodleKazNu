@@ -200,6 +200,10 @@ $string['xp_quiz_need_submit'] = 'XP тек әрекетті жіберіп, ≥
 $string['xp_quiz_awarded'] = 'Бұл тест үшін XP уже берілген.';
 $string['xp_quiz_failed'] = '60% өтілмеді — XP жоқ. Қайта тапсыруға болады.';
 $string['xp_quiz_panel_title'] = 'Жетістіктер';
+$string['achievements_level_xp'] = 'Lv {$a->level} · {$a->xp} XP';
+$string['achievements_toggle'] = 'Жетістіктерді көрсету немесе жасыру';
+$string['achievements_panel_label'] = 'Жетістіктер';
+$string['achievements_close'] = 'Жетістіктерді жабу';
 
 $string['univer_settings'] = 'Univer интеграциясы';
 $string['univer_settings_desc'] = 'Univer API арқылы студент SSO (тек оқу). Univer қолжетімсіз болса да Moodle кіруі жұмыс істейді.';

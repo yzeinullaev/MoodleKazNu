@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="local/proctopus/db" VERSION="20260808" COMMENT="XMLDB for local_proctopus"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd">
+  <TABLES>
+    <TABLE NAME="local_proctopus_session" COMMENT="Proctoring sessions (no JWT, no secrets)">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="courseid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="cmid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="quizid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="attemptid" TYPE="int" LENGTH="10" NOTNULL="false"/>
+        <FIELD NAME="external_session_id" TYPE="char" LENGTH="100" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="status" TYPE="char" LENGTH="32" NOTNULL="true" DEFAULT="created"/>
+        <FIELD NAME="proctoring_mode" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="started_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="expires_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="completed_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="last_callback_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="result_code" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="result_summary" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="correlation_id" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="externalsessionuk" TYPE="unique" FIELDS="external_session_id"/>
+      </KEYS>
+      <INDEXES>
+        <INDEX NAME="useridcmidix" UNIQUE="false" FIELDS="userid, cmid"/>
+        <INDEX NAME="statusix" UNIQUE="false" FIELDS="status"/>
+        <INDEX NAME="timecreatedix" UNIQUE="false" FIELDS="timecreated"/>
+        <INDEX NAME="correlationix" UNIQUE="false" FIELDS="correlation_id"/>
+      </INDEXES>
+    </TABLE>
+    <TABLE NAME="local_proctopus_callback" COMMENT="Callback journal (payload_hash only)">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="sessionid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="external_event_id" TYPE="char" LENGTH="128" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="event_type" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="safe_status" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="payload_hash" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="received_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="processed_at" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
+        <FIELD NAME="processing_status" TYPE="char" LENGTH="32" NOTNULL="true" DEFAULT="received"/>
+        <FIELD NAME="error_code" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT=""/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="externaleventuk" TYPE="unique" FIELDS="external_event_id"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>

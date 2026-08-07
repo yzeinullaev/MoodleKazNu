@@ -200,6 +200,10 @@ $string['xp_quiz_need_submit'] = '仅在提交且成绩 ≥60% 后发放 XP。�
 $string['xp_quiz_awarded'] = '本测验的 XP 已发放。';
 $string['xp_quiz_failed'] = '未达 60% — 无 XP。可以重考。';
 $string['xp_quiz_panel_title'] = '成就';
+$string['achievements_level_xp'] = 'Lv {$a->level} · {$a->xp} XP';
+$string['achievements_toggle'] = '显示或隐藏成就';
+$string['achievements_panel_label'] = '成就';
+$string['achievements_close'] = '关闭成就';
 
 $string['univer_settings'] = 'Univer 集成';
 $string['univer_settings_desc'] = '只读学生 SSO（Univer API）。Univer 不可用时 Moodle 登录仍可用。';

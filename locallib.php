@@ -325,6 +325,192 @@ function local_kaznu_xp_progress(stdClass $rec): array {
 }
 
 /**
+ * Quiz pages that must not show achievements / XP HUD UI (active attempt focus).
+ * Uses Moodle pagetype prefixes — not raw $_SERVER URL alone.
+ */
+function local_kaznu_is_quiz_focus_page(): bool {
+    global $PAGE;
+
+    $type = (string) ($PAGE->pagetype ?? '');
+    // Proctopus preparation / launch: hide achievements and keep exam-like focus.
+    // Completion page is normal again (trophy allowed).
+    if (strpos($type, 'local-proctopus-check') === 0
+            || strpos($type, 'local-proctopus-launch') === 0) {
+        return true;
+    }
+    if (!empty($PAGE->bodyclasses) && is_string($PAGE->bodyclasses)
+            && str_contains($PAGE->bodyclasses, 'local-proctopus-hide-achievements')) {
+        return true;
+    }
+    // Also match by URL path when body classes not yet final.
+    if (!empty($PAGE->url)) {
+        $path = $PAGE->url->get_path();
+        if (is_string($path)) {
+            if (str_contains($path, '/local/proctopus/check.php')
+                    || str_contains($path, '/local/proctopus/launch.php')) {
+                return true;
+            }
+            // return.php is mid-proctoring handoff.
+            if (str_contains($path, '/local/proctopus/return.php')) {
+                return true;
+            }
+        }
+    }
+
+    if ($type === '') {
+        return false;
+    }
+    // Active attempt chrome only (not review — results may keep light portal shell).
+    $prefixes = [
+        'mod-quiz-attempt',
+        'mod-quiz-summary',
+        'mod-quiz-processattempt',
+    ];
+    foreach ($prefixes as $prefix) {
+        if (strpos($type, $prefix) === 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Compact collapsible achievements panel (default collapsed; state in localStorage).
+ *
+ * Collapsed = trophy FAB only (no Lv/XP text). Expanded = panel with details.
+ * Does not change XP awarding. Callers must not output this on quiz focus pages.
+ *
+ * @param array{
+ *   id?:string,
+ *   title:string,
+ *   level:int,
+ *   xp:int,
+ *   bodyhtml:string,
+ *   variant?:string,
+ *   extra_class?:string
+ * } $data
+ */
+function local_kaznu_render_achievement_panel(array $data): string {
+    global $OUTPUT;
+    static $scriptprinted = false;
+
+    $id = !empty($data['id']) ? preg_replace('/[^a-zA-Z0-9_-]/', '', (string) $data['id']) : 'kzn-achievements';
+    if ($id === '') {
+        $id = 'kzn-achievements';
+    }
+    $title = (string) ($data['title'] ?? get_string('xp_quiz_panel_title', 'local_kaznu'));
+    $level = (int) ($data['level'] ?? 1);
+    $xp = (int) ($data['xp'] ?? 0);
+    $bodyhtml = (string) ($data['bodyhtml'] ?? '');
+    $variant = !empty($data['variant']) ? preg_replace('/[^a-z0-9_-]/', '', (string) $data['variant']) : 'hud';
+    $extra = !empty($data['extra_class']) ? ' ' . preg_replace('/[^a-zA-Z0-9 _-]/', '', (string) $data['extra_class']) : '';
+
+    $summary = get_string('achievements_level_xp', 'local_kaznu', (object) [
+        'level' => $level,
+        'xp' => $xp,
+    ]);
+    $bodyid = $id . '-body';
+    $btnid = $id . '-btn';
+    $closeid = $id . '-close';
+    $label = get_string('achievements_panel_label', 'local_kaznu');
+
+    // Moodle Font Awesome trophy (no emoji).
+    $icon = '';
+    if (!empty($OUTPUT) && is_object($OUTPUT) && method_exists($OUTPUT, 'pix_icon')) {
+        try {
+            $icon = $OUTPUT->pix_icon('i/badge', '', 'core', [
+                'class' => 'kzn-achievement-icon-img',
+                'aria-hidden' => 'true',
+            ]);
+        } catch (\Throwable $e) {
+            $icon = '';
+        }
+    }
+    if ($icon === '') {
+        $icon = '<i class="icon fa fa-trophy fa-fw kzn-achievement-icon-fa" aria-hidden="true"></i>';
+    }
+
+    $html = '<aside class="kzn-achievement-panel is-collapsed kzn-achievement--' . s($variant) . $extra . '"'
+        . ' data-kzn-achievements="1" data-kzn-ach-id="' . s($id) . '" id="' . s($id) . '">'
+        . '<button type="button" class="kzn-achievement-toggle" id="' . s($btnid) . '"'
+        . ' aria-expanded="false" aria-controls="' . s($bodyid) . '"'
+        . ' aria-label="' . s($label) . '"'
+        . ' title="' . s($label) . '">'
+        . '<span class="kzn-achievement-icon">' . $icon . '</span>'
+        . '</button>'
+        . '<div class="kzn-achievement-body" id="' . s($bodyid) . '" role="region"'
+        . ' aria-label="' . s($title) . '" hidden>'
+        . '<div class="kzn-achievement-head">'
+        . '<span class="kzn-achievement-title">' . s($title) . '</span>'
+        . '<button type="button" class="kzn-achievement-close" id="' . s($closeid) . '"'
+        . ' aria-label="' . s(get_string('achievements_close', 'local_kaznu')) . '">'
+        . '<span aria-hidden="true">&times;</span>'
+        . '</button>'
+        . '</div>'
+        . '<p class="kzn-achievement-summary">' . s($summary) . '</p>'
+        . $bodyhtml
+        . '</div>'
+        . '</aside>';
+
+    if (!$scriptprinted) {
+        $scriptprinted = true;
+        $html .= local_kaznu_achievement_panel_js();
+    }
+    return $html;
+}
+
+/**
+ * One shared JS for all achievement panels (safe if localStorage unavailable).
+ * KEY farabi_achievements_open: 1=expanded, 0=collapsed. Default collapsed.
+ */
+function local_kaznu_achievement_panel_js(): string {
+    return '<script>(function(){'
+        . 'var KEY="farabi_achievements_open";'
+        . 'var KEY_LEGACY="farabi_achievements_collapsed";'
+        . 'function openDefault(){'
+        . 'try{'
+        . 'var v=localStorage.getItem(KEY);'
+        . 'if(v==="1")return true;'
+        . 'if(v==="0")return false;'
+        // Migrate old inverted key once (collapsed=1 → open=0).
+        . 'var leg=localStorage.getItem(KEY_LEGACY);'
+        . 'if(leg==="0")return true;'
+        . 'if(leg==="1")return false;'
+        . '}catch(e){}'
+        . 'return false;'
+        . '}'
+        . 'function apply(panel,open){'
+        . 'var btn=panel.querySelector(".kzn-achievement-toggle");'
+        . 'var body=panel.querySelector(".kzn-achievement-body");'
+        . 'if(!btn||!body)return;'
+        . 'panel.classList.toggle("is-collapsed",!open);'
+        . 'panel.classList.toggle("is-expanded",open);'
+        . 'btn.setAttribute("aria-expanded",open?"true":"false");'
+        . 'if(open){body.removeAttribute("hidden");}else{body.setAttribute("hidden","");}'
+        . '}'
+        . 'function init(panel){'
+        . 'if(panel.getAttribute("data-kzn-ach-bound")==="1")return;'
+        . 'panel.setAttribute("data-kzn-ach-bound","1");'
+        . 'var btn=panel.querySelector(".kzn-achievement-toggle");'
+        . 'var close=panel.querySelector(".kzn-achievement-close");'
+        . 'if(!btn)return;'
+        . 'var open=openDefault();'
+        . 'apply(panel,open);'
+        . 'function setOpen(next){'
+        . 'apply(panel,next);'
+        . 'try{localStorage.setItem(KEY,next?"1":"0");}catch(e){}'
+        . '}'
+        . 'btn.addEventListener("click",function(){'
+        . 'setOpen(!panel.classList.contains("is-expanded"));'
+        . '});'
+        . 'if(close){close.addEventListener("click",function(e){e.preventDefault();setOpen(false);btn.focus();});}'
+        . '}'
+        . 'function boot(){document.querySelectorAll("[data-kzn-achievements]").forEach(init);}'
+        . 'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",boot);}else{boot();}'
+        . '})();</script>';
+}
+
+/**
  * Demo leaderboard names (used when real XP rows are scarce).
  *
  * @return array<int,array{firstname:string,lastname:string,xp:int}>
@@ -1324,6 +1510,11 @@ function local_kaznu_vimeo_embed_from_url(string $url): string {
 function local_kaznu_render_quiz_xp_panel(stdClass $course, int $userid, int $quizid): string {
     global $DB;
 
+    // Never render achievements UI during active quiz attempt pages.
+    if (local_kaznu_is_quiz_focus_page()) {
+        return '';
+    }
+
     $pass = LOCAL_KAZNU_XP_QUIZ_PASS;
     $perfect = LOCAL_KAZNU_XP_QUIZ_PERFECT;
     $hint = get_string('xp_quiz_hint', 'local_kaznu', (object) [
@@ -1376,15 +1567,27 @@ function local_kaznu_render_quiz_xp_panel(stdClass $course, int $userid, int $qu
         }
     }
 
-    $html = '<aside class="kzn-xp-panel ' . $cls . '" data-kaznu-xp-panel="1">'
-        . '<strong>' . get_string('xp_quiz_panel_title', 'local_kaznu') . '</strong>'
-        . '<p>' . $hint . '</p>';
+    $body = '<div class="kzn-xp-panel-inner ' . $cls . '">'
+        . '<p class="kzn-xp-panel-hint">' . $hint . '</p>';
     if ($status !== '') {
-        $html .= '<p class="kzn-xp-panel-status">' . $status . '</p>';
+        $body .= '<p class="kzn-xp-panel-status">' . $status . '</p>';
     }
-    $html .= '<p class="kzn-xp-panel-meta">Lv ' . (int) $rec->level . ' · ' . (int) $rec->xp . ' XP</p>'
-        . '</aside>';
-    return $html;
+    $tonext = LOCAL_KAZNU_XP_PER_LEVEL - ((int) $rec->xp % LOCAL_KAZNU_XP_PER_LEVEL);
+    if ($tonext === LOCAL_KAZNU_XP_PER_LEVEL && (int) $rec->xp > 0 && ((int) $rec->xp % LOCAL_KAZNU_XP_PER_LEVEL) === 0) {
+        $tonext = LOCAL_KAZNU_XP_PER_LEVEL;
+    }
+    $body .= '<p class="kzn-xp-panel-to-next">' . get_string('xp_to_next', 'local_kaznu', $tonext) . '</p>'
+        . '</div>';
+
+    return local_kaznu_render_achievement_panel([
+        'id' => 'kzn-xp-panel-q' . $quizid,
+        'title' => get_string('xp_quiz_panel_title', 'local_kaznu'),
+        'level' => (int) $rec->level,
+        'xp' => (int) $rec->xp,
+        'bodyhtml' => $body,
+        'variant' => 'inline',
+        'extra_class' => 'kzn-xp-panel',
+    ]);
 }
 
 /**

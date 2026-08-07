@@ -170,6 +170,9 @@ function local_kaznu_load_styles(): void {
 }
 
 function local_kaznu_before_standard_html_head() {
+    // Quiz focus chrome is selected via Moodle page body id/classes
+    // (page-mod-quiz-attempt|summary|processattempt). Do not call
+    // add_body_class here — some quiz layouts start output early and it fatals.
     local_kaznu_load_styles();
 }
 
@@ -212,11 +215,13 @@ function local_kaznu_before_footer() {
     $ondash = ($pagetype === 'my-index' || $pagetype === 'mycourses-index' || strpos($pagetype, 'my-') === 0);
     $oncoursehome = (strpos($pagetype, 'course-view') === 0);
     $onmod = (strpos($pagetype, 'mod-') === 0);
+    $quizfocus = local_kaznu_is_quiz_focus_page();
 
     $dbman = $GLOBALS['DB']->get_manager();
     $hasxp = $dbman->table_exists('local_kaznu_xp');
 
-    if ($hasxp && !empty($SESSION->local_kaznu_celebrate)) {
+    // Celebration after XP award (not during active attempt UI).
+    if ($hasxp && !empty($SESSION->local_kaznu_celebrate) && !$quizfocus) {
         $c = $SESSION->local_kaznu_celebrate;
         unset($SESSION->local_kaznu_celebrate);
         $title = !empty($c['levelup'])
@@ -232,6 +237,8 @@ function local_kaznu_before_footer() {
             . '<div class="xp">' . s($detail) . '</div>'
             . '<div class="gain">+' . (int) $c['gained'] . ' XP</div>'
             . '</div>';
+    } else if ($hasxp && !empty($SESSION->local_kaznu_celebrate) && $quizfocus) {
+        // Keep session flag until a non-focus page (e.g. course) so toast is not lost mid-submit.
     }
 
     if ($hasxp && $ondash) {
@@ -244,7 +251,8 @@ function local_kaznu_before_footer() {
         echo '<script>(function(){var a=document.querySelector("[data-kaznu-arena]");var m=document.getElementById("region-main");if(a&&m){m.insertBefore(a,m.firstChild);}})();</script>';
     }
 
-    if ($hasxp && local_kaznu_is_student_shell_page()) {
+    // Sticky achievements HUD: collapsible; never on quiz focus pages (no HTML).
+    if ($hasxp && !$quizfocus && local_kaznu_is_student_shell_page()) {
         $xp = local_kaznu_get_xp((int) $USER->id);
         $prog = local_kaznu_xp_progress($xp);
         $catalog = new moodle_url('/local/kaznu/landing.php');
@@ -255,13 +263,29 @@ function local_kaznu_before_footer() {
             ? get_string('hub_syllabus', 'local_kaznu')
             : get_string('dash_title', 'local_kaznu');
 
-        echo '<aside class="local-kaznu-hud" aria-label="XP">'
-            . '<strong>' . s($prog['title']) . '</strong>'
-            . '<div class="local-kaznu-hud-meta"><span>Lv ' . (int) $xp->level . '</span><span>' . (int) $xp->xp . ' XP</span></div>'
-            . '<div class="local-kaznu-hud-bar"><span style="width:' . (int) $prog['pct'] . '%"></span></div>'
-            . '<a href="' . $hub->out(false) . '">' . $hublabel . '</a>'
+        $body = '<p class="kzn-achievement-rank">' . s($prog['title']) . '</p>'
+            . '<div class="kzn-achievement-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100"'
+            . ' aria-valuenow="' . (int) $prog['pct'] . '"><span style="width:' . (int) $prog['pct'] . '%"></span></div>'
+            . '<p class="kzn-achievement-to-next">' . get_string('xp_to_next', 'local_kaznu', (int) ($prog['need'] - $prog['into'])) . '</p>'
+            . '<p class="kzn-achievement-links">'
+            . '<a href="' . $hub->out(false) . '">' . s($hublabel) . '</a>'
             . ' · <a href="' . $catalog->out(false) . '">' . get_string('landing_nav_courses', 'local_kaznu') . '</a>'
-            . '</aside>';
+            . '</p>';
+
+        echo local_kaznu_render_achievement_panel([
+            'id' => 'kzn-achievements-hud',
+            'title' => get_string('xp_quiz_panel_title', 'local_kaznu'),
+            'level' => (int) $xp->level,
+            'xp' => (int) $xp->xp,
+            'bodyhtml' => $body,
+            'variant' => 'hud',
+            'extra_class' => 'local-kaznu-hud',
+        ]);
+    }
+
+    // Lesson strip / nav / quiz intro XP — not during quiz attempt, summary, process, review.
+    if ($hasxp && !$quizfocus && local_kaznu_is_student_shell_page()) {
+        $xp = local_kaznu_get_xp((int) $USER->id);
 
         if ($onmod && !empty($COURSE->id) && (int) $COURSE->id > 1) {
             echo '<div class="local-kaznu-lesson-strip" data-kaznu-strip="1">'
@@ -278,15 +302,12 @@ function local_kaznu_before_footer() {
                 $cmid = (int) $PAGE->context->instanceid;
             }
             if ($cmid > 0) {
-                $afternext = (strpos($pagetype, 'mod-quiz-review') === 0
-                    || strpos($pagetype, 'mod-quiz-summary') === 0
-                    || strpos($pagetype, 'mod-quiz-view') === 0);
+                $afternext = (strpos($pagetype, 'mod-quiz-view') === 0);
                 echo local_kaznu_render_lesson_nav($COURSE, $cmid, (int) $USER->id, $afternext);
                 echo '<script>(function(){var n=document.querySelector("[data-kaznu-nav]");var m=document.getElementById("region-main");if(n&&m){m.appendChild(n);}})();</script>';
 
-                // XP rules only on quiz intro / review — not while answering questions.
-                if (strpos($pagetype, 'mod-quiz-view') === 0
-                        || strpos($pagetype, 'mod-quiz-review') === 0) {
+                // XP rules only on quiz intro (view) — not on attempt/summary/process/review.
+                if (strpos($pagetype, 'mod-quiz-view') === 0) {
                     $quizid = 0;
                     if (!empty($PAGE->cm) && $PAGE->cm->modname === 'quiz') {
                         $quizid = (int) $PAGE->cm->instance;
@@ -295,8 +316,11 @@ function local_kaznu_before_footer() {
                         $quizid = $cmquiz ? (int) $cmquiz->instance : 0;
                     }
                     if ($quizid > 0) {
-                        echo local_kaznu_render_quiz_xp_panel($COURSE, (int) $USER->id, $quizid);
-                        echo '<script>(function(){var p=document.querySelector("[data-kaznu-xp-panel]");var m=document.getElementById("region-main");if(p&&m){var s=m.querySelector("[data-kaznu-strip]");if(s&&s.nextSibling){m.insertBefore(p,s.nextSibling);}else{m.insertBefore(p,m.firstChild);}}})();</script>';
+                        $panel = local_kaznu_render_quiz_xp_panel($COURSE, (int) $USER->id, $quizid);
+                        if ($panel !== '') {
+                            echo $panel;
+                            echo '<script>(function(){var p=document.querySelector("[data-kzn-achievements].kzn-xp-panel");var m=document.getElementById("region-main");if(p&&m){var s=m.querySelector("[data-kaznu-strip]");if(s&&s.nextSibling){m.insertBefore(p,s.nextSibling);}else{m.insertBefore(p,m.firstChild);}}})();</script>';
+                        }
                     }
                 }
 

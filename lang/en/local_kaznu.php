@@ -205,6 +205,10 @@ $string['xp_quiz_need_submit'] = 'XP is awarded only after you submit an attempt
 $string['xp_quiz_awarded'] = 'XP for this quiz has already been awarded.';
 $string['xp_quiz_failed'] = 'Below 60% — no XP. You can try again.';
 $string['xp_quiz_panel_title'] = 'Achievements';
+$string['achievements_level_xp'] = 'Lv {$a->level} · {$a->xp} XP';
+$string['achievements_toggle'] = 'Show or hide achievements';
+$string['achievements_panel_label'] = 'Achievements';
+$string['achievements_close'] = 'Close achievements';
 
 $string['univer_settings'] = 'Univer integration';
 $string['univer_settings_desc'] = 'Read-only Univer API used by auth_univer (single login form). No dual-entry CTA.';
@@ -213,7 +217,14 @@ $string['univer_enabled_desc'] = 'Allows the HTTP client to call Univer. Does no
 $string['univer_unified_login_enabled'] = 'Enable unified login flow (Univer-first)';
 $string['univer_unified_login_enabled_desc'] = 'Kill switch. Default off. Even if auth_univer files are installed, loginpage_hook is inactive until this is on AND auth_univer is explicitly enabled (CLI enable_unified_login.php).';
 $string['univer_fallback_auth_methods'] = 'Local fallback auth methods (comma-separated)';
-$string['univer_fallback_auth_methods_desc'] = 'Used only on Univer bad credentials / not student / outage when a local user exists. Default: manual,email. Do not add ldap/db without review. Unknown usernames never fan-out.';
+$string['univer_fallback_auth_methods_desc'] = 'Used only on Univer bad credentials / not student / outage when a local user exists. Default: manual,email. Do not add ldap/db without review. Unknown usernames never fan-out. Faculty denial and mapping conflict never fall back.';
+$string['univer_faculty_filter_enabled'] = 'Enable Business School faculty filter';
+$string['univer_faculty_filter_enabled_desc'] = 'Kill switch. Default OFF. When ON, only students with allowed faculty IDs (or allowlisted logins) may complete Univer login. Do not enable until a stable numeric facultyId path is confirmed from the Univer API.';
+$string['univer_allowed_faculty_ids'] = 'Allowed Univer faculty IDs';
+$string['univer_allowed_faculty_ids_desc'] = 'Comma-separated positive integers (default 28 = Business School). Invalid tokens are ignored. Faculty display names are never used.';
+$string['univer_login_allowlist'] = 'Univer login allowlist (faculty override)';
+$string['univer_login_allowlist_desc'] = 'Comma-separated usernames that pass the faculty gate after successful Student credentials (default: oxikbayev.yernur). Compared trim+lowercase. Does not skip rate limits, mapping conflicts, or STUDENT check. Not shown in the UI.';
+$string['univer_faculty_access_denied'] = 'Access to the platform is provided to Business School students.';
 $string['univer_baseurl'] = 'Univer API base URL';
 $string['univer_baseurl_desc'] = 'Must be HTTPS (e.g. https://univerapi.kaznu.kz).';
 $string['univer_timeout'] = 'HTTP timeout (seconds)';

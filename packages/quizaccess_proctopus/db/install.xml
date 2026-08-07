@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="mod/quiz/accessrule/proctopus/db" VERSION="20260808" COMMENT="XMLDB for quizaccess_proctopus"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../../../lib/xmldb/xmldb.xsd">
+  <TABLES>
+    <TABLE NAME="quizaccess_proctopus" COMMENT="Per-quiz Proctopus access rule settings">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true" COMMENT="Standard Moodle primary key"/>
+        <FIELD NAME="quizid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" COMMENT="Quiz id"/>
+        <FIELD NAME="proctopusrequired" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" COMMENT="1 if proctoring required"/>
+        <FIELD NAME="proctopuswebsites" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT="" COMMENT="Allowed websites list"/>
+        <FIELD NAME="proctopuslookaway" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" COMMENT="Look away detection"/>
+        <FIELD NAME="proctopusmoveaway" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" COMMENT="Move away detection"/>
+        <FIELD NAME="proctopusvoices" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" COMMENT="Voice detection"/>
+        <FIELD NAME="proctopusduration" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" COMMENT="Duration override minutes, 0=use quiz"/>
+        <FIELD NAME="proctopusmode" TYPE="char" LENGTH="64" NOTNULL="true" DEFAULT="" COMMENT="Proctoring mode string"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key"/>
+        <KEY NAME="quiziduk" TYPE="unique" FIELDS="quizid" COMMENT="One row per quiz"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
