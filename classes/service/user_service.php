@@ -276,6 +276,7 @@ class user_service {
             'univer_userid' => $login->univeruserid,
             'univer_login' => $login->login,
             'faculty' => $profile->faculty,
+            'faculty_id' => $profile->facultyid !== null ? (int) $profile->facultyid : null,
             'speciality' => $profile->speciality,
             'course_number' => $profile->coursenumber,
             'group_name' => $profile->groupname,

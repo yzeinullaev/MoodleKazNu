@@ -120,6 +120,7 @@ class univer_client_test extends \advanced_testcase {
                 'name' => 'Yernur',
                 'fname' => '',
                 'iin' => '950223301098',
+                'facultyId' => '28',
                 'specialityOkpd' => '8D06103',
                 'course' => 2,
                 'snameEn' => 'Oxikbayev',
@@ -141,9 +142,35 @@ class univer_client_test extends \advanced_testcase {
         $this->assertSame('Yernur', $profile->firstname);
         $this->assertSame('Oxikbayev', $profile->lastname);
         $this->assertSame('ИТ', $profile->faculty);
+        $this->assertSame(28, $profile->facultyid);
         $this->assertSame('univer_10@users.invalid', $profile->email);
         $this->assertTrue($profile->emailistechnical);
         $this->assertStringNotContainsString('950223301098', json_encode($profile));
+    }
+
+    public function test_faculty_name_alone_does_not_set_facultyid(): void {
+        $transport = new univer_client_test_transport();
+        $transport->enqueue(new http_response(200, json_encode([
+            'code' => 0,
+            'userId' => 11,
+            'data' => ['id' => 11, 'login' => 'u2', 'userType' => 'STUDENT', 'access' => 1],
+        ]), ['set-cookie' => ['.ASPXAUTH=x']]));
+        $transport->enqueue(new http_response(200, json_encode([
+            'code' => 0,
+            'userId' => 11,
+            'data' => [
+                'sname' => 'X', 'name' => 'Y', 'course' => 1,
+            ],
+        ])));
+        $transport->enqueue(new http_response(200, json_encode([
+            'code' => 0,
+            'data' => [[['faculty' => 'Факультет: Бизнес-школа']]],
+        ])));
+        $client = new univer_client(null, 10, $transport);
+        $client->login('u2', 'p');
+        $profile = $client->get_profile_for_user(11);
+        $this->assertNull($profile->facultyid);
+        $this->assertStringContainsString('Бизнес', $profile->faculty);
     }
 
     public function test_group_list_and_idnumber(): void {

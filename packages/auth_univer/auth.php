@@ -105,6 +105,7 @@ class auth_plugin_univer extends auth_plugin_base {
                 \local_kaznu\local\login_result::ACCOUNT_REVIEW,
                 \local_kaznu\local\login_result::SYNC_FAILED,
                 \local_kaznu\local\login_result::PROFILE_FAILED,
+                \local_kaznu\local\login_result::FACULTY_DENIED,
                 \local_kaznu\local\login_result::DISABLED,
                 \local_kaznu\local\login_result::RATE_LIMITED,
             ];
@@ -125,16 +126,15 @@ class auth_plugin_univer extends auth_plugin_base {
                 return;
             }
 
-            // BAD_CREDENTIALS | NOT_STUDENT: fall through only if not a Univer-bound identity
-            // and local auth is in the configured allowlist (prevents foreign local takeover).
+            // BAD_CREDENTIALS | NOT_STUDENT: fall through only if local_fallback_allowed().
+            // NOT_STUDENT: no Univer student created; local account may still authenticate.
             if (!$this->local_fallback_allowed($username)) {
                 $this->wipe_password_materials($frm);
                 // Same UI as core invalidlogin (no enumeration of which backend failed).
                 \core\notification::error(get_string('auth_univer_invalidlogin', 'auth_univer'));
                 redirect(new moodle_url('/login/index.php'));
             }
-            // Keep $frm->password for Moodle — do not clear.
-        } finally {
+            // Keep $frm->password for Moodle — do not clear.        } finally {
             self::$processing = false;
         }
     }
@@ -253,6 +253,9 @@ class auth_plugin_univer extends auth_plugin_base {
             \local_kaznu\local\login_result::RATE_LIMITED => get_string('auth_univer_rate_limited', 'auth_univer'),
             \local_kaznu\local\login_result::DISABLED => get_string('auth_univer_disabled', 'auth_univer'),
             \local_kaznu\local\login_result::UNAVAILABLE => get_string('auth_univer_unavailable', 'auth_univer'),
+            \local_kaznu\local\login_result::FACULTY_DENIED => get_string('auth_univer_faculty_denied', 'auth_univer'),
+            \local_kaznu\local\login_result::PROFILE_FAILED => get_string('auth_univer_invalidlogin', 'auth_univer'),
+            \local_kaznu\local\login_result::ACCOUNT_REVIEW => get_string('auth_univer_invalidlogin', 'auth_univer'),
             default => get_string('auth_univer_invalidlogin', 'auth_univer'),
         };
     }

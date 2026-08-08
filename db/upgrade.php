@@ -415,5 +415,26 @@ function xmldb_local_kaznu_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026080704, 'local', 'kaznu');
     }
 
+    if ($oldversion < 2026080801) {
+        // Faculty access filter (feature flag default OFF). Store numeric faculty_id when API provides it.
+        $table = new xmldb_table('local_kaznu_univer_user');
+        $field = new xmldb_field('faculty_id', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'faculty');
+        if ($dbman->table_exists($table) && !$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        if (get_config('local_kaznu', 'univer_faculty_filter_enabled') === false) {
+            set_config('univer_faculty_filter_enabled', 0, 'local_kaznu');
+        }
+        if (get_config('local_kaznu', 'univer_allowed_faculty_ids') === false) {
+            set_config('univer_allowed_faculty_ids', '28', 'local_kaznu');
+        }
+        if (get_config('local_kaznu', 'univer_login_allowlist') === false) {
+            set_config('univer_login_allowlist', 'oxikbayev.yernur', 'local_kaznu');
+        }
+        // Never auto-block users. Never enable filter.
+        upgrade_plugin_savepoint(true, 2026080801, 'local', 'kaznu');
+    }
+
     return true;
 }

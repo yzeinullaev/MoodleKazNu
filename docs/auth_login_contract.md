@@ -15,7 +15,7 @@ Static `$processing` blocks re-entrant `user_login` during the same request.
 
 ## Soft fail → Moodle fallback
 
-Statuses: `BAD_CREDENTIALS`, `NOT_STUDENT` (and UNAVAILABLE with allowlist match)
+Statuses: `BAD_CREDENTIALS`, `NOT_STUDENT` (and `UNAVAILABLE` with allowlist match)
 
 | Condition | Action |
 |-----------|--------|
@@ -25,12 +25,18 @@ Statuses: `BAD_CREDENTIALS`, `NOT_STUDENT` (and UNAVAILABLE with allowlist match
 | local auth ∉ `univer_fallback_auth_methods` | no fallback |
 | otherwise | **password kept** on `$frm`; return from hook; core `authenticate_user_login` |
 
-UI does not distinguish BAD_CREDENTIALS vs NOT_STUDENT.
+`NOT_STUDENT`: never creates Univer student; local fallback only via the table above.
 
-## Hard fail
+## Hard fail (never fallback)
 
-`ACCOUNT_REVIEW`, `SYNC_FAILED`, `PROFILE_FAILED`, `DISABLED`, `RATE_LIMITED`  
+`ACCOUNT_REVIEW` (`mapping_conflict`), `SYNC_FAILED`, `PROFILE_FAILED` (`profile_unavailable`),  
+`FACULTY_DENIED` (`denied_faculty` / `missing_faculty`), `DISABLED`, `RATE_LIMITED`  
 → wipe password, notify, redirect. No core.
+
+Faculty UI message (no ID / allowlist):  
+«Доступ к платформе предоставляется студентам Бизнес-школы.»
+
+Feature flag `univer_faculty_filter_enabled` default **0**. When 0, faculty gate is a no-op.
 
 ## user_login (user.auth=univer)
 

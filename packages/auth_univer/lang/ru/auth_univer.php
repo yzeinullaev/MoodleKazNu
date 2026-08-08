@@ -11,3 +11,4 @@ $string['auth_univer_invalidlogin'] = 'Неверный логин или пар
 $string['auth_univer_unavailable'] = 'Вход временно недоступен. Попробуйте позже.';
 $string['auth_univer_rate_limited'] = 'Слишком много неудачных попыток. Попробуйте позже.';
 $string['auth_univer_disabled'] = 'Вход временно отключён. Обратитесь в поддержку.';
+$string['auth_univer_faculty_denied'] = 'Доступ к платформе предоставляется студентам Бизнес-школы.';

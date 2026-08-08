@@ -5,6 +5,7 @@ use local_kaznu\api\univer_client;
 use local_kaznu\api\univer_client_interface;
 use local_kaznu\api\univer_exception;
 use local_kaznu\event\univer_login_attempted;
+use local_kaznu\local\faculty_access_policy;
 use local_kaznu\local\login_rate_limiter;
 use local_kaznu\local\login_result;
 
@@ -91,28 +92,50 @@ class login_service {
             }
 
             if (!$apilogin->is_student()) {
+                // Not counted as bad password, but limits abuse of non-student accounts.
                 $limiter->register_failure($login, $ip);
                 $this->emit($correlation, 'not_student');
-                return new login_result(login_result::NOT_STUDENT, null, false, $correlation, 'univer_not_student');
+                return new login_result(
+                    login_result::NOT_STUDENT, null, false, $correlation, 'univer_not_student', 'not_student'
+                );
             }
             if ($apilogin->univeruserid <= 0) {
-                $limiter->register_failure($login, $ip);
-                $this->emit($correlation, 'missing_userid');
-                return new login_result(login_result::PROFILE_FAILED, null, false, $correlation, 'univer_profile_failed');
+                $this->emit($correlation, 'profile_unavailable');
+                return new login_result(
+                    login_result::PROFILE_FAILED, null, false, $correlation, 'univer_profile_failed', 'profile_unavailable'
+                );
             }
 
             try {
                 $profile = $client->get_profile_for_user($apilogin->univeruserid);
             } catch (univer_exception $e) {
-                $limiter->register_failure($login, $ip);
-                $this->emit($correlation, 'profile_failed');
-                return new login_result(login_result::PROFILE_FAILED, null, false, $correlation, 'univer_profile_failed');
+                // Valid credentials but profile unavailable — hard fail, not BAD_CREDENTIALS.
+                $this->emit($correlation, 'profile_unavailable');
+                return new login_result(
+                    login_result::PROFILE_FAILED, null, false, $correlation, 'univer_profile_failed', 'profile_unavailable'
+                );
             }
 
             if ($profile->univeruserid <= 0) {
-                $limiter->register_failure($login, $ip);
-                $this->emit($correlation, 'profile_userid_missing');
-                return new login_result(login_result::PROFILE_FAILED, null, false, $correlation, 'univer_profile_failed');
+                $this->emit($correlation, 'profile_unavailable');
+                return new login_result(
+                    login_result::PROFILE_FAILED, null, false, $correlation, 'univer_profile_failed', 'profile_unavailable'
+                );
+            }
+
+            // Faculty gate (default OFF). Never uses faculty display-name string.
+            $facultyoutcome = faculty_access_policy::evaluate($login, $profile->facultyid);
+            if (faculty_access_policy::is_deny_outcome($facultyoutcome)) {
+                // Correct credentials: do not burn rate-limit as failures.
+                $this->emit($correlation, $facultyoutcome);
+                return new login_result(
+                    login_result::FACULTY_DENIED,
+                    null,
+                    false,
+                    $correlation,
+                    'univer_faculty_access_denied',
+                    $facultyoutcome
+                );
             }
 
             $semester = null;
@@ -126,15 +149,15 @@ class login_service {
             try {
                 $synced = $this->users()->upsert_from_univer($apilogin, $profile, $semester, []);
             } catch (univer_exception $e) {
-                $limiter->register_failure($login, $ip);
                 if ($e->errorcode === 'univer_username_conflict') {
-                    $this->emit($correlation, 'conflict');
-                    return new login_result(login_result::ACCOUNT_REVIEW, null, false, $correlation, 'univer_account_review');
+                    $this->emit($correlation, 'mapping_conflict');
+                    return new login_result(
+                        login_result::ACCOUNT_REVIEW, null, false, $correlation, 'univer_account_review', 'mapping_conflict'
+                    );
                 }
                 $this->emit($correlation, 'sync_failed');
                 return new login_result(login_result::SYNC_FAILED, null, false, $correlation, 'univer_sync_failed');
             } catch (\Throwable $e) {
-                $limiter->register_failure($login, $ip);
                 $this->emit($correlation, 'sync_failed');
                 debugging('Univer sync failure correlation=' . $correlation, DEBUG_DEVELOPER);
                 return new login_result(login_result::SYNC_FAILED, null, false, $correlation, 'univer_sync_failed');
@@ -157,13 +180,19 @@ class login_service {
             }
 
             $limiter->register_success($login, $ip);
-            $this->emit($correlation, 'success', (int) $synced['user']->id);
+            $successoutcome = match ($facultyoutcome) {
+                faculty_access_policy::OUTCOME_SUCCESS_ALLOWLIST => 'success_allowlisted_user',
+                faculty_access_policy::OUTCOME_SUCCESS_BUSINESS => 'success_business_school',
+                default => 'success',
+            };
+            $this->emit($correlation, $successoutcome, (int) $synced['user']->id);
             return new login_result(
                 login_result::OK,
                 $synced['user'],
                 (bool) $synced['created'],
                 $correlation,
-                ''
+                '',
+                $successoutcome
             );
         } finally {
             // Phase 3: destroy cookie jar; no vault.

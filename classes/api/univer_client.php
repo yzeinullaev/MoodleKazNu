@@ -145,6 +145,8 @@ class univer_client implements univer_client_interface {
         }
 
         $faculty = $this->extract_profile_pair($pairs, 'faculty');
+        // Numeric faculty id only — never derive from display name labels.
+        $facultyid = $this->extract_faculty_id($data, $pairs);
         $speciality = $this->as_string($data['specialityOkpd'] ?? null);
         $group = $this->extract_profile_pair($pairs, 'group');
         if ($group === '') {
@@ -203,7 +205,8 @@ class univer_client implements univer_client_interface {
             (int) ($data['course'] ?? 0),
             $group,
             $firstnameen,
-            $lastnameen
+            $lastnameen,
+            $facultyid
         );
     }
 
@@ -436,7 +439,8 @@ class univer_client implements univer_client_interface {
             $profile->coursenumber,
             $profile->groupname,
             $profile->firstnameen,
-            $profile->lastnameen
+            $profile->lastnameen,
+            $profile->facultyid
         );
     }
 
@@ -515,6 +519,76 @@ class univer_client implements univer_client_interface {
     /**
      * @param array<int,mixed> $pairs
      */
+    /**
+     * Extract positive integer faculty id from GetStudentInfo data and/or profile pairs.
+     * Only known key paths — never parses faculty display names.
+     *
+     * Confirmed production path is still pending P0 discovery; candidates are tried in order.
+     *
+     * @param array<string,mixed> $data GetStudentInfo data
+     * @param array<int,mixed> $pairs profile/{culture} rows
+     */
+    private function extract_faculty_id(array $data, array $pairs): ?int {
+        $candidates = [
+            $data['facultyId'] ?? null,
+            $data['FacultyId'] ?? null,
+            $data['faculty_id'] ?? null,
+            $data['facultyID'] ?? null,
+        ];
+        if (isset($data['faculty']) && is_array($data['faculty'])) {
+            $candidates[] = $data['faculty']['id'] ?? ($data['faculty']['Id'] ?? null);
+            $candidates[] = $data['faculty']['facultyId'] ?? null;
+        }
+        foreach ($candidates as $raw) {
+            $id = $this->coerce_positive_int($raw);
+            if ($id !== null) {
+                return $id;
+            }
+        }
+        // Profile pairs: key facultyId only (not the label "faculty" string).
+        foreach ($pairs as $item) {
+            if (!is_array($item)) {
+                continue;
+            }
+            foreach ($item as $k => $v) {
+                $kl = strtolower((string) $k);
+                if (in_array($kl, ['facultyid', 'faculty_id'], true)) {
+                    $id = $this->coerce_positive_int($v);
+                    if ($id !== null) {
+                        return $id;
+                    }
+                }
+                if (is_array($v)) {
+                    foreach (['id', 'facultyId', 'faculty_id', 'Id'] as $nk) {
+                        if (array_key_exists($nk, $v)) {
+                            $id = $this->coerce_positive_int($v[$nk]);
+                            if ($id !== null && in_array(strtolower((string) $k), ['faculty', 'fac'], true)) {
+                                return $id;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private function coerce_positive_int(mixed $raw): ?int {
+        if ($raw === null || is_array($raw) || is_object($raw)) {
+            return null;
+        }
+        if (is_int($raw) || is_float($raw)) {
+            $id = (int) $raw;
+            return $id > 0 ? $id : null;
+        }
+        $s = trim((string) $raw);
+        if ($s === '' || !preg_match('/^\d+$/', $s)) {
+            return null;
+        }
+        $id = (int) $s;
+        return $id > 0 ? $id : null;
+    }
+
     private function extract_profile_pair(array $pairs, string $key): string {
         foreach ($pairs as $item) {
             if (!is_array($item)) {

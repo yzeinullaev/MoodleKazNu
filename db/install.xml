@@ -26,6 +26,7 @@
         <FIELD NAME="univer_userid" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" COMMENT="Immutable Univer user id"/>
         <FIELD NAME="univer_login" TYPE="char" LENGTH="100" NOTNULL="true" DEFAULT="" COMMENT="Last known Univer login"/>
         <FIELD NAME="faculty" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT=""/>
+        <FIELD NAME="faculty_id" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="Univer numeric faculty id when known"/>
         <FIELD NAME="speciality" TYPE="char" LENGTH="255" NOTNULL="true" DEFAULT=""/>
         <FIELD NAME="course_number" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0"/>
         <FIELD NAME="group_name" TYPE="char" LENGTH="100" NOTNULL="true" DEFAULT=""/>

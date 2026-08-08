@@ -11,3 +11,4 @@ $string['auth_univer_invalidlogin'] = 'Логин немесе құпия сөз
 $string['auth_univer_unavailable'] = 'Кіру уақытша қолжетімсіз. Кейінірек қайталаңыз.';
 $string['auth_univer_rate_limited'] = 'Тым көп сәтсіз әрекет. Кейінірек қайталаңыз.';
 $string['auth_univer_disabled'] = 'Кіру уақытша өшірулі. Қолдауға хабарласыңыз.';
+$string['auth_univer_faculty_denied'] = 'Платформаға қолжетімділік Бизнес-мектеп студенттеріне беріледі.';

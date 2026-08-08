@@ -54,6 +54,29 @@ if ($hassiteconfig) {
         PARAM_TEXT
     ));
 
+    $settings->add(new admin_setting_configcheckbox(
+        'local_kaznu/univer_faculty_filter_enabled',
+        get_string('univer_faculty_filter_enabled', 'local_kaznu'),
+        get_string('univer_faculty_filter_enabled_desc', 'local_kaznu'),
+        0
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_kaznu/univer_allowed_faculty_ids',
+        get_string('univer_allowed_faculty_ids', 'local_kaznu'),
+        get_string('univer_allowed_faculty_ids_desc', 'local_kaznu'),
+        '28',
+        PARAM_TEXT
+    ));
+
+    $settings->add(new admin_setting_configtext(
+        'local_kaznu/univer_login_allowlist',
+        get_string('univer_login_allowlist', 'local_kaznu'),
+        get_string('univer_login_allowlist_desc', 'local_kaznu'),
+        'oxikbayev.yernur',
+        PARAM_TEXT
+    ));
+
     $settings->add(new admin_setting_configtext(
         'local_kaznu/univer_baseurl',
         get_string('univer_baseurl', 'local_kaznu'),

@@ -11,3 +11,4 @@ $string['auth_univer_invalidlogin'] = 'Invalid username or password.';
 $string['auth_univer_unavailable'] = 'Sign-in is temporarily unavailable. Please try again later.';
 $string['auth_univer_rate_limited'] = 'Too many failed attempts. Please try again later.';
 $string['auth_univer_disabled'] = 'Sign-in is temporarily disabled. Please contact support.';
+$string['auth_univer_faculty_denied'] = 'Access to the platform is provided to Business School students.';

@@ -8,6 +8,9 @@ defined('MOODLE_INTERNAL') || die();
  *
  * Univer may return null for optional string fields (e.g. nameEn). Constructor
  * always coerces string properties so callers never TypeError on null.
+ *
+ * facultyid is set only when a numeric field is present in the API payload.
+ * Faculty display name is never used as an access criterion.
  */
 class student_profile {
     public readonly int $univeruserid;
@@ -23,6 +26,8 @@ class student_profile {
     public readonly string $groupname;
     public readonly string $firstnameen;
     public readonly string $lastnameen;
+    /** @var int|null Numeric faculty id when parsed; null if not found in API. */
+    public readonly ?int $facultyid;
 
     public function __construct(
         int $univeruserid,
@@ -37,7 +42,8 @@ class student_profile {
         int $coursenumber = 0,
         ?string $groupname = '',
         ?string $firstnameen = '',
-        ?string $lastnameen = ''
+        ?string $lastnameen = '',
+        ?int $facultyid = null
     ) {
         $this->univeruserid = $univeruserid;
         $this->login = (string) ($login ?? '');
@@ -52,5 +58,6 @@ class student_profile {
         $this->groupname = (string) ($groupname ?? '');
         $this->firstnameen = (string) ($firstnameen ?? '');
         $this->lastnameen = (string) ($lastnameen ?? '');
+        $this->facultyid = ($facultyid !== null && $facultyid > 0) ? $facultyid : null;
     }
 }
