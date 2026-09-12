@@ -395,3 +395,32 @@ $string['role_farabi_student_desc'] = 'Студенты портала: каби
 $string['local/kaznu:portalstudent'] = 'Режим студенческого портала Farabi';
 $string['local/kaznu:viewcabinet'] = 'Просмотр студенческого кабинета';
 
+// Student AI chat
+$string['ai_chat_settings'] = 'ИИ-помощник студента';
+$string['ai_chat_settings_desc'] = 'Отдельная страница чата с контекстом курсов, дисциплин и расписания студента. Ключ OpenAI можно задать через CLI.';
+$string['ai_chat_enabled'] = 'Включить ИИ-чат';
+$string['ai_chat_enabled_desc'] = 'Показывать страницу /local/kaznu/chat.php для авторизованных студентов.';
+$string['openai_api_key'] = 'OpenAI API key';
+$string['openai_api_key_desc'] = 'Секретный ключ OpenAI. Предпочтительно задавать через CLI: php local/kaznu/cli/set_openai_key.php --key=... --enable';
+$string['openai_model'] = 'Модель OpenAI';
+$string['openai_model_desc'] = 'Например gpt-4o-mini.';
+$string['nav_ai_chat'] = 'ИИ-помощник';
+$string['ai_chat_title'] = 'ИИ-помощник Farabi';
+$string['ai_chat_lead'] = 'Спросите про свои курсы, дисциплины, расписание и учёбу. Помощник использует ваши данные из кабинета.';
+$string['ai_chat_welcome'] = 'Здравствуйте, {$a}! Я помощник Farabi School. Могу подсказать по вашим курсам, дисциплинам и расписанию.';
+$string['ai_chat_placeholder'] = 'Напишите вопрос…';
+$string['ai_chat_input_label'] = 'Сообщение';
+$string['ai_chat_send'] = 'Отправить';
+$string['ai_chat_thinking'] = 'Думаю…';
+$string['ai_chat_disclaimer'] = 'Ответы формирует ИИ на основе данных вашего кабинета. Проверяйте важную информацию в официальных разделах.';
+$string['ai_chat_unavailable'] = 'ИИ-чат временно недоступен. Обратитесь к администратору (нужно включить функцию и указать ключ OpenAI).';
+$string['ai_chat_error_empty'] = 'Введите сообщение.';
+$string['ai_chat_error_too_long'] = 'Сообщение слишком длинное.';
+$string['ai_chat_error_not_configured'] = 'Ключ OpenAI не настроен.';
+$string['ai_chat_error_disabled'] = 'ИИ-чат отключён.';
+$string['ai_chat_error_provider'] = 'Не удалось получить ответ. Попробуйте позже.';
+$string['ai_chat_error_rate_limit'] = 'Слишком много запросов. Подождите несколько минут.';
+$string['ai_chat_suggest_schedule'] = 'Какое у меня расписание?';
+$string['ai_chat_suggest_courses'] = 'Какие у меня курсы и дисциплины?';
+$string['ai_chat_suggest_grades'] = 'Покажи мои оценки';
+

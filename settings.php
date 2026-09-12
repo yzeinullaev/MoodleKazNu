@@ -182,5 +182,30 @@ if ($hassiteconfig) {
         PARAM_INT
     ));
 
+    $settings->add(new admin_setting_heading(
+        'local_kaznu/aichatheading',
+        get_string('ai_chat_settings', 'local_kaznu'),
+        get_string('ai_chat_settings_desc', 'local_kaznu')
+    ));
+    $settings->add(new admin_setting_configcheckbox(
+        'local_kaznu/ai_chat_enabled',
+        get_string('ai_chat_enabled', 'local_kaznu'),
+        get_string('ai_chat_enabled_desc', 'local_kaznu'),
+        0
+    ));
+    $settings->add(new admin_setting_configpasswordunmask(
+        'local_kaznu/openai_api_key',
+        get_string('openai_api_key', 'local_kaznu'),
+        get_string('openai_api_key_desc', 'local_kaznu'),
+        ''
+    ));
+    $settings->add(new admin_setting_configtext(
+        'local_kaznu/openai_model',
+        get_string('openai_model', 'local_kaznu'),
+        get_string('openai_model_desc', 'local_kaznu'),
+        'gpt-4o-mini',
+        PARAM_TEXT
+    ));
+
     $ADMIN->add('localplugins', $settings);
 }

@@ -115,6 +115,20 @@ function local_kaznu_my_freshness_banner(array $st): string {
 }
 
 echo $OUTPUT->header();
+
+$aichatenabled = (int) get_config('local_kaznu', 'ai_chat_enabled')
+    && trim((string) get_config('local_kaznu', 'openai_api_key')) !== '';
+if ($aichatenabled) {
+    echo html_writer::div(
+        html_writer::link(
+            new moodle_url('/local/kaznu/chat.php'),
+            get_string('nav_ai_chat', 'local_kaznu'),
+            ['class' => 'btn btn-primary local-kaznu-ai-open-btn']
+        ),
+        'local-kaznu-my-actions mb-3'
+    );
+}
+
 if ($islinked) {
     echo html_writer::div($refreshaction, 'local-kaznu-my-actions mb-3');
 }

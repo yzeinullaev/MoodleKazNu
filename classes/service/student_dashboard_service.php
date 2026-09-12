@@ -85,8 +85,11 @@ class student_dashboard_service {
 
         $base = $this->subjects()->get_cabinet_data($userid);
         $profile = $base['profile'];
-        $year = $profile ? (int) $profile->current_year : 0;
-        $sem = $profile ? (int) $profile->current_semester : 0;
+        $profileyear = $profile ? (int) $profile->current_year : 0;
+        $profilesem = $profile ? (int) $profile->current_semester : 0;
+        $resolved = academic_period_resolver::resolve_for_user($userid, $profileyear, $profilesem);
+        $year = (int) $resolved['year'];
+        $sem = (int) $resolved['semester'];
 
         $status = $this->build_status($userid, $year, $sem);
 
@@ -95,6 +98,9 @@ class student_dashboard_service {
             'subjects' => $base['subjects'],
             'year' => $year,
             'semester' => $sem,
+            'period_source' => $resolved['source'],
+            'profile_year' => $profileyear,
+            'profile_semester' => $profilesem,
             'lessons' => [],
             'exams' => [],
             'midterms' => [],

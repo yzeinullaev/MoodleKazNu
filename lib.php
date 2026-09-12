@@ -478,6 +478,18 @@ function local_kaznu_extend_navigation(global_navigation $nav) {
         if ($oncabinet) {
             $cab->make_active();
         }
+        $chat = $nav->add(
+            get_string('nav_ai_chat', 'local_kaznu'),
+            new moodle_url('/local/kaznu/chat.php'),
+            navigation_node::TYPE_CUSTOM,
+            null,
+            'local_kaznu_ai_chat',
+            new pix_icon('i/messagecontent', '')
+        );
+        $chat->showinflatnavigation = false;
+        if (!empty($PAGE) && $PAGE->url && str_contains($PAGE->url->get_path(false), '/local/kaznu/chat.php')) {
+            $chat->make_active();
+        }
         return;
     }
 
@@ -503,6 +515,19 @@ function local_kaznu_extend_navigation(global_navigation $nav) {
         $my->showinflatnavigation = true;
         if ($oncabinet) {
             $my->make_active();
+        }
+
+        $chat = $nav->add(
+            get_string('nav_ai_chat', 'local_kaznu'),
+            new moodle_url('/local/kaznu/chat.php'),
+            navigation_node::TYPE_CUSTOM,
+            null,
+            'local_kaznu_ai_chat',
+            new pix_icon('i/messagecontent', '')
+        );
+        $chat->showinflatnavigation = true;
+        if (!empty($PAGE) && $PAGE->url && str_contains($PAGE->url->get_path(false), '/local/kaznu/chat.php')) {
+            $chat->make_active();
         }
     }
 

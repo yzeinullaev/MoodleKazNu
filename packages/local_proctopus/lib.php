@@ -29,16 +29,20 @@ function local_proctopus_live_calls_enabled(): bool {
 }
 
 /**
- * Temporary production safety gate (controlled live test scope).
- * Live outbound start is allowed only for the hidden test quiz CM.
- * Default allowlist: cmid 201 only.
+ * Live outbound start allowlist (cmids).
+ * Empty or "*" = all course modules (when live_calls_enabled).
+ * Comma/space-separated list otherwise (e.g. "123,151,191").
  */
 function local_proctopus_live_cmid_allowed(int $cmid): bool {
     $raw = trim((string) (get_config('local_proctopus', 'proctopus_live_cmid_allowlist') ?? ''));
-    if ($raw === '') {
-        $raw = '201';
+    if ($raw === '' || $raw === '*') {
+        // No hard allowlist — any quiz with the access rule may go live.
+        return true;
     }
     $allowed = array_filter(array_map('intval', preg_split('/[\s,;]+/', $raw)));
+    if (!$allowed) {
+        return true;
+    }
     return in_array((int) $cmid, $allowed, true);
 }
 

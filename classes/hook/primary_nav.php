@@ -35,7 +35,7 @@ final class primary_nav {
             }
         }
 
-        // Single destination: unified cabinet.
+        // Destinations: cabinet + AI assistant.
         if (!$view->find('local_kaznu_my_cabinet', null)) {
             $cab = $view->add(
                 get_string('nav_my_cabinet', 'local_kaznu'),
@@ -47,18 +47,34 @@ final class primary_nav {
             );
             $cab->showinflatnavigation = true;
         }
-
-        // Active state on cabinet (any section).
-        global $PAGE;
-        $oncabinet = false;
-        if (!empty($PAGE) && $PAGE->url) {
-            $path = $PAGE->url->get_path(false);
-            $oncabinet = str_contains($path, '/local/kaznu/my.php');
+        if (!$view->find('local_kaznu_ai_chat', null)) {
+            $chat = $view->add(
+                get_string('nav_ai_chat', 'local_kaznu'),
+                new \moodle_url('/local/kaznu/chat.php'),
+                navigation_node::TYPE_CUSTOM,
+                null,
+                'local_kaznu_ai_chat',
+                new \pix_icon('i/messagecontent', '')
+            );
+            $chat->showinflatnavigation = true;
         }
+
+        // Active state on cabinet / chat.
+        global $PAGE;
+        $path = (!empty($PAGE) && $PAGE->url) ? $PAGE->url->get_path(false) : '';
+        $oncabinet = str_contains($path, '/local/kaznu/my.php');
+        $onchat = str_contains($path, '/local/kaznu/chat.php');
         if ($oncabinet) {
             if ($cab = $view->find('local_kaznu_my_cabinet', null)) {
                 $cab->make_active();
             }
+        }
+        if ($onchat) {
+            if ($chat = $view->find('local_kaznu_ai_chat', null)) {
+                $chat->make_active();
+            }
+        }
+        if ($oncabinet || $onchat) {
             // Prevent Home winning active match by residual URL heuristics.
             foreach (['home', 'myhome', 'mycourses'] as $key) {
                 if ($n = $view->find($key, null)) {

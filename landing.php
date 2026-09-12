@@ -34,7 +34,7 @@ $shelves = [
     'research' => [],
 ];
 foreach ($courses as $c) {
-    if (local_kaznu_is_retired_course($c)) {
+    if (local_kaznu_is_excluded_from_catalogue($c)) {
         continue;
     }
     $shelves[local_kaznu_course_shelf($c)][] = $c;

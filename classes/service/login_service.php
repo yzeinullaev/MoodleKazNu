@@ -163,20 +163,12 @@ class login_service {
                 return new login_result(login_result::SYNC_FAILED, null, false, $correlation, 'univer_sync_failed');
             }
 
-            // Phase 4: subjects + enrol while Univer session still valid (before finally).
-            if ($semester) {
-                try {
-                    $this->subjects()->sync_from_client((int) $synced['user']->id, $client, $semester);
-                } catch (\Throwable $e) {
-                    // Login succeeds even if groupList/enrol fails; user can refresh later.
-                    debugging('Univer subjects sync skipped: ' . get_class($e), DEBUG_DEVELOPER);
-                }
-                // Phase 5: schedule / assessments / attendance — isolated per module.
-                try {
-                    (new student_dashboard_service())->sync_live_modules((int) $synced['user']->id, $client, $semester);
-                } catch (\Throwable $e) {
-                    debugging('Univer cabinet modules sync skipped: ' . get_class($e), DEBUG_DEVELOPER);
-                }
+            // Phase 4+5: full Univer snapshot (subjects, schedule, exams, grades, attendance)
+            // for current and previous academic period while session is still valid.
+            try {
+                (new full_student_sync_service())->sync_all((int) $synced['user']->id, $client, $semester);
+            } catch (\Throwable $e) {
+                debugging('Univer full student sync skipped: ' . get_class($e), DEBUG_DEVELOPER);
             }
 
             $limiter->register_success($login, $ip);

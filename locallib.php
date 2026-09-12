@@ -4,6 +4,9 @@ defined('MOODLE_INTERNAL') || die();
 /** Demo / featured paid course shortname. */
 const LOCAL_KAZNU_COURSE_SHORTNAME = 'SUMMER2026';
 
+/** Internal proctoring lab — never show on landing / student course lists. */
+const LOCAL_KAZNU_PROCTOPUS_TEST_SHORTNAME = 'PROCTOPUS_TEST';
+
 /** XP required per level (hard progression). */
 const LOCAL_KAZNU_XP_PER_LEVEL = 200;
 
@@ -33,6 +36,38 @@ function local_kaznu_is_retired_course(stdClass $course): bool {
 }
 
 /**
+ * Courses that must never appear on landing, shelves, or "my courses" for students.
+ * (Still accessible by direct URL / admin when needed.)
+ * Visibility of normal courses (including shortname TEST) is controlled only via Moodle admin.
+ */
+function local_kaznu_is_excluded_from_catalogue(stdClass $course): bool {
+    $sn = strtoupper((string) $course->shortname);
+    if ($sn === LOCAL_KAZNU_COURSE_SHORTNAME) {
+        return true;
+    }
+    if ($sn === LOCAL_KAZNU_PROCTOPUS_TEST_SHORTNAME) {
+        return true;
+    }
+    if (str_starts_with($sn, 'PROCTOPUS_')) {
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Shortnames permanently forced hidden (never auto-unhidden).
+ * Keep this list minimal — admin Hide/Show must work for all other courses.
+ *
+ * @return string[]
+ */
+function local_kaznu_catalogue_force_hidden_shortnames(): array {
+    return [
+        LOCAL_KAZNU_COURSE_SHORTNAME,
+        LOCAL_KAZNU_PROCTOPUS_TEST_SHORTNAME,
+    ];
+}
+
+/**
  * All catalogue courses (site courses except frontpage).
  *
  * @return stdClass[]
@@ -45,12 +80,15 @@ function local_kaznu_get_catalogue_courses(bool $includehidden = true, bool $inc
     if (!$includehidden) {
         $sql .= " AND visible = 1";
     }
-    if (!$includeretired) {
-        $sql .= " AND shortname <> :retired";
-        $params['retired'] = LOCAL_KAZNU_COURSE_SHORTNAME;
-    }
     $sql .= " ORDER BY sortorder ASC, fullname ASC";
-    return array_values($DB->get_records_sql($sql, $params));
+    $rows = array_values($DB->get_records_sql($sql, $params));
+    if ($includeretired) {
+        return $rows;
+    }
+    return array_values(array_filter(
+        $rows,
+        static fn(stdClass $c): bool => !local_kaznu_is_excluded_from_catalogue($c)
+    ));
 }
 
 /**
@@ -108,34 +146,38 @@ function local_kaznu_find_course_youtube_url(int $courseid): string {
 }
 
 /**
- * Demo trailer YouTube IDs (rotated per course).
+ * Curated course trailer YouTube video IDs (language-aware).
  *
- * @return string[]
+ * @return string empty if none configured
  */
-function local_kaznu_mock_trailer_ids(): array {
-    return [
-        'qp0HIF3SfI4', // TED: How great leaders inspire action
-        'UF8uR6Z6KLc', // Steve Jobs Stanford
-        'arj7oStGLkU', // TED: Inside the mind of a master procrastinator
-        'i9KEU97utPw',
-        '8CwoCtBZn9k',
-        '3QIfkeA6HBY',
-        'RLal0oX3s6s',
-        'ZXsQAXx_ao0',
-    ];
+function local_kaznu_course_trailer_video_id(stdClass $course): string {
+    $sn = strtoupper((string) $course->shortname);
+    // Corporate Finance — EMBA 7M04106.
+    if ($sn === 'EMBA_CORPFIN_2025' || str_contains($sn, 'CORPFIN')) {
+        $lang = current_language();
+        if (str_starts_with($lang, 'en')) {
+            return '05e3cPm4-uE';
+        }
+        // Russian (default) and other UI languages.
+        return 'gouIAZD-m5k';
+    }
+    return '';
 }
 
 /**
- * Resolve course trailer YouTube watch/embed URL (real activity or mock).
+ * Resolve course trailer YouTube embed/watch URL (configured map, then URL activity).
+ * Does not invent placeholder TED clips (keeps landing free of test filler video).
  */
 function local_kaznu_course_trailer_url(stdClass $course): string {
+    $id = local_kaznu_course_trailer_video_id($course);
+    if ($id !== '') {
+        return 'https://www.youtube.com/embed/' . $id . '?rel=0&modestbranding=1';
+    }
     $found = local_kaznu_find_course_youtube_url((int) $course->id);
     if ($found !== '') {
         return $found;
     }
-    $ids = local_kaznu_mock_trailer_ids();
-    $id = $ids[((int) $course->id) % count($ids)];
-    return 'https://www.youtube.com/embed/' . $id . '?rel=0&modestbranding=1';
+    return '';
 }
 
 /**
@@ -790,9 +832,17 @@ function local_kaznu_confirm_url(int $courseid = 0): moodle_url {
 
 /**
  * Plain-text course blurb from Moodle summary (for class landing).
+ * Runs multilang filters first so RU/EN mlang blocks resolve correctly.
  */
 function local_kaznu_course_blurb(stdClass $course, int $maxlen = 280): string {
-    $raw = trim(html_to_text($course->summary ?? '', 0, false));
+    $format = (int) ($course->summaryformat ?? FORMAT_HTML);
+    $html = format_text((string) ($course->summary ?? ''), $format, [
+        'context' => context_course::instance((int) $course->id),
+        'filter' => true,
+        'para' => false,
+        'noclean' => false,
+    ]);
+    $raw = trim(html_to_text($html, 0, false));
     $raw = preg_replace('/\s+/u', ' ', $raw) ?? '';
     if ($raw === '') {
         return get_string('hub_blurb_default', 'local_kaznu');
@@ -830,16 +880,16 @@ function local_kaznu_should_debrand(): bool {
 }
 
 /**
- * Make catalogue courses visible for the demo shelf (never unhide retired summer school).
+ * Enforce permanent lab/retired exclusions only.
+ * Does NOT auto-unhide courses: Moodle admin "Hide" (visible=0) is respected on landing.
  */
 function local_kaznu_ensure_catalogue_visible(): void {
     global $DB;
-    $DB->execute(
-        "UPDATE {course} SET visible = 1 WHERE id > 1 AND visible = 0 AND shortname <> ?",
-        [LOCAL_KAZNU_COURSE_SHORTNAME]
-    );
-    // Keep summer school hidden from students.
-    $DB->set_field('course', 'visible', 0, ['shortname' => LOCAL_KAZNU_COURSE_SHORTNAME]);
+
+    // Never force visible=1 — that overwrote admin hides on every landing hit.
+    foreach (local_kaznu_catalogue_force_hidden_shortnames() as $shortname) {
+        $DB->set_field('course', 'visible', 0, ['shortname' => $shortname]);
+    }
 }
 
 /**
@@ -1164,7 +1214,11 @@ function local_kaznu_get_user_courses(int $userid): array {
         if ((int) $c->id <= 1) {
             continue;
         }
-        if (local_kaznu_is_retired_course($c)) {
+        // Hidden in admin (visible=0) — do not list on portal shelves/dashboard.
+        if ((int) ($c->visible ?? 1) !== 1) {
+            continue;
+        }
+        if (local_kaznu_is_excluded_from_catalogue($c)) {
             continue;
         }
         $all[] = $c;

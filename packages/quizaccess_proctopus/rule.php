@@ -73,12 +73,22 @@ class quizaccess_proctopus extends access_rule_base {
             unset($SESSION->local_proctopus_admit[$cmid]);
         }
 
-        // Gate panel: send student to preparation page first (never direct Proctopus).
+        $check = new moodle_url('/local/proctopus/check.php', ['cmid' => $cmid]);
+
+        // startattempt/attempt throw moodle_exception which escapes {$a} — so HTML becomes
+        // visible tags. Redirect to prep instead of returning markup on those entry points.
+        $script = (string) ($_SERVER['SCRIPT_FILENAME'] ?? ($_SERVER['SCRIPT_NAME'] ?? ''));
+        $basename = strtolower(basename(str_replace('\\', '/', $script)));
+        if (in_array($basename, ['startattempt.php', 'attempt.php', 'summary.php'], true)) {
+            redirect($check);
+        }
+
+        // Quiz view page renders prevent messages as HTML (not escaped).
         if (function_exists('local_proctopus_render_readiness_panel')) {
             return local_proctopus_render_readiness_panel($cmid, false);
         }
 
-        $check = new moodle_url('/local/proctopus/check.php', ['cmid' => $cmid]);
+        // Plain-text fallback (safe if ever passed through s()/exception $a).
         return get_string('must_start_proctoring', 'quizaccess_proctopus', $check->out(false));
     }
 
