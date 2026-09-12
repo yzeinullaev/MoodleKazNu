@@ -61,4 +61,31 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+    /** Upload / manage own thesis submissions (when thesis_enabled). */
+    'local/kaznu:thesisupload' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'user' => CAP_ALLOW,
+            'student' => CAP_ALLOW,
+        ],
+    ],
+    /** Supervise / review / sign assigned submissions. */
+    'local/kaznu:thesissupervise' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW,
+        ],
+    ],
+    /** Manage rule sets and all submissions. */
+    'local/kaznu:thesismanage' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 ];

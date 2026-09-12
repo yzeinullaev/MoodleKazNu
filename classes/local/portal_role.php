@@ -46,6 +46,7 @@ final class portal_role {
         set_role_contextlevels($roleid, [CONTEXT_SYSTEM]);
         $sys = \context_system::instance();
         assign_capability('local/kaznu:viewportal', CAP_ALLOW, $roleid, $sys->id, true);
+        assign_capability('local/kaznu:thesisupload', CAP_ALLOW, $roleid, $sys->id, true);
         assign_capability('moodle/user:manageownfiles', CAP_PROHIBIT, $roleid, $sys->id, true);
         assign_capability('moodle/blog:create', CAP_PROHIBIT, $roleid, $sys->id, true);
         assign_capability('moodle/blog:view', CAP_PROHIBIT, $roleid, $sys->id, true);
@@ -76,6 +77,7 @@ final class portal_role {
         assign_capability('local/kaznu:viewportal', CAP_ALLOW, $roleid, $sys->id, true);
         assign_capability('local/kaznu:viewuniverdata', CAP_ALLOW, $roleid, $sys->id, true);
         assign_capability('local/kaznu:portalstudent', CAP_ALLOW, $roleid, $sys->id, true);
+        assign_capability('local/kaznu:thesisupload', CAP_ALLOW, $roleid, $sys->id, true);
         assign_capability('moodle/user:manageownfiles', CAP_PROHIBIT, $roleid, $sys->id, true);
         assign_capability('moodle/blog:create', CAP_PROHIBIT, $roleid, $sys->id, true);
         assign_capability('moodle/blog:view', CAP_PROHIBIT, $roleid, $sys->id, true);

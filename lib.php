@@ -200,6 +200,89 @@ function local_kaznu_before_standard_head_html() {
 }
 
 /**
+ * Student beta allowlist for AI chat + thesis student UI.
+ * Matches exact username or suffix ".token" (e.g. yernur → oxikbayev.yernur).
+ * Site admins always pass. Supervisors keep thesis review via their own caps.
+ *
+ * @param stdClass|null $user
+ */
+function local_kaznu_student_preview_allowed(?stdClass $user = null): bool {
+    global $USER;
+
+    $user = $user ?? $USER;
+    if (empty($user->id) || (int) $user->id <= 0) {
+        return false;
+    }
+    if (function_exists('isguestuser') && isguestuser($user)) {
+        return false;
+    }
+    if (is_siteadmin($user)) {
+        return true;
+    }
+
+    $raw = trim((string) get_config('local_kaznu', 'student_preview_usernames'));
+    if ($raw === '') {
+        $raw = 'yernur';
+    }
+    $username = core_text::strtolower(trim((string) ($user->username ?? '')));
+    if ($username === '') {
+        return false;
+    }
+    foreach (preg_split('/[\s,;]+/', $raw, -1, PREG_SPLIT_NO_EMPTY) as $token) {
+        $token = core_text::strtolower(trim((string) $token));
+        if ($token === '') {
+            continue;
+        }
+        if ($username === $token || str_ends_with($username, '.' . $token)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Whether AI chat appears in menus / buttons for the current user.
+ */
+function local_kaznu_ai_chat_menu_visible(): bool {
+    if (!isloggedin() || isguestuser()) {
+        return false;
+    }
+    if ((int) get_config('local_kaznu', 'ai_chat_enabled') !== 1) {
+        return false;
+    }
+    return local_kaznu_student_preview_allowed();
+}
+
+/**
+ * AI chat + thesis shortcut buttons (cabinet and Moodle /my/).
+ */
+function local_kaznu_render_feature_action_buttons(): string {
+    if (!isloggedin() || isguestuser()) {
+        return '';
+    }
+
+    $bits = [];
+    if (local_kaznu_ai_chat_menu_visible()) {
+        $bits[] = html_writer::link(
+            new moodle_url('/local/kaznu/chat.php'),
+            get_string('nav_ai_chat', 'local_kaznu'),
+            ['class' => 'btn btn-primary local-kaznu-ai-open-btn me-2']
+        );
+    }
+    if (local_kaznu_thesis_menu_visible()) {
+        $bits[] = html_writer::link(
+            new moodle_url('/local/kaznu/thesis/index.php'),
+            get_string('nav_thesis', 'local_kaznu'),
+            ['class' => 'btn btn-secondary local-kaznu-thesis-open-btn']
+        );
+    }
+    if (!$bits) {
+        return '';
+    }
+    return html_writer::div(implode('', $bits), 'local-kaznu-my-actions mb-3');
+}
+
+/**
  * Arena / dashboard / XP HUD / celebration.
  */
 function local_kaznu_before_footer() {
@@ -216,6 +299,17 @@ function local_kaznu_before_footer() {
     $oncoursehome = (strpos($pagetype, 'course-view') === 0);
     $onmod = (strpos($pagetype, 'mod-') === 0);
     $quizfocus = local_kaznu_is_quiz_focus_page();
+
+    // Moodle core /my/ does not include Farabi cabinet buttons — inject them.
+    if ($pagetype === 'my-index' || $pagetype === 'mycourses-index') {
+        $actions = local_kaznu_render_feature_action_buttons();
+        if ($actions !== '') {
+            echo $actions;
+            echo '<script>(function(){var a=document.querySelector(".local-kaznu-my-actions");'
+                . 'var m=document.getElementById("region-main");'
+                . 'if(a&&m){m.insertBefore(a,m.firstChild);}})();</script>';
+        }
+    }
 
     $dbman = $GLOBALS['DB']->get_manager();
     $hasxp = $dbman->table_exists('local_kaznu_xp');
@@ -478,17 +572,33 @@ function local_kaznu_extend_navigation(global_navigation $nav) {
         if ($oncabinet) {
             $cab->make_active();
         }
-        $chat = $nav->add(
-            get_string('nav_ai_chat', 'local_kaznu'),
-            new moodle_url('/local/kaznu/chat.php'),
-            navigation_node::TYPE_CUSTOM,
-            null,
-            'local_kaznu_ai_chat',
-            new pix_icon('i/messagecontent', '')
-        );
-        $chat->showinflatnavigation = false;
-        if (!empty($PAGE) && $PAGE->url && str_contains($PAGE->url->get_path(false), '/local/kaznu/chat.php')) {
-            $chat->make_active();
+        if (local_kaznu_ai_chat_menu_visible()) {
+            $chat = $nav->add(
+                get_string('nav_ai_chat', 'local_kaznu'),
+                new moodle_url('/local/kaznu/chat.php'),
+                navigation_node::TYPE_CUSTOM,
+                null,
+                'local_kaznu_ai_chat',
+                new pix_icon('i/messagecontent', '')
+            );
+            $chat->showinflatnavigation = false;
+            if (!empty($PAGE) && $PAGE->url && str_contains($PAGE->url->get_path(false), '/local/kaznu/chat.php')) {
+                $chat->make_active();
+            }
+        }
+        if (local_kaznu_thesis_menu_visible()) {
+            $thesis = $nav->add(
+                get_string('nav_thesis', 'local_kaznu'),
+                new moodle_url('/local/kaznu/thesis/index.php'),
+                navigation_node::TYPE_CUSTOM,
+                null,
+                'local_kaznu_thesis',
+                new pix_icon('i/report', '')
+            );
+            $thesis->showinflatnavigation = false;
+            if (!empty($PAGE) && $PAGE->url && str_contains($PAGE->url->get_path(false), '/local/kaznu/thesis/')) {
+                $thesis->make_active();
+            }
         }
         return;
     }
@@ -517,17 +627,34 @@ function local_kaznu_extend_navigation(global_navigation $nav) {
             $my->make_active();
         }
 
-        $chat = $nav->add(
-            get_string('nav_ai_chat', 'local_kaznu'),
-            new moodle_url('/local/kaznu/chat.php'),
-            navigation_node::TYPE_CUSTOM,
-            null,
-            'local_kaznu_ai_chat',
-            new pix_icon('i/messagecontent', '')
-        );
-        $chat->showinflatnavigation = true;
-        if (!empty($PAGE) && $PAGE->url && str_contains($PAGE->url->get_path(false), '/local/kaznu/chat.php')) {
-            $chat->make_active();
+        if (local_kaznu_ai_chat_menu_visible()) {
+            $chat = $nav->add(
+                get_string('nav_ai_chat', 'local_kaznu'),
+                new moodle_url('/local/kaznu/chat.php'),
+                navigation_node::TYPE_CUSTOM,
+                null,
+                'local_kaznu_ai_chat',
+                new pix_icon('i/messagecontent', '')
+            );
+            $chat->showinflatnavigation = true;
+            if (!empty($PAGE) && $PAGE->url && str_contains($PAGE->url->get_path(false), '/local/kaznu/chat.php')) {
+                $chat->make_active();
+            }
+        }
+
+        if (local_kaznu_thesis_menu_visible()) {
+            $thesis = $nav->add(
+                get_string('nav_thesis', 'local_kaznu'),
+                new moodle_url('/local/kaznu/thesis/index.php'),
+                navigation_node::TYPE_CUSTOM,
+                null,
+                'local_kaznu_thesis',
+                new pix_icon('i/report', '')
+            );
+            $thesis->showinflatnavigation = true;
+            if (!empty($PAGE) && $PAGE->url && str_contains($PAGE->url->get_path(false), '/local/kaznu/thesis/')) {
+                $thesis->make_active();
+            }
         }
     }
 
@@ -540,4 +667,122 @@ function local_kaznu_extend_navigation(global_navigation $nav) {
         new pix_icon('i/course', '')
     );
     $node->showinflatnavigation = true;
+}
+
+/**
+ * Serve thesis submission files.
+ */
+function local_kaznu_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload, array $options = []) {
+    global $USER;
+
+    if ($context->contextlevel != CONTEXT_SYSTEM) {
+        return false;
+    }
+    require_login();
+    if (isguestuser()) {
+        return false;
+    }
+    if ($filearea !== \local_kaznu\service\thesis_service::FILEAREA) {
+        return false;
+    }
+    if (!\local_kaznu\service\thesis_service::is_enabled()) {
+        return false;
+    }
+
+    $itemid = (int) array_shift($args);
+    $filename = array_pop($args);
+    $filepath = $args ? '/' . implode('/', $args) . '/' : '/';
+
+    $sub = \local_kaznu\service\thesis_service::get($itemid);
+    if (!$sub) {
+        return false;
+    }
+    $sys = context_system::instance();
+    $ok = (int) $sub->userid === (int) $USER->id
+        || ((int) $sub->supervisorid === (int) $USER->id && has_capability('local/kaznu:thesissupervise', $sys))
+        || has_capability('local/kaznu:thesismanage', $sys)
+        || is_siteadmin();
+    if (!$ok) {
+        return false;
+    }
+
+    $fs = get_file_storage();
+    $file = $fs->get_file($context->id, 'local_kaznu', $filearea, $itemid, $filepath, $filename);
+    if (!$file || $file->is_directory()) {
+        return false;
+    }
+    send_stored_file($file, 0, 0, $forcedownload, $options);
+}
+
+/**
+ * Whether thesis module is enabled for current user menus.
+ * Admin enables the feature; student UI is limited to the preview allowlist.
+ * Supervisors / managers still see the menu for the review queue.
+ */
+function local_kaznu_thesis_menu_visible(): bool {
+    if (!isloggedin() || isguestuser()) {
+        return false;
+    }
+    if (!class_exists(\local_kaznu\service\thesis_service::class)) {
+        return false;
+    }
+    if (!\local_kaznu\service\thesis_service::is_enabled()) {
+        return false;
+    }
+    // Keep portal role caps in sync with the admin switch.
+    if (class_exists(\local_kaznu\local\portal_role::class)) {
+        \local_kaznu\local\portal_role::ensure_all_roles();
+    }
+    if (is_siteadmin()) {
+        return true;
+    }
+    $sys = context_system::instance();
+    if (has_capability('local/kaznu:thesissupervise', $sys)
+            || has_capability('local/kaznu:thesismanage', $sys)) {
+        return true;
+    }
+    // Ordinary students: preview allowlist only (e.g. yernur).
+    if (!local_kaznu_student_preview_allowed()) {
+        return false;
+    }
+    if (has_capability('local/kaznu:thesisupload', $sys)) {
+        return true;
+    }
+    return class_exists(\local_kaznu\access\portal_policy::class)
+        && \local_kaznu\access\portal_policy::is_portal_user();
+}
+
+/**
+ * Student can open upload / own works when admin enabled the module.
+ */
+function local_kaznu_thesis_can_upload(): bool {
+    if (!\local_kaznu\service\thesis_service::is_enabled()) {
+        return false;
+    }
+    if (class_exists(\local_kaznu\local\portal_role::class)) {
+        \local_kaznu\local\portal_role::ensure_all_roles();
+    }
+    if (is_siteadmin()) {
+        return true;
+    }
+    if (!local_kaznu_student_preview_allowed()) {
+        return false;
+    }
+    $sys = context_system::instance();
+    if (has_capability('local/kaznu:thesisupload', $sys)) {
+        return true;
+    }
+    return class_exists(\local_kaznu\access\portal_policy::class)
+        && \local_kaznu\access\portal_policy::is_portal_user();
+}
+
+/**
+ * After admin toggles thesis_enabled — refresh portal role capabilities.
+ */
+function local_kaznu_thesis_setting_updated(): void {
+    if (class_exists(\local_kaznu\local\portal_role::class)) {
+        \local_kaznu\local\portal_role::ensure_all_roles();
+    }
+    update_capabilities('local_kaznu');
+    purge_all_caches();
 }

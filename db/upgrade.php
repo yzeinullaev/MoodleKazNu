@@ -436,5 +436,96 @@ function xmldb_local_kaznu_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2026080801, 'local', 'kaznu');
     }
 
+    if ($oldversion < 2026091301) {
+        // Thesis / diploma MVP: rule sets, submissions, signatures, audit.
+        $table = new xmldb_table('local_kaznu_thesis_rule');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('name', XMLDB_TYPE_CHAR, '255', null, XMLDB_NOTNULL, null, '');
+            $table->add_field('worktype', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, 'master');
+            $table->add_field('enabled', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+            $table->add_field('rulesjson', XMLDB_TYPE_TEXT, null, null, null, null, null);
+            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_index('enabledix', XMLDB_INDEX_NOTUNIQUE, ['enabled']);
+            $dbman->create_table($table);
+        }
+
+        $table = new xmldb_table('local_kaznu_thesis_sub');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('supervisorid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('rulesetid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('title', XMLDB_TYPE_CHAR, '500', null, XMLDB_NOTNULL, null, '');
+            $table->add_field('worktype', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, 'master');
+            $table->add_field('status', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, 'draft');
+            $table->add_field('contenthash', XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL, null, '');
+            $table->add_field('reportjson', XMLDB_TYPE_TEXT, null, null, null, null, null);
+            $table->add_field('supervisorcomment', XMLDB_TYPE_TEXT, null, null, null, null, null);
+            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_key('useridfk', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
+            $table->add_index('supervisorix', XMLDB_INDEX_NOTUNIQUE, ['supervisorid']);
+            $table->add_index('statusix', XMLDB_INDEX_NOTUNIQUE, ['status']);
+            $dbman->create_table($table);
+        }
+
+        $table = new xmldb_table('local_kaznu_thesis_sig');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('submissionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('signerid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('sigtype', XMLDB_TYPE_CHAR, '20', null, XMLDB_NOTNULL, null, 'stub');
+            $table->add_field('filehash', XMLDB_TYPE_CHAR, '64', null, XMLDB_NOTNULL, null, '');
+            $table->add_field('payload', XMLDB_TYPE_TEXT, null, null, null, null, null);
+            $table->add_field('certsubject', XMLDB_TYPE_TEXT, null, null, null, null, null);
+            $table->add_field('verifyok', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_key('submissionix', XMLDB_KEY_FOREIGN, ['submissionid'], 'local_kaznu_thesis_sub', ['id']);
+            $table->add_index('signerix', XMLDB_INDEX_NOTUNIQUE, ['signerid']);
+            $dbman->create_table($table);
+        }
+
+        $table = new xmldb_table('local_kaznu_thesis_evt');
+        if (!$dbman->table_exists($table)) {
+            $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+            $table->add_field('submissionid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_field('eventname', XMLDB_TYPE_CHAR, '40', null, XMLDB_NOTNULL, null, '');
+            $table->add_field('detailjson', XMLDB_TYPE_TEXT, null, null, null, null, null);
+            $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+            $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+            $table->add_index('subix', XMLDB_INDEX_NOTUNIQUE, ['submissionid']);
+            $dbman->create_table($table);
+        }
+
+        if (get_config('local_kaznu', 'thesis_enabled') === false) {
+            set_config('thesis_enabled', 0, 'local_kaznu');
+        }
+
+        update_capabilities('local_kaznu');
+        \local_kaznu\service\thesis_service::ensure_default_ruleset();
+
+        upgrade_plugin_savepoint(true, 2026091301, 'local', 'kaznu');
+    }
+
+    if ($oldversion < 2026091303) {
+        // Thesis: grant upload to Farabi portal student roles when module is used.
+        update_capabilities('local_kaznu');
+        \local_kaznu\local\portal_role::ensure_all_roles();
+        upgrade_plugin_savepoint(true, 2026091303, 'local', 'kaznu');
+    }
+
+    if ($oldversion < 2026091305) {
+        if (get_config('local_kaznu', 'student_preview_usernames') === false) {
+            set_config('student_preview_usernames', 'yernur', 'local_kaznu');
+        }
+        upgrade_plugin_savepoint(true, 2026091305, 'local', 'kaznu');
+    }
+
     return true;
 }

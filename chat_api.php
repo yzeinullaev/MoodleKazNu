@@ -40,6 +40,13 @@ try {
     if (isguestuser()) {
         local_kaznu_ai_json(['ok' => false, 'error' => 'guest', 'message' => 'Guest not allowed']);
     }
+    if (!local_kaznu_student_preview_allowed()) {
+        local_kaznu_ai_json([
+            'ok' => false,
+            'error' => 'forbidden',
+            'message' => get_string('student_preview_denied', 'local_kaznu'),
+        ], 403);
+    }
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         local_kaznu_ai_json(['ok' => false, 'error' => 'method', 'message' => 'POST required']);

@@ -206,6 +206,27 @@ if ($hassiteconfig) {
         'gpt-4o-mini',
         PARAM_TEXT
     ));
+    $settings->add(new admin_setting_configtext(
+        'local_kaznu/student_preview_usernames',
+        get_string('student_preview_usernames', 'local_kaznu'),
+        get_string('student_preview_usernames_desc', 'local_kaznu'),
+        'yernur',
+        PARAM_RAW
+    ));
+
+    $settings->add(new admin_setting_heading(
+        'local_kaznu/thesisheading',
+        get_string('thesis_settings', 'local_kaznu'),
+        get_string('thesis_settings_desc', 'local_kaznu')
+    ));
+    $thesisenabled = new admin_setting_configcheckbox(
+        'local_kaznu/thesis_enabled',
+        get_string('thesis_enabled', 'local_kaznu'),
+        get_string('thesis_enabled_desc', 'local_kaznu'),
+        0
+    );
+    $thesisenabled->set_updatedcallback('local_kaznu_thesis_setting_updated');
+    $settings->add($thesisenabled);
 
     $ADMIN->add('localplugins', $settings);
 }

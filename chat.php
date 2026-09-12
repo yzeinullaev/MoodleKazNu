@@ -13,6 +13,9 @@ require_login();
 if (isguestuser()) {
     redirect(new moodle_url('/login/index.php'));
 }
+if (!local_kaznu_student_preview_allowed()) {
+    throw new moodle_exception('nopermissions', 'error', '', get_string('nav_ai_chat', 'local_kaznu'));
+}
 
 global $USER, $PAGE, $OUTPUT;
 
