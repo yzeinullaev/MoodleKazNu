@@ -19,7 +19,7 @@ install_from_git() {
   echo "==> Clone Moodle MOODLE_502_STABLE from git (moodle.org CDN blocked)"
   rm -rf "$MOODLE_ROOT"
   git clone --depth 1 --branch MOODLE_502_STABLE https://github.com/moodle/moodle.git "$MOODLE_ROOT"
-  chown -R www-data:www-data "$MOODLE_ROOT"
+  sudo chown -R www-data:www-data "$MOODLE_ROOT"
 }
 
 echo "==> Download $TGZ"
@@ -28,7 +28,7 @@ if curl -fL -A "MoodleKazNu-deploy/1.0" "$URL" -o "/tmp/${TGZ}"; then
   rm -f "/tmp/${TGZ}"
   rm -rf "$MOODLE_ROOT"
   mv "/tmp/moodle" "$MOODLE_ROOT"
-  chown -R www-data:www-data "$MOODLE_ROOT"
+  sudo chown -R www-data:www-data "$MOODLE_ROOT"
 else
   install_from_git
 fi

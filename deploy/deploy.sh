@@ -21,9 +21,10 @@ fi
 
 if [[ -d "$APP_DIR/custom" ]]; then
   echo "==> Sync custom plugins"
-  rsync -a --delete \
+  sudo rsync -a --delete \
     --exclude='.gitkeep' \
     "$APP_DIR/custom/" "$MOODLE_ROOT/public/local/"
+  sudo chown -R www-data:www-data "$MOODLE_ROOT/public/local"
 fi
 
 MOODLE_CLI="$MOODLE_DIR"

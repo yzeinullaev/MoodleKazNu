@@ -24,9 +24,10 @@ else
   RSYNC_EXTRA+=(--ignore-existing)
 fi
 
-rsync -av "${RSYNC_EXTRA[@]}" \
+sudo rsync -av "${RSYNC_EXTRA[@]}" \
   --exclude='.gitkeep' \
   "$SRC/" "$DEST/"
+sudo chown -R www-data:www-data "$DEST"
 
 echo "==> Upgrade Moodle plugin"
 sudo -u www-data php "$MOODLE_LIVE/admin/cli/upgrade.php" --non-interactive
