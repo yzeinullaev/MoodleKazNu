@@ -1,4 +1,27 @@
-/* Farabi AI — full-width chat shell (breaks out of Moodle content column) */
+/* Farabi AI — full viewport chat, no page scroll */
+html.path-local-kaznu.kaznu-ai-chat-page,
+body.path-local-kaznu.kaznu-ai-chat-page {
+    overflow: hidden;
+    overflow-x: clip;
+    height: 100%;
+    overscroll-behavior: none;
+}
+
+body.path-local-kaznu.kaznu-ai-chat-page #page-wrapper,
+body.path-local-kaznu.kaznu-ai-chat-page #page {
+    overflow: hidden;
+    max-width: none;
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+    height: auto;
+}
+
+body.path-local-kaznu.kaznu-ai-chat-page #page-footer,
+body.path-local-kaznu.kaznu-ai-chat-page .footer-popover,
+body.path-local-kaznu.kaznu-ai-chat-page .btn-footer-popover {
+    display: none !important;
+}
+
 body.path-local-kaznu.kaznu-ai-chat-page #page {
     max-width: none;
 }
@@ -43,22 +66,29 @@ body.path-local-kaznu.kaznu-ai-chat-page #region-main .card-body {
     --kaznu-ai-font: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
 
     font-family: var(--kaznu-ai-font);
-    width: 100vw;
-    max-width: 100vw;
-    margin-left: calc(50% - 50vw);
-    margin-right: calc(50% - 50vw);
-    height: calc(100vh - 56px);
-    min-height: 520px;
-    max-height: calc(100vh - 56px);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: var(--kaznu-moodle-nav, 56px);
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    height: calc(100dvh - var(--kaznu-moodle-nav, 56px));
+    min-height: 0;
     background: var(--kaznu-ai-bg);
     box-sizing: border-box;
+    overflow: hidden;
+    z-index: 2;
 }
 
 .kaznu-ai-app {
     display: grid;
     grid-template-columns: 300px minmax(0, 1fr);
     height: 100%;
+    min-height: 0;
     max-width: 1600px;
+    width: 100%;
     margin: 0 auto;
     gap: 0;
     background: var(--kaznu-ai-surface);
@@ -191,6 +221,8 @@ body.path-local-kaznu.kaznu-ai-chat-page #region-main .card-body {
     flex-direction: column;
     min-width: 0;
     min-height: 0;
+    height: 100%;
+    overflow: hidden;
     background: linear-gradient(180deg, #fafaf9 0%, #fff 120px);
 }
 
@@ -262,8 +294,10 @@ body.path-local-kaznu.kaznu-ai-chat-page #region-main .card-body {
 }
 
 .kaznu-ai-messages {
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 28px 24px 16px;
     display: flex;
     flex-direction: column;
@@ -372,11 +406,14 @@ body.path-local-kaznu.kaznu-ai-chat-page #region-main .card-body {
     border-style: dashed;
 }
 
-/* Composer */
+/* Composer — pinned to bottom of viewport shell */
 .kaznu-ai-compose {
+    flex: 0 0 auto;
     flex-shrink: 0;
-    padding: 12px 24px 24px;
-    background: linear-gradient(0deg, #fff 70%, transparent);
+    padding: 10px 24px max(14px, env(safe-area-inset-bottom, 0px));
+    background: #fff;
+    border-top: 1px solid var(--kaznu-ai-border);
+    box-shadow: 0 -4px 20px rgba(28, 25, 23, 0.04);
 }
 
 .kaznu-ai-compose-inner {
@@ -454,10 +491,16 @@ body.path-local-kaznu.kaznu-ai-chat-page #region-main .card-body {
 }
 
 .kaznu-ai-compose-hint {
-    margin: 8px 4px 0;
+    margin: 6px 4px 0;
     font-size: 11px;
     color: #a8a29e;
     text-align: center;
+}
+
+@media (max-height: 700px) {
+    .kaznu-ai-compose-hint {
+        display: none;
+    }
 }
 
 .kaznu-ai-backdrop {
@@ -465,10 +508,6 @@ body.path-local-kaznu.kaznu-ai-chat-page #region-main .card-body {
 }
 
 @media (max-width: 960px) {
-    .kaznu-ai-shell {
-        height: calc(100vh - 48px);
-    }
-
     .kaznu-ai-app {
         grid-template-columns: 1fr;
     }

@@ -1,4 +1,23 @@
 (function () {
+    function fitShellToViewport() {
+        const nav = document.querySelector(
+            '#page-header .navbar, nav.navbar.fixed-top, header .navbar, .navbar'
+        );
+        let navh = 56;
+        if (nav) {
+            const r = nav.getBoundingClientRect();
+            navh = Math.max(0, Math.round(r.bottom));
+        }
+        document.documentElement.style.setProperty('--kaznu-moodle-nav', navh + 'px');
+        const shell = document.querySelector('.kaznu-ai-shell');
+        if (shell) {
+            shell.style.top = navh + 'px';
+            shell.style.height = `calc(100dvh - ${navh}px)`;
+        }
+    }
+    fitShellToViewport();
+    window.addEventListener('resize', fitShellToViewport);
+
     const root = document.getElementById('kaznu-ai-root');
     if (!root) return;
 
