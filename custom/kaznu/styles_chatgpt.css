@@ -1,29 +1,156 @@
+/* Farabi AI — full-width chat shell (breaks out of Moodle content column) */
+body.path-local-kaznu.kaznu-ai-chat-page #page {
+    max-width: none;
+}
+
+body.path-local-kaznu.kaznu-ai-chat-page #page-content,
+body.path-local-kaznu.kaznu-ai-chat-page [data-region="main-content"],
+body.path-local-kaznu.kaznu-ai-chat-page #region-main-box,
+body.path-local-kaznu.kaznu-ai-chat-page #region-main {
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+body.path-local-kaznu.kaznu-ai-chat-page .page-header-headings {
+    display: none;
+}
+
+body.path-local-kaznu.kaznu-ai-chat-page .activity-header,
+body.path-local-kaznu.kaznu-ai-chat-page #region-main .card {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+body.path-local-kaznu.kaznu-ai-chat-page #region-main .card-body {
+    padding: 0;
+}
+
+.kaznu-ai-shell {
+    --kaznu-ai-bg: #f4f1ec;
+    --kaznu-ai-surface: #ffffff;
+    --kaznu-ai-sidebar: #1c1917;
+    --kaznu-ai-sidebar-text: #e7e5e4;
+    --kaznu-ai-sidebar-muted: #a8a29e;
+    --kaznu-ai-border: #e7e5e4;
+    --kaznu-ai-accent: #ea580c;
+    --kaznu-ai-accent-hover: #c2410c;
+    --kaznu-ai-user: #1c1917;
+    --kaznu-ai-assist: #fafaf9;
+    --kaznu-ai-shadow: 0 8px 32px rgba(28, 25, 23, 0.08);
+    --kaznu-ai-radius: 16px;
+    --kaznu-ai-font: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+
+    font-family: var(--kaznu-ai-font);
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    height: calc(100vh - 56px);
+    min-height: 520px;
+    max-height: calc(100vh - 56px);
+    background: var(--kaznu-ai-bg);
+    box-sizing: border-box;
+}
+
 .kaznu-ai-app {
     display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 16px;
-    min-height: 70vh;
-    max-width: 1200px;
+    grid-template-columns: 300px minmax(0, 1fr);
+    height: 100%;
+    max-width: 1600px;
     margin: 0 auto;
+    gap: 0;
+    background: var(--kaznu-ai-surface);
+    box-shadow: var(--kaznu-ai-shadow);
+    border-radius: 0;
+    overflow: hidden;
 }
 
+/* Sidebar */
 .kaznu-ai-sidebar {
-    background: #f8f9fb;
-    border: 1px solid #dfe4ea;
-    border-radius: 12px;
-    padding: 12px;
+    background: var(--kaznu-ai-sidebar);
+    color: var(--kaznu-ai-sidebar-text);
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    min-height: 0;
+    border-right: 1px solid #292524;
 }
 
-.kaznu-ai-sidebar h3 {
-    margin: 4px 8px 8px;
-    font-size: 0.95rem;
+.kaznu-ai-sidebar-top {
+    padding: 20px 16px 12px;
+    border-bottom: 1px solid #292524;
+}
+
+.kaznu-ai-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+}
+
+.kaznu-ai-brand-mark {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #fb923c, #ea580c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: #fff;
+}
+
+.kaznu-ai-brand-text strong {
+    display: block;
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.kaznu-ai-brand-text span {
+    font-size: 12px;
+    color: var(--kaznu-ai-sidebar-muted);
 }
 
 .kaznu-ai-new {
     width: 100%;
+    border: 1px solid #44403c;
+    background: transparent;
+    color: #fafaf9;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.kaznu-ai-new:hover {
+    background: #292524;
+    border-color: #57534e;
+}
+
+.kaznu-ai-history-label {
+    padding: 14px 16px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--kaznu-ai-sidebar-muted);
+}
+
+.kaznu-ai-conv-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 10px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 }
 
 .kaznu-ai-conv {
@@ -33,90 +160,360 @@
     border-radius: 8px;
     padding: 10px 12px;
     cursor: pointer;
-    font-size: 0.92rem;
+    font-size: 13px;
+    color: var(--kaznu-ai-sidebar-text);
+    line-height: 1.35;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: background 0.12s;
 }
 
 .kaznu-ai-conv:hover {
-    background: #eef2f7;
+    background: #292524;
 }
 
 .kaznu-ai-conv.active {
-    background: #20262c;
+    background: #44403c;
     color: #fff;
 }
 
+.kaznu-ai-sidebar-foot {
+    padding: 12px 16px;
+    border-top: 1px solid #292524;
+    font-size: 11px;
+    color: var(--kaznu-ai-sidebar-muted);
+}
+
+/* Main column */
 .kaznu-ai-main {
-    border: 1px solid #dfe4ea;
-    border-radius: 12px;
-    background: #fff;
     display: flex;
     flex-direction: column;
-    min-height: 70vh;
+    min-width: 0;
+    min-height: 0;
+    background: linear-gradient(180deg, #fafaf9 0%, #fff 120px);
+}
+
+.kaznu-ai-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    border-bottom: 1px solid var(--kaznu-ai-border);
+    flex-shrink: 0;
+    gap: 16px;
+}
+
+.kaznu-ai-topbar > div:first-child {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.kaznu-ai-topbar > div:first-child > div:last-child {
+    min-width: 0;
+}
+
+.kaznu-ai-topbar h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1c1917;
+}
+
+.kaznu-ai-topbar p {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: #78716c;
+}
+
+.kaznu-ai-topbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.kaznu-ai-icon-btn {
+    border: 1px solid var(--kaznu-ai-border);
+    background: #fff;
+    color: #57534e;
+    border-radius: 10px;
+    padding: 8px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.12s, color 0.12s;
+}
+
+.kaznu-ai-icon-btn:hover {
+    background: #f5f5f4;
+    color: #1c1917;
+}
+
+.kaznu-ai-icon-btn.danger:hover {
+    background: #fef2f2;
+    color: #b91c1c;
+    border-color: #fecaca;
+}
+
+.kaznu-ai-menu-toggle {
+    display: none;
 }
 
 .kaznu-ai-messages {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: 28px 24px 16px;
     display: flex;
     flex-direction: column;
+    gap: 20px;
+    scroll-behavior: smooth;
+}
+
+.kaznu-ai-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 24px;
+    color: #57534e;
+}
+
+.kaznu-ai-empty-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffedd5, #fed7aa);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+.kaznu-ai-empty h2 {
+    margin: 0 0 8px;
+    font-size: 26px;
+    font-weight: 600;
+    color: #1c1917;
+}
+
+.kaznu-ai-empty p {
+    margin: 0;
+    max-width: 420px;
+    font-size: 15px;
+    line-height: 1.55;
+}
+
+.kaznu-ai-row {
+    display: flex;
     gap: 12px;
+    max-width: 900px;
+    width: 100%;
+    margin: 0 auto;
 }
 
-.kaznu-ai-bubble {
-    max-width: 85%;
-    padding: 12px 14px;
-    border-radius: 14px;
-    line-height: 1.45;
-    white-space: pre-wrap;
+.kaznu-ai-row.user {
+    flex-direction: row-reverse;
 }
 
-.kaznu-ai-bubble.user {
-    align-self: flex-end;
-    background: #20262c;
+.kaznu-ai-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.kaznu-ai-row.assistant .kaznu-ai-avatar {
+    background: linear-gradient(135deg, #fb923c, #ea580c);
     color: #fff;
 }
 
-.kaznu-ai-bubble.assistant {
-    align-self: flex-start;
-    background: #f3f6fa;
-    border: 1px solid #e6ebf2;
+.kaznu-ai-row.user .kaznu-ai-avatar {
+    background: var(--kaznu-ai-user);
+    color: #fff;
 }
 
+.kaznu-ai-bubble {
+    flex: 1;
+    max-width: min(720px, 85%);
+    padding: 14px 18px;
+    border-radius: var(--kaznu-ai-radius);
+    line-height: 1.6;
+    font-size: 15px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.kaznu-ai-row.user .kaznu-ai-bubble {
+    background: var(--kaznu-ai-user);
+    color: #fafaf9;
+    border-bottom-right-radius: 4px;
+}
+
+.kaznu-ai-row.assistant .kaznu-ai-bubble {
+    background: var(--kaznu-ai-assist);
+    border: 1px solid var(--kaznu-ai-border);
+    border-bottom-left-radius: 4px;
+    color: #1c1917;
+}
+
+.kaznu-ai-bubble.meta {
+    font-size: 13px;
+    color: #78716c;
+    border-style: dashed;
+}
+
+/* Composer */
 .kaznu-ai-compose {
-    border-top: 1px solid #e6ebf2;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    flex-shrink: 0;
+    padding: 12px 24px 24px;
+    background: linear-gradient(0deg, #fff 70%, transparent);
 }
 
-.kaznu-ai-compose textarea {
-    width: 100%;
-    min-height: 72px;
-    resize: vertical;
-    border-radius: 10px;
-    border: 1px solid #cfd7e3;
-    padding: 10px 12px;
-    font: inherit;
+.kaznu-ai-compose-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    border: 1px solid #d6d3d1;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 4px 24px rgba(28, 25, 23, 0.06);
+    padding: 12px 14px 10px;
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.kaznu-ai-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+.kaznu-ai-compose-inner:focus-within {
+    border-color: #fdba74;
+    box-shadow: 0 4px 28px rgba(234, 88, 12, 0.12);
+}
+
+.kaznu-ai-web {
+    margin-bottom: 8px;
+    padding: 0 4px;
 }
 
 .kaznu-ai-web label {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.9rem;
+    gap: 8px;
+    font-size: 13px;
+    color: #57534e;
+    cursor: pointer;
 }
 
-@media (max-width: 900px) {
+.kaznu-ai-input-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+.kaznu-ai-input {
+    flex: 1;
+    min-height: 48px;
+    max-height: 200px;
+    resize: none;
+    border: 0;
+    padding: 10px 8px;
+    font: inherit;
+    font-size: 15px;
+    line-height: 1.5;
+    background: transparent;
+    outline: none;
+}
+
+.kaznu-ai-send {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    border: 0;
+    border-radius: 12px;
+    background: var(--kaznu-ai-accent);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.kaznu-ai-send:hover:not(:disabled) {
+    background: var(--kaznu-ai-accent-hover);
+}
+
+.kaznu-ai-send:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.kaznu-ai-compose-hint {
+    margin: 8px 4px 0;
+    font-size: 11px;
+    color: #a8a29e;
+    text-align: center;
+}
+
+.kaznu-ai-backdrop {
+    display: none;
+}
+
+@media (max-width: 960px) {
+    .kaznu-ai-shell {
+        height: calc(100vh - 48px);
+    }
+
     .kaznu-ai-app {
         grid-template-columns: 1fr;
+    }
+
+    .kaznu-ai-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: min(300px, 88vw);
+        z-index: 10050;
+        transform: translateX(-105%);
+        transition: transform 0.25s ease;
+        box-shadow: 8px 0 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .kaznu-ai-sidebar.open {
+        transform: translateX(0);
+    }
+
+    .kaznu-ai-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 10040;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s;
+    }
+
+    .kaznu-ai-backdrop.show {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .kaznu-ai-menu-toggle {
+        display: inline-flex;
+    }
+
+    .kaznu-ai-messages {
+        padding: 16px 14px;
+    }
+
+    .kaznu-ai-compose {
+        padding: 8px 12px 16px;
     }
 }
