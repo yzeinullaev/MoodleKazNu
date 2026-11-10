@@ -4,6 +4,10 @@
 moodle_backup_*/
 *.zip
 *.tgz
+moodle52/
+
+# Presentation / video build (local only)
+presentation/
 
 # Moodle runtime (never commit)
 moodledata/
@@ -17,6 +21,7 @@ Thumbs.db
 .vscode/
 *.swp
 *.log
+*~
 
 # Local env overrides
 .env
