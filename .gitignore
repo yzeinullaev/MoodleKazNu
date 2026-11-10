@@ -1,0 +1,30 @@
+# Moodle core — local: scripts/setup-local-official.ps1, server: deploy/install-moodle-server.sh
+/moodle/
+!/moodle/.gitkeep
+moodle_backup_*/
+*.zip
+*.tgz
+
+# Moodle runtime (never commit)
+moodledata/
+config.php
+moodle/config.php
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.log
+
+# Local env overrides
+.env
+.env.local
+
+# Deploy keys (never commit private keys)
+deploy/keys/
+*.pem
+id_rsa
+id_ed25519
+.osp/

@@ -1,0 +1,23 @@
+<?php
+// Copy to config.php after install. Do not commit config.php.
+
+unset($CFG);
+global $CFG;
+$CFG = new stdClass();
+
+$CFG->dbtype    = 'mysqli';
+$CFG->dblibrary = 'native';
+$CFG->dbhost    = '127.127.126.50';
+$CFG->dbname    = 'moodle';
+$CFG->dbuser    = 'root';
+$CFG->dbpass    = '';
+$CFG->prefix    = 'mdl_';
+$CFG->dboptions = ['dbcollation' => 'utf8mb4_unicode_ci'];
+
+$CFG->wwwroot   = 'http://moodle.local';
+$CFG->dataroot  = 'C:/OSPanel/userdata/moodledata-kaznu';
+$CFG->admin     = 'admin';
+
+$CFG->directorypermissions = 02777;
+
+require_once(__DIR__ . '/lib/setup.php');

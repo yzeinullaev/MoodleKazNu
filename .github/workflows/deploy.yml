@@ -1,0 +1,27 @@
+name: Deploy to server
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script_stop: true
+          script: |
+            export APP_DIR="${{ secrets.APP_DIR || '/var/www/moodle-kaznu' }}"
+            export DEPLOY_BRANCH="${{ github.ref_name }}"
+            bash "$APP_DIR/deploy/deploy.sh"
