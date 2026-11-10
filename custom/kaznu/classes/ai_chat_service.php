@@ -87,8 +87,8 @@ class ai_chat_service {
     ): array {
         global $DB;
 
-        $apikey = get_config('local_kaznu', 'openai_apikey');
-        if (empty($apikey)) {
+        $apikey = self::openai_api_key();
+        if ($apikey === '') {
             throw new \moodle_exception('noapikey', 'local_kaznu');
         }
 
@@ -147,6 +147,14 @@ class ai_chat_service {
             'conversationid' => $conversationid,
             'used_web' => $usedweb,
         ];
+    }
+
+    private static function openai_api_key(): string {
+        $key = trim((string)get_config('local_kaznu', 'openai_apikey'));
+        if ($key === '') {
+            $key = trim((string)get_config('local_kaznu', 'openai_api_key'));
+        }
+        return $key;
     }
 
     private static function assert_owner(int $userid, int $conversationid): void {
