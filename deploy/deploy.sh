@@ -26,12 +26,25 @@ if [[ -d "$APP_DIR/custom" ]]; then
     "$APP_DIR/custom/" "$MOODLE_ROOT/public/local/"
 fi
 
-if [[ -f "$MOODLE_ROOT/config.php" ]]; then
-  echo "==> Moodle upgrade"
-  sudo -u www-data php "$MOODLE_ROOT/admin/cli/maintenance.php" --enable || true
-  sudo -u www-data php "$MOODLE_ROOT/admin/cli/upgrade.php" --non-interactive
-  sudo -u www-data php "$MOODLE_ROOT/admin/cli/maintenance.php" --disable || true
-  sudo -u www-data php "$MOODLE_ROOT/admin/cli/purge_caches.php"
+MOODLE_CLI="$MOODLE_DIR"
+if [[ ! -f "$MOODLE_CLI/admin/cli/upgrade.php" && -f "$MOODLE_ROOT/admin/cli/upgrade.php" ]]; then
+  MOODLE_CLI="$MOODLE_ROOT"
+fi
+
+CONFIG_PHP=""
+for candidate in "$MOODLE_DIR/config.php" "$MOODLE_ROOT/config.php"; do
+  if [[ -f "$candidate" ]]; then
+    CONFIG_PHP="$candidate"
+    break
+  fi
+done
+
+if [[ -n "$CONFIG_PHP" ]]; then
+  echo "==> Moodle upgrade ($MOODLE_CLI)"
+  sudo -u www-data php "$MOODLE_CLI/admin/cli/maintenance.php" --enable || true
+  sudo -u www-data php "$MOODLE_CLI/admin/cli/upgrade.php" --non-interactive
+  sudo -u www-data php "$MOODLE_CLI/admin/cli/maintenance.php" --disable || true
+  sudo -u www-data php "$MOODLE_CLI/admin/cli/purge_caches.php"
 else
   echo "==> config.php not found — run install first (see README)"
 fi
