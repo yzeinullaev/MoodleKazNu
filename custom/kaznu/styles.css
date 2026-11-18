@@ -1,122 +1,2274 @@
-.kaznu-ai-app {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 16px;
-    min-height: 70vh;
-    max-width: 1200px;
+/* Farabi IBS — course + payment + gamified Moodle UX
+ *
+ * Phase 6A: global shell colours/contrast owned by theme_farabi (Boost child).
+ * Keep these rules for pages not yet themed; prefer reducing path-* hacks over time.
+ * Do not re-introduce black text on charcoal headers on path-grade/user without light text tokens.
+ */
+:root {
+    --kaznu-cream: #FFFBF7;
+    --kaznu-charcoal: #20262C;
+    --kaznu-coral: #F06543;
+    --kaznu-coral-deep: #d94f2f;
+    --kaznu-bronze: #A3927B;
+    --kaznu-bronze-soft: #c4b5a0;
+    --kaznu-primary: #20262C;
+    --kaznu-accent: #F06543;
+    --kaznu-light: #FFFBF7;
+    --kaznu-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+    --kaznu-sans: "Manrope", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+/* Cabinet profile (Phase 6C) */
+.local-kaznu-my-profile-head { gap: 1rem; flex-wrap: wrap; }
+.local-kaznu-my-fullname { color: var(--kaznu-charcoal); font-family: var(--kaznu-serif); }
+.local-kaznu-my-dl dt { font-weight: 600; color: var(--kaznu-charcoal); margin-top: 0.5rem; }
+.local-kaznu-my-dl dd { margin-left: 0; color: var(--kaznu-charcoal); }
+
+body.path-local-kaznu,
+body.path-course,
+body.path-mod,
+body.path-my,
+body.path-user,
+body.path-calendar,
+body.path-grade,
+body.path-message {
+    --primary: var(--kaznu-coral);
+    --bs-primary: #F06543;
+    font-family: var(--kaznu-sans);
+}
+
+/* —— Full course + student shell —— */
+body.path-course,
+body.path-mod,
+body.path-my,
+body.path-user,
+body.path-calendar,
+body.path-grade,
+body.path-message {
+    background: var(--kaznu-cream) !important;
+}
+
+body.path-course #page,
+body.path-mod #page,
+body.path-my #page,
+body.path-user #page {
+    background: var(--kaznu-cream) !important;
+}
+
+body.path-course #page-header,
+body.path-course .header-maxwidth {
+    display: none !important;
+}
+
+body.path-course #region-main {
+    max-width: 920px;
     margin: 0 auto;
+    padding: 0 1rem 4rem;
 }
 
-.kaznu-ai-sidebar {
-    background: #f8f9fb;
-    border: 1px solid #dfe4ea;
-    border-radius: 12px;
-    padding: 12px;
+body.path-course .navbar,
+body.path-mod .navbar,
+body.path-my .navbar,
+body.path-user .navbar,
+body.path-calendar .navbar,
+body.path-grade .navbar,
+body.path-message .navbar {
+    background: var(--kaznu-charcoal) !important;
+    border: none !important;
+}
+
+/* Nav links: keep readable on hover / active / focus (Boost uses light hover bg). */
+body.path-course .navbar .nav-link,
+body.path-course .navbar a.nav-link,
+body.path-course .navbar .dropdown-toggle,
+body.path-mod .navbar .nav-link,
+body.path-mod .navbar a.nav-link,
+body.path-mod .navbar .dropdown-toggle,
+body.path-my .navbar .nav-link,
+body.path-my .navbar a.nav-link,
+body.path-my .navbar .dropdown-toggle,
+body.path-user .navbar .nav-link,
+body.path-user .navbar a.nav-link,
+body.path-user .navbar .dropdown-toggle {
+    color: var(--kaznu-cream) !important;
+    background: transparent !important;
+    border-radius: 2px !important;
+}
+
+body.path-course .navbar .nav-link:hover,
+body.path-course .navbar .nav-link:focus,
+body.path-course .navbar .nav-link:focus-visible,
+body.path-course .navbar .nav-link.active,
+body.path-course .navbar .nav-item.show > .nav-link,
+body.path-course .navbar .dropdown-toggle:hover,
+body.path-course .navbar .dropdown-toggle:focus,
+body.path-course .navbar .dropdown-toggle[aria-expanded="true"],
+body.path-mod .navbar .nav-link:hover,
+body.path-mod .navbar .nav-link:focus,
+body.path-mod .navbar .nav-link:focus-visible,
+body.path-mod .navbar .nav-link.active,
+body.path-mod .navbar .nav-item.show > .nav-link,
+body.path-mod .navbar .dropdown-toggle:hover,
+body.path-mod .navbar .dropdown-toggle:focus,
+body.path-mod .navbar .dropdown-toggle[aria-expanded="true"],
+body.path-my .navbar .nav-link:hover,
+body.path-my .navbar .nav-link:focus,
+body.path-my .navbar .nav-link:focus-visible,
+body.path-my .navbar .nav-link.active,
+body.path-my .navbar .nav-item.show > .nav-link,
+body.path-my .navbar .dropdown-toggle:hover,
+body.path-my .navbar .dropdown-toggle:focus,
+body.path-my .navbar .dropdown-toggle[aria-expanded="true"],
+body.path-user .navbar .nav-link:hover,
+body.path-user .navbar .nav-link:focus,
+body.path-user .navbar .nav-link.active,
+body.path-user .navbar .nav-item.show > .nav-link,
+body.path-user .navbar .dropdown-toggle:hover,
+body.path-user .navbar .dropdown-toggle:focus,
+body.path-user .navbar .dropdown-toggle[aria-expanded="true"] {
+    color: var(--kaznu-charcoal) !important;
+    background: var(--kaznu-cream) !important;
+}
+
+body.path-course .navbar .navbar-brand,
+body.path-mod .navbar .navbar-brand {
+    color: var(--kaznu-cream) !important;
+}
+
+body.path-course .navbar .navbar-brand:hover,
+body.path-mod .navbar .navbar-brand:hover {
+    color: var(--kaznu-coral) !important;
+    background: transparent !important;
+}
+
+body.path-course .navbar .btn,
+body.path-course .navbar .btn-light,
+body.path-mod .navbar .btn,
+body.path-mod .navbar .btn-light {
+    color: var(--kaznu-cream) !important;
+    background: transparent !important;
+    border-color: rgba(255, 251, 247, 0.25) !important;
+}
+
+body.path-course .navbar .btn:hover,
+body.path-course .navbar .btn-light:hover,
+body.path-mod .navbar .btn:hover,
+body.path-mod .navbar .btn-light:hover {
+    color: var(--kaznu-charcoal) !important;
+    background: var(--kaznu-cream) !important;
+}
+
+body.path-course .navbar .usermenu .dropdown-toggle,
+body.path-mod .navbar .usermenu .dropdown-toggle {
+    color: var(--kaznu-cream) !important;
+}
+
+body.path-course .navbar .usermenu .dropdown-toggle:hover,
+body.path-course .navbar .usermenu .dropdown-toggle:focus,
+body.path-course .navbar .usermenu .dropdown-toggle[aria-expanded="true"],
+body.path-mod .navbar .usermenu .dropdown-toggle:hover,
+body.path-mod .navbar .usermenu .dropdown-toggle:focus,
+body.path-mod .navbar .usermenu .dropdown-toggle[aria-expanded="true"] {
+    color: var(--kaznu-charcoal) !important;
+    background: var(--kaznu-cream) !important;
+}
+
+body.path-course .navbar .dropdown-menu,
+body.path-mod .navbar .dropdown-menu {
+    background: #fff !important;
+    border: 1px solid rgba(32, 38, 44, 0.1) !important;
+    border-radius: 2px !important;
+}
+
+body.path-course .navbar .dropdown-item,
+body.path-mod .navbar .dropdown-item {
+    color: var(--kaznu-charcoal) !important;
+    background: transparent !important;
+}
+
+body.path-course .navbar .dropdown-item:hover,
+body.path-course .navbar .dropdown-item:focus,
+body.path-course .navbar .dropdown-item.active,
+body.path-mod .navbar .dropdown-item:hover,
+body.path-mod .navbar .dropdown-item:focus,
+body.path-mod .navbar .dropdown-item.active {
+    color: var(--kaznu-cream) !important;
+    background: var(--kaznu-charcoal) !important;
+}
+
+body.path-course .navbar .icon,
+body.path-course .navbar .fa,
+body.path-mod .navbar .icon,
+body.path-mod .navbar .fa {
+    color: inherit !important;
+}
+
+body.path-course .secondary-navigation {
+    background: transparent !important;
+    margin-bottom: 0.75rem !important;
+}
+
+body.path-course .secondary-navigation .navigation {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+body.path-course .secondary-navigation .nav-tabs {
+    border: none !important;
+    gap: 0.35rem;
+    background: transparent !important;
+}
+
+body.path-course .secondary-navigation .nav-link {
+    border-radius: 2px !important;
+    border: none !important;
+    font-weight: 600;
+    color: var(--kaznu-charcoal) !important;
+    background: transparent !important;
+}
+
+body.path-course .secondary-navigation .nav-link:hover,
+body.path-course .secondary-navigation .nav-link:focus {
+    color: var(--kaznu-coral) !important;
+    background: rgba(240, 101, 67, 0.08) !important;
+}
+
+body.path-course .secondary-navigation .nav-link.active {
+    background: var(--kaznu-charcoal) !important;
+    color: var(--kaznu-cream) !important;
+}
+
+/* Drawer: replace default Moodle blue with Farabi accents */
+body.path-course #theme_boost-drawers-courseindex .list-group-item,
+body.path-course .courseindex .courseindex-item {
+    border-radius: 2px !important;
+}
+
+body.path-course .courseindex .courseindex-item.pageitem,
+body.path-course .courseindex .courseindex-item.active,
+body.path-course #theme_boost-drawers-courseindex a.active,
+body.path-course .list-group-item.active {
+    background: var(--kaznu-charcoal) !important;
+    border-color: var(--kaznu-charcoal) !important;
+    color: var(--kaznu-cream) !important;
+}
+
+body.path-course .courseindex .courseindex-item:hover,
+body.path-course .courseindex .courseindex-item:focus {
+    background: rgba(240, 101, 67, 0.1) !important;
+    color: var(--kaznu-charcoal) !important;
+}
+
+body.path-course .editmode-switch-form .custom-control-input:checked ~ .custom-control-label::before,
+body.path-course .custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+    background-color: var(--kaznu-coral) !important;
+    border-color: var(--kaznu-coral) !important;
+}
+
+body.path-course .btn-outline-secondary,
+body.path-course .btn-secondary {
+    border-radius: 2px !important;
+}
+
+body.path-course a:not(.btn):not(.nav-link):not(.dropdown-item):focus-visible {
+    outline: 2px solid var(--kaznu-coral);
+    outline-offset: 2px;
+}
+
+/* Arena hero */
+.local-kaznu-arena {
+    color: var(--kaznu-cream);
+    margin: 0 0 1.75rem;
+    border-radius: 2px;
+    overflow: hidden;
+    background: var(--kaznu-charcoal);
+    animation: kaznu-rise 0.55s ease both;
+}
+
+@keyframes kaznu-rise {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+}
+
+.local-kaznu-arena.kzn-accent-1 {
+    background: linear-gradient(145deg, #2a2220 0%, #3d2a24 40%, #F06543 120%);
+}
+.local-kaznu-arena.kzn-accent-2 {
+    background: linear-gradient(145deg, #20262C 0%, #3a3228 50%, #A3927B 120%);
+}
+.local-kaznu-arena.kzn-accent-3 {
+    background: linear-gradient(160deg, #2c333a 0%, #8a5a48 70%, #F06543 130%);
+}
+.local-kaznu-arena.kzn-accent-4 {
+    background: linear-gradient(135deg, #1a1e22 0%, #5c5044 55%, #A3927B 120%);
+}
+.local-kaznu-arena.kzn-accent-5 {
+    background: linear-gradient(150deg, #20262C 0%, #5a3028 50%, #F06543 120%);
+}
+
+.kzn-arena-inner {
+    padding: 1.5rem 1.5rem 1.35rem;
+}
+
+.kzn-arena-top {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
 }
 
-.kaznu-ai-sidebar h3 {
-    margin: 4px 8px 8px;
+.kzn-arena-back {
+    color: var(--kaznu-bronze-soft);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.kzn-arena-back:hover {
+    color: var(--kaznu-cream);
+}
+
+.kzn-arena-short {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    opacity: 0.7;
+}
+
+.kzn-arena-title {
+    font-family: var(--kaznu-serif) !important;
+    font-size: clamp(1.75rem, 4vw, 2.6rem) !important;
+    font-weight: 600 !important;
+    color: var(--kaznu-cream) !important;
+    margin: 0 0 0.4rem !important;
+    line-height: 1.15 !important;
+}
+
+.kzn-arena-reward {
+    margin: 0 0 1.25rem;
+    color: var(--kaznu-bronze-soft);
     font-size: 0.95rem;
 }
 
-.kaznu-ai-new {
-    width: 100%;
+.kzn-arena-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.15rem;
 }
 
-.kaznu-ai-conv {
-    text-align: left;
-    border: 0;
-    background: transparent;
-    border-radius: 8px;
-    padding: 10px 12px;
-    cursor: pointer;
-    font-size: 0.92rem;
-}
-
-.kaznu-ai-conv:hover {
-    background: #eef2f7;
-}
-
-.kaznu-ai-conv.active {
-    background: #20262c;
-    color: #fff;
-}
-
-.kaznu-ai-main {
-    border: 1px solid #dfe4ea;
-    border-radius: 12px;
-    background: #fff;
-    display: flex;
-    flex-direction: column;
-    min-height: 70vh;
-}
-
-.kaznu-ai-messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.kaznu-ai-bubble {
-    max-width: 85%;
-    padding: 12px 14px;
-    border-radius: 14px;
-    line-height: 1.45;
-    white-space: pre-wrap;
-}
-
-.kaznu-ai-bubble.user {
-    align-self: flex-end;
-    background: #20262c;
-    color: #fff;
-}
-
-.kaznu-ai-bubble.assistant {
-    align-self: flex-start;
-    background: #f3f6fa;
-    border: 1px solid #e6ebf2;
-}
-
-.kaznu-ai-compose {
-    border-top: 1px solid #e6ebf2;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.kaznu-ai-compose textarea {
-    width: 100%;
-    min-height: 72px;
-    resize: vertical;
-    border-radius: 10px;
-    border: 1px solid #cfd7e3;
-    padding: 10px 12px;
-    font: inherit;
-}
-
-.kaznu-ai-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.kaznu-ai-web label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.9rem;
-}
-
-@media (max-width: 900px) {
-    .kaznu-ai-app {
+@media (max-width: 640px) {
+    .kzn-arena-stats {
         grid-template-columns: 1fr;
     }
 }
+
+.kzn-arena-stat label {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    opacity: 0.7;
+    margin-bottom: 0.25rem;
+}
+
+.kzn-arena-stat strong {
+    display: block;
+    font-family: var(--kaznu-serif);
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+}
+
+.kzn-arena-stat em {
+    font-style: normal;
+    font-size: 0.8rem;
+    opacity: 0.75;
+}
+
+.kzn-arena-bar {
+    height: 6px;
+    background: rgba(255, 251, 247, 0.15);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+}
+
+.kzn-arena-bar span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--kaznu-bronze), var(--kaznu-coral));
+    border-radius: 99px;
+}
+
+.kzn-arena-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.kzn-arena-cta {
+    display: inline-flex;
+    background: var(--kaznu-coral);
+    color: var(--kaznu-cream) !important;
+    text-decoration: none !important;
+    font-weight: 700;
+    padding: 0.7rem 1.35rem;
+    border-radius: 2px;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.kzn-arena-cta:hover {
+    background: var(--kaznu-coral-deep);
+    color: var(--kaznu-cream) !important;
+    transform: translateY(-1px);
+}
+
+.kzn-arena-link {
+    color: var(--kaznu-bronze-soft) !important;
+    font-weight: 600;
+    text-decoration: none !important;
+}
+
+.kzn-arena-link:hover {
+    color: var(--kaznu-cream) !important;
+}
+
+.kzn-arena-path h2 {
+    font-family: var(--kaznu-serif);
+    font-size: 1.05rem;
+    margin: 0 0 0.65rem;
+    color: var(--kaznu-cream);
+    font-weight: 600;
+}
+
+.kzn-arena-path ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.kzn-arena-path li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.7rem;
+    background: rgba(255, 251, 247, 0.08);
+    border: 1px solid rgba(255, 251, 247, 0.12);
+    border-radius: 2px;
+    font-size: 0.8rem;
+}
+
+.kzn-arena-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--kaznu-bronze);
+    flex-shrink: 0;
+}
+
+.kzn-arena-path li.is-open .kzn-arena-dot {
+    background: var(--kaznu-coral);
+    box-shadow: 0 0 0 3px rgba(240, 101, 67, 0.25);
+}
+
+.kzn-arena-path li.is-done .kzn-arena-dot {
+    background: #7dcea0;
+}
+
+.kzn-arena-path li.is-locked {
+    opacity: 0.45;
+}
+
+.kzn-arena-path li.is-locked .kzn-arena-dot {
+    background: rgba(255, 251, 247, 0.35);
+}
+
+/* Lesson strip */
+.local-kaznu-lesson-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    background: var(--kaznu-charcoal);
+    color: var(--kaznu-cream);
+    padding: 0.75rem 1rem;
+    margin: 0 0 1.25rem;
+    border-radius: 2px;
+    font-size: 0.9rem;
+}
+
+.local-kaznu-lesson-strip a {
+    color: var(--kaznu-cream) !important;
+    font-family: var(--kaznu-serif);
+    font-weight: 600;
+    text-decoration: none !important;
+    font-size: 1.05rem;
+}
+
+.local-kaznu-lesson-strip span {
+    color: var(--kaznu-bronze-soft);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Prev / next lesson nav */
+.local-kaznu-lesson-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.75rem 0 0.5rem;
+    padding: 1rem 0;
+    border-top: 1px solid rgba(32, 38, 44, 0.12);
+    font-family: var(--kaznu-sans);
+}
+
+.local-kaznu-lesson-nav a {
+    color: var(--kaznu-charcoal) !important;
+    font-weight: 600;
+    text-decoration: none !important;
+    padding: 0.55rem 1rem;
+    border: 1px solid rgba(32, 38, 44, 0.2);
+    background: #fff;
+}
+
+.local-kaznu-lesson-nav a:hover {
+    border-color: var(--kaznu-coral);
+    color: var(--kaznu-coral) !important;
+}
+
+.local-kaznu-lesson-nav a.kzn-lesson-next {
+    background: var(--kaznu-coral);
+    border-color: var(--kaznu-coral);
+    color: var(--kaznu-cream) !important;
+}
+
+.local-kaznu-lesson-nav .is-disabled {
+    opacity: 0.35;
+    pointer-events: none;
+    padding: 0.55rem 1rem;
+}
+
+.kzn-lesson-pos {
+    font-size: 0.85rem;
+    color: var(--kaznu-bronze);
+    font-weight: 600;
+}
+
+.local-kaznu-yt {
+    position: relative;
+    width: 100%;
+    margin: 0 0 1.25rem;
+    padding-top: 56.25%;
+    background: #111;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.local-kaznu-yt iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Prefer in-page video frame over Moodle "click the link" workaround. */
+body.path-mod-url .urlworkaround,
+body.path-mod-url .resourceworkaround {
+    display: none !important;
+}
+
+.local-kaznu-pdf {
+    padding-top: 0;
+    min-height: min(78vh, 920px);
+    height: min(78vh, 920px);
+    background: #1a1e22;
+}
+
+.local-kaznu-pdf iframe,
+.kzn-pdf-native iframe,
+iframe.kzn-pdf-frame {
+    background: #fff;
+}
+
+.kzn-pdf-native {
+    position: relative;
+    width: 100%;
+    margin: 0 0 1.25rem;
+    min-height: min(78vh, 920px);
+    height: min(78vh, 920px);
+    background: #1a1e22;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.kzn-pdf-native iframe,
+.resourcecontent iframe.kzn-pdf-frame {
+    position: absolute;
+    inset: 0;
+    width: 100% !important;
+    height: 100% !important;
+    border: 0;
+}
+
+body.path-mod-resource .resourceworkaround,
+body.path-mod-resource .urlworkaround {
+    display: none !important;
+}
+
+/* One media frame only — do not hide Moodle's native embed. */
+body.path-mod-url .mediaplugin iframe.kzn-media-frame,
+body.path-mod-url iframe.kzn-media-frame {
+    width: 100%;
+    min-height: min(56vw, 420px);
+    aspect-ratio: 16 / 9;
+    border: 0;
+    display: block;
+}
+
+.kzn-arena-cta-hint {
+    display: block;
+    width: 100%;
+    margin: 0.35rem 0 0.5rem;
+    font-size: 0.82rem;
+    color: rgba(255, 251, 247, 0.7);
+}
+
+.kzn-dash-rank-stats {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+    max-width: 520px;
+}
+
+.kzn-dash-rank-stats li {
+    background: rgba(255, 251, 247, 0.08);
+    padding: 0.65rem 0.75rem;
+    border-radius: 2px;
+}
+
+.kzn-dash-rank-stats span {
+    display: block;
+    font-size: 0.72rem;
+    opacity: 0.7;
+    margin-bottom: 0.2rem;
+}
+
+.kzn-dash-rank-stats strong {
+    font-size: 0.92rem;
+}
+
+.kzn-dash-achievements {
+    margin: 0 0 1rem;
+    max-width: 520px;
+}
+
+.kzn-dash-achievements h3 {
+    font-family: var(--kaznu-serif);
+    font-size: 1.05rem;
+    margin: 0 0 0.5rem;
+    font-weight: 600;
+}
+
+.kzn-dash-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.kzn-dash-badge {
+    display: inline-block;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: rgba(240, 101, 67, 0.2);
+    color: var(--kaznu-cream);
+    border: 1px solid rgba(240, 101, 67, 0.45);
+}
+
+.kzn-dash-badge.is-empty {
+    background: transparent;
+    border-style: dashed;
+    opacity: 0.7;
+    font-weight: 500;
+}
+
+.kzn-dash-ranks-info {
+    margin: 0 0 1.1rem;
+    max-width: 420px;
+    font-size: 0.9rem;
+}
+
+.kzn-dash-ranks-info summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--kaznu-bronze-soft);
+    list-style: none;
+}
+
+.kzn-dash-ranks-info summary::-webkit-details-marker {
+    display: none;
+}
+
+.kzn-dash-ranks-info .kzn-xp-rules {
+    margin: 0.65rem 0 0;
+    padding-left: 1.1rem;
+    opacity: 0.85;
+    line-height: 1.55;
+}
+
+/* Dashboard tabs */
+.kzn-dash-tabs {
+    margin-top: 0.5rem;
+    background: #fff;
+    border: 1px solid rgba(32, 38, 44, 0.08);
+    border-radius: 2px;
+    padding: 0.85rem 1rem 1.25rem;
+}
+
+.kzn-dash-tablist {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid rgba(32, 38, 44, 0.1);
+    padding-bottom: 0.65rem;
+}
+
+.kzn-dash-tablist button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    font-family: var(--kaznu-sans);
+    font-weight: 600;
+    font-size: 0.92rem;
+    padding: 0.45rem 0.85rem;
+    color: #6b645c;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+}
+
+.kzn-dash-tablist button[aria-selected="true"] {
+    color: var(--kaznu-charcoal);
+    border-bottom-color: var(--kaznu-coral);
+}
+
+.kzn-dash-tabpanel h2 {
+    font-family: var(--kaznu-serif);
+    font-size: 1.35rem;
+    margin: 0 0 0.5rem;
+    color: var(--kaznu-charcoal);
+}
+
+.kzn-dash-tab-lead {
+    margin: 0 0 1rem;
+    color: #5c564f;
+    font-size: 0.92rem;
+}
+
+.kzn-cal-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.kzn-cal-item {
+    display: grid;
+    grid-template-columns: 6.5rem 1fr;
+    gap: 0.85rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid rgba(32, 38, 44, 0.08);
+}
+
+.kzn-cal-item time {
+    font-weight: 700;
+    color: var(--kaznu-coral);
+    font-size: 0.88rem;
+}
+
+.kzn-cal-item strong {
+    display: block;
+    color: var(--kaznu-charcoal);
+    margin-bottom: 0.15rem;
+}
+
+.kzn-cal-item span {
+    color: #6b645c;
+    font-size: 0.85rem;
+}
+
+/* Grades on dark panel — high contrast */
+.kzn-grades-wrap {
+    background: var(--kaznu-charcoal);
+    color: var(--kaznu-cream);
+    border-radius: 2px;
+    overflow: auto;
+}
+
+.kzn-grades-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.kzn-grades-table th,
+.kzn-grades-table td {
+    padding: 0.75rem 0.9rem;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 251, 247, 0.12);
+    color: rgba(255, 251, 247, 0.92);
+}
+
+.kzn-grades-table th {
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--kaznu-bronze-soft);
+    font-weight: 600;
+}
+
+.kzn-grades-table tr.is-pass td:last-child {
+    color: #7dcea0;
+    font-weight: 600;
+}
+
+.kzn-grades-table tr.is-pending td:last-child {
+    color: var(--kaznu-bronze-soft);
+}
+
+/* Language dropdown */
+.kzn-lang-dd {
+    position: relative;
+    display: inline-block;
+    z-index: 40;
+    margin: 0 0.35rem;
+}
+
+.kzn-lang-btn {
+    appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.65rem;
+    border: 1px solid rgba(32, 38, 44, 0.2);
+    background: #fff;
+    color: var(--kaznu-charcoal);
+    font-family: var(--kaznu-sans);
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.navbar .kzn-lang-btn,
+.local-kaznu-debrand .kzn-lang-btn,
+body.path-my .navbar .kzn-lang-btn,
+body.path-course .navbar .kzn-lang-btn,
+body.path-mod .navbar .kzn-lang-btn,
+body.path-user .navbar .kzn-lang-btn,
+body.local-kaznu-debrand .navbar .kzn-lang-btn {
+    border-color: rgba(255, 251, 247, 0.35) !important;
+    background: transparent !important;
+    color: var(--kaznu-cream) !important;
+}
+
+.navbar .kzn-lang-btn:hover,
+.navbar .kzn-lang-btn:focus,
+.local-kaznu-debrand .navbar .kzn-lang-btn:hover,
+.local-kaznu-debrand .navbar .kzn-lang-btn:focus,
+body.path-my .navbar .kzn-lang-btn:hover {
+    color: var(--kaznu-charcoal) !important;
+    background: var(--kaznu-cream) !important;
+    border-color: var(--kaznu-cream) !important;
+}
+
+.kzn-lang-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    min-width: 7.5rem;
+    background: #fff;
+    border: 1px solid rgba(32, 38, 44, 0.12);
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    padding: 0.25rem 0;
+}
+
+.kzn-lang-menu[hidden] {
+    display: none !important;
+}
+
+.kzn-lang-item {
+    padding: 0.45rem 0.85rem;
+    color: var(--kaznu-charcoal) !important;
+    text-decoration: none !important;
+    font-size: 0.88rem;
+    font-weight: 500;
+}
+
+.kzn-lang-item:hover,
+.kzn-lang-item.is-active {
+    background: rgba(240, 101, 67, 0.1);
+    color: var(--kaznu-coral) !important;
+}
+
+/* Temporarily hide Moodle clutter */
+.kzn-temp-hidden,
+body.local-kaznu-hide-temp .block_timeline,
+body.local-kaznu-hide-temp .block_calendar_month,
+body.local-kaznu-hide-temp .block_calendar_upcoming,
+body.local-kaznu-hide-temp .block_recentlyaccessedcourses,
+body.local-kaznu-hide-temp .block_recentlyaccesseditems,
+body.local-kaznu-hide-temp .block_myoverview,
+body.local-kaznu-hide-temp.page-mycourses .block_myoverview,
+body.local-kaznu-hide-temp .activity-navigation {
+    display: none !important;
+}
+
+@media (max-width: 720px) {
+    .kzn-dash-rank-stats {
+        grid-template-columns: 1fr;
+    }
+    .local-kaznu-lesson-nav {
+        flex-wrap: wrap;
+    }
+    .kzn-cal-item {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Sticky XP HUD — trophy FAB collapsed / panel expanded */
+.local-kaznu-hud.kzn-achievement-panel,
+.kzn-achievement-panel.kzn-achievement--hud {
+    position: fixed;
+    z-index: 1050; /* below Moodle drawer ~1100+ when open; still above content */
+    right: 1rem;
+    bottom: 1rem;
+    width: auto;
+    min-width: 0;
+    max-width: min(92vw, 300px);
+    background: transparent;
+    color: var(--kaznu-cream);
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    font-family: var(--kaznu-sans);
+    font-size: 0.85rem;
+    overflow: visible;
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-end;
+    gap: 0.5rem;
+    pointer-events: none;
+}
+
+.local-kaznu-hud.kzn-achievement-panel > *,
+.kzn-achievement-panel.kzn-achievement--hud > * {
+    pointer-events: auto;
+}
+
+.kzn-achievement-panel.kzn-achievement--hud.is-expanded {
+    /* Expanded card sits above the FAB */
+}
+
+.kzn-achievement-panel.kzn-achievement--inline {
+    position: relative;
+    margin: 0 0 1rem;
+    max-width: 100%;
+    background: transparent;
+    color: var(--kaznu-charcoal);
+    border: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+
+/* Circular trophy FAB (collapsed chrome) */
+.kzn-achievement-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    min-width: 48px;
+    min-height: 48px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: var(--kaznu-charcoal);
+    color: var(--kaznu-cream);
+    font: inherit;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(32, 38, 44, 0.28);
+    transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    outline-offset: 3px;
+    flex: 0 0 auto;
+}
+
+.kzn-achievement-toggle:hover {
+    background: #2c343c;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(32, 38, 44, 0.34);
+}
+
+.kzn-achievement-toggle:focus-visible {
+    outline: 2px solid var(--kaznu-coral);
+    outline-offset: 3px;
+}
+
+.kzn-achievement-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.35rem;
+    height: 1.35rem;
+    line-height: 1;
+}
+
+.kzn-achievement-icon .icon,
+.kzn-achievement-icon .kzn-achievement-icon-fa,
+.kzn-achievement-icon img,
+.kzn-achievement-icon .kzn-achievement-icon-img {
+    width: 1.25rem;
+    height: 1.25rem;
+    margin: 0;
+    font-size: 1.2rem;
+    color: var(--kaznu-cream);
+    filter: none;
+}
+
+/* Expanded panel body */
+.kzn-achievement-body {
+    width: min(92vw, 280px);
+    padding: 0.75rem 0.85rem 0.85rem;
+    border-radius: 10px;
+    background: var(--kaznu-charcoal);
+    color: var(--kaznu-cream);
+    box-shadow: 0 8px 24px rgba(32, 38, 44, 0.28);
+    border: 1px solid rgba(255, 251, 247, 0.08);
+}
+
+.kzn-achievement--inline .kzn-achievement-body {
+    width: 100%;
+    max-width: 100%;
+    background: #fff;
+    color: var(--kaznu-charcoal);
+    border: 1px solid rgba(32, 38, 44, 0.1);
+    border-left: 3px solid var(--kaznu-coral);
+    box-shadow: 0 4px 14px rgba(32, 38, 44, 0.04);
+}
+
+.kzn-achievement--inline .kzn-achievement-toggle {
+    background: var(--kaznu-charcoal);
+    color: var(--kaznu-cream);
+}
+
+.kzn-achievement-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 0.35rem;
+}
+
+.kzn-achievement-title {
+    font-family: var(--kaznu-serif);
+    font-size: 1rem;
+    font-weight: 600;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.kzn-achievement-close {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: inherit;
+    font-size: 1.35rem;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0.85;
+}
+
+.kzn-achievement-close:hover {
+    opacity: 1;
+    background: rgba(255, 251, 247, 0.08);
+}
+
+.kzn-achievement--inline .kzn-achievement-close:hover {
+    background: rgba(32, 38, 44, 0.06);
+}
+
+.kzn-achievement-close:focus-visible {
+    outline: 2px solid var(--kaznu-coral);
+    outline-offset: 1px;
+}
+
+.kzn-achievement-summary {
+    margin: 0 0 0.35rem;
+    opacity: 0.9;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* Collapsed: only FAB — hide body */
+.kzn-achievement-panel.is-collapsed .kzn-achievement-body {
+    display: none !important;
+}
+
+.kzn-achievement-panel.is-expanded .kzn-achievement-body {
+    display: block;
+}
+
+/* Mobile: keep FAB bottom-right in safe area, no content overlap */
+@media (max-width: 767.98px) {
+    .local-kaznu-hud.kzn-achievement-panel,
+    .kzn-achievement-panel.kzn-achievement--hud {
+        right: max(0.75rem, env(safe-area-inset-right));
+        bottom: max(0.75rem, env(safe-area-inset-bottom));
+        z-index: 1040;
+    }
+
+    .kzn-achievement-body {
+        width: min(88vw, 280px);
+    }
+}
+
+.kzn-achievement-rank {
+    margin: 0.55rem 0 0.4rem;
+    font-family: var(--kaznu-serif);
+    font-size: 1.05rem;
+}
+
+.kzn-achievement-bar {
+    height: 5px;
+    background: rgba(255, 251, 247, 0.15);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 0.45rem;
+}
+
+.kzn-achievement--inline .kzn-achievement-bar {
+    background: rgba(32, 38, 44, 0.1);
+}
+
+.kzn-achievement-bar span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, var(--kaznu-bronze), var(--kaznu-coral));
+}
+
+.kzn-achievement-to-next,
+.kzn-achievement-links,
+.kzn-xp-panel-hint,
+.kzn-xp-panel-status,
+.kzn-xp-panel-to-next {
+    margin: 0.35rem 0 0;
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
+.kzn-achievement-links a,
+.kzn-achievement--hud .kzn-achievement-links a {
+    color: var(--kaznu-coral);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.kzn-achievement--inline .kzn-achievement-links a {
+    color: var(--kaznu-coral);
+}
+
+/* CSS fallback: force-hide XP / rewards + non-exam chrome on active attempt pages */
+body.local-kaznu-quiz-focus .local-kaznu-hud,
+body.local-kaznu-quiz-focus .kzn-achievement-panel,
+body.local-kaznu-quiz-focus .local-kaznu-lesson-strip,
+body.local-kaznu-quiz-focus .local-kaznu-lesson-nav,
+body.local-kaznu-quiz-focus .kzn-xp-panel,
+body.local-kaznu-quiz-focus [data-kaznu-xp-panel],
+body.local-kaznu-quiz-focus .navbar,
+body.local-kaznu-quiz-focus #page-footer,
+body.local-kaznu-quiz-focus .footer-popover,
+body.local-kaznu-quiz-focus .secondary-navigation,
+body.local-kaznu-quiz-focus .activity-navigation,
+body.local-kaznu-quiz-focus .breadcrumb-nav,
+body.local-kaznu-quiz-focus .drawer-toggler,
+body.local-kaznu-quiz-focus #nav-drawer,
+body.local-kaznu-quiz-focus .editmode-switch-form,
+body.local-kaznu-quiz-focus .kzn-lang-root,
+body.local-kaznu-quiz-focus [data-kaznu-lang],
+body.local-kaznu-quiz-focus .local-kaznu-celebrate,
+body.path-mod-quiz.pagelayout-popup .local-kaznu-hud,
+body#page-mod-quiz-attempt .local-kaznu-hud,
+body#page-mod-quiz-attempt .kzn-achievement-panel,
+body#page-mod-quiz-attempt .local-kaznu-lesson-strip,
+body#page-mod-quiz-attempt .local-kaznu-lesson-nav,
+body#page-mod-quiz-attempt .kzn-xp-panel,
+body#page-mod-quiz-attempt [data-kaznu-xp-panel],
+body#page-mod-quiz-attempt .navbar,
+body#page-mod-quiz-attempt #page-footer,
+body#page-mod-quiz-attempt .footer-popover,
+body#page-mod-quiz-attempt .secondary-navigation,
+body#page-mod-quiz-attempt .activity-navigation,
+body#page-mod-quiz-attempt .breadcrumb-nav,
+body#page-mod-quiz-attempt .drawer-toggler,
+body#page-mod-quiz-attempt #nav-drawer,
+body#page-mod-quiz-attempt .editmode-switch-form,
+body#page-mod-quiz-attempt .kzn-lang-root,
+body#page-mod-quiz-attempt [data-kaznu-lang],
+body#page-mod-quiz-attempt .local-kaznu-celebrate,
+body#page-mod-quiz-summary .local-kaznu-hud,
+body#page-mod-quiz-summary .kzn-achievement-panel,
+body#page-mod-quiz-summary .local-kaznu-lesson-strip,
+body#page-mod-quiz-summary .local-kaznu-lesson-nav,
+body#page-mod-quiz-summary .kzn-xp-panel,
+body#page-mod-quiz-summary [data-kaznu-xp-panel],
+body#page-mod-quiz-summary .navbar,
+body#page-mod-quiz-summary #page-footer,
+body#page-mod-quiz-summary .footer-popover,
+body#page-mod-quiz-summary .secondary-navigation,
+body#page-mod-quiz-summary .activity-navigation,
+body#page-mod-quiz-summary .breadcrumb-nav,
+body#page-mod-quiz-summary .drawer-toggler,
+body#page-mod-quiz-summary #nav-drawer,
+body#page-mod-quiz-summary .editmode-switch-form,
+body#page-mod-quiz-summary .kzn-lang-root,
+body#page-mod-quiz-summary [data-kaznu-lang],
+body#page-mod-quiz-summary .local-kaznu-celebrate,
+body#page-mod-quiz-processattempt .local-kaznu-hud,
+body#page-mod-quiz-processattempt .kzn-achievement-panel,
+body#page-mod-quiz-processattempt .navbar,
+body#page-mod-quiz-processattempt #page-footer,
+body#page-mod-quiz-processattempt .footer-popover,
+body#page-mod-quiz-review .local-kaznu-hud {
+    display: none !important;
+}
+
+/* Hide achievements on procting prep / launch pages */
+body.local-proctopus-hide-achievements .kzn-achievement-panel,
+body.local-proctopus-hide-achievements .local-kaznu-hud,
+body.path-local-proctopus.local-proctopus-prep .kzn-achievement-panel,
+body.path-local-proctopus.local-proctopus-launch .kzn-achievement-panel,
+body#page-local-proctopus-check .kzn-achievement-panel,
+body#page-local-proctopus-launch .kzn-achievement-panel {
+    display: none !important;
+}
+
+body.local-kaznu-quiz-focus #page,
+body#page-mod-quiz-attempt #page,
+body#page-mod-quiz-summary #page,
+body#page-mod-quiz-processattempt #page {
+    margin-top: 0 !important;
+}
+
+body.local-kaznu-quiz-focus #region-main,
+body#page-mod-quiz-attempt #region-main,
+body#page-mod-quiz-summary #region-main {
+    max-width: 920px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Legacy selectors kept as no-op-safe overrides after collapse redesign */
+.local-kaznu-hud strong {
+    display: none;
+}
+
+.local-kaznu-hud-meta,
+.local-kaznu-hud-bar {
+    display: none;
+}
+
+.kzn-xp-panel .kzn-achievement-title {
+    color: inherit;
+}
+
+.kzn-xp-panel.is-ok {
+    border-left-color: #2f7d4a;
+}
+
+.kzn-xp-panel.is-warn {
+    border-left-color: var(--kaznu-coral);
+}
+
+/* Celebration toast */
+.local-kaznu-celebrate {
+    position: fixed;
+    z-index: 1300;
+    left: 50%;
+    top: 14%;
+    transform: translateX(-50%) scale(0.92);
+    min-width: min(92vw, 360px);
+    background: var(--kaznu-charcoal);
+    color: var(--kaznu-cream);
+    padding: 1.35rem 1.75rem 1.5rem;
+    border-top: 4px solid var(--kaznu-coral);
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+    animation: kaznu-pop 0.45s ease forwards, kaznu-fade 0.6s 4.5s ease forwards;
+    pointer-events: none;
+    font-family: var(--kaznu-sans);
+}
+
+.local-kaznu-celebrate .lvl {
+    font-family: var(--kaznu-serif);
+    font-size: 1.55rem;
+    color: var(--kaznu-coral);
+    margin: 0 0 0.35rem;
+}
+
+.local-kaznu-celebrate .xp {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    margin-bottom: 0.35rem;
+}
+
+.local-kaznu-celebrate .gain {
+    font-family: var(--kaznu-serif);
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--kaznu-cream);
+    letter-spacing: 0.02em;
+}
+
+.kzn-xp-panel {
+    margin: 0 0 1.25rem;
+    padding: 1rem 1.15rem;
+    border-left: 3px solid var(--kaznu-coral);
+    background: rgba(32, 38, 44, 0.05);
+    font-family: var(--kaznu-sans);
+}
+
+.kzn-xp-panel strong {
+    display: block;
+    font-family: var(--kaznu-serif);
+    font-size: 1.15rem;
+    margin-bottom: 0.35rem;
+    color: var(--kaznu-charcoal);
+}
+
+.kzn-xp-panel p {
+    margin: 0 0 0.4rem;
+    font-size: 0.92rem;
+    color: var(--kaznu-charcoal);
+}
+
+.kzn-xp-panel-status {
+    font-weight: 600 !important;
+}
+
+.kzn-xp-panel.is-ok {
+    border-left-color: #2f7d4a;
+    background: rgba(47, 125, 74, 0.08);
+}
+
+.kzn-xp-panel.is-warn {
+    border-left-color: var(--kaznu-coral);
+    background: rgba(240, 101, 67, 0.08);
+}
+
+.kzn-xp-panel-meta {
+    opacity: 0.7;
+    font-size: 0.82rem !important;
+    margin-bottom: 0 !important;
+}
+
+@keyframes kaznu-pop {
+    to { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+@keyframes kaznu-fade {
+    to { opacity: 0; transform: translateX(-50%) translateY(-12px) scale(0.98); }
+}
+
+/* Course sections as lesson list */
+body.path-course .course-content ul.sections,
+body.path-course .course-content .sections {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+body.path-course .course-section,
+body.path-course li.section,
+body.path-course .section.main {
+    background: #fff !important;
+    border: 1px solid rgba(32, 38, 44, 0.08) !important;
+    border-radius: 2px !important;
+    margin-bottom: 1rem !important;
+    padding: 1rem 1.15rem !important;
+    box-shadow: 0 6px 18px rgba(32, 38, 44, 0.04);
+}
+
+body.path-course .sectionname,
+body.path-course .course-section-header .sectionname,
+body.path-course h3.sectionname {
+    font-family: var(--kaznu-serif) !important;
+    color: var(--kaznu-charcoal) !important;
+    font-weight: 600 !important;
+    font-size: 1.35rem !important;
+}
+
+body.path-course .activity-item,
+body.path-course .activity {
+    border: none !important;
+    border-bottom: 1px dashed rgba(32, 38, 44, 0.1) !important;
+    border-radius: 0 !important;
+    padding: 0.65rem 0.25rem !important;
+    background: transparent !important;
+    transition: background 0.15s;
+}
+
+body.path-course .activity-item:hover,
+body.path-course .activity:hover {
+    background: rgba(240, 101, 67, 0.04) !important;
+}
+
+body.path-course .activityname a,
+body.path-course .activity-item a.aalink {
+    color: var(--kaznu-charcoal) !important;
+    font-weight: 600 !important;
+    text-decoration: none !important;
+}
+
+body.path-course .activityname a:hover,
+body.path-course .activity-item a.aalink:hover {
+    color: var(--kaznu-coral) !important;
+}
+
+body.path-course .activity.quiz .activityname a {
+    color: var(--kaznu-coral) !important;
+}
+
+body.path-course .activity.url .activityname a::before {
+    content: "▶ ";
+    color: var(--kaznu-bronze);
+}
+
+body.path-course .btn-primary,
+body.path-mod .btn-primary,
+body.path-local-kaznu .btn-primary {
+    background: var(--kaznu-coral) !important;
+    border-color: var(--kaznu-coral) !important;
+    color: #fff !important;
+    border-radius: 2px !important;
+}
+
+body.path-course .btn-primary:hover,
+body.path-mod .btn-primary:hover,
+body.path-local-kaznu .btn-primary:hover {
+    background: var(--kaznu-coral-deep) !important;
+    border-color: var(--kaznu-coral-deep) !important;
+}
+
+body.path-mod #region-main {
+    max-width: 860px;
+    margin: 0 auto;
+}
+
+body.path-mod .page-header-headings h1,
+body.path-mod #page-header h1 {
+    font-family: var(--kaznu-serif) !important;
+    color: var(--kaznu-charcoal) !important;
+}
+
+/* Pay page */
+body.path-local-kaznu.local-kaznu-pay-page #region-main,
+body.path-local-kaznu .local-kaznu-pay {
+    max-width: 920px;
+    margin: 0 auto 2rem;
+}
+
+.local-kaznu-pay {
+    max-width: 920px;
+    margin: 0 auto 2rem;
+    font-family: var(--kaznu-sans);
+}
+
+.local-kaznu-badge {
+    display: inline-block;
+    background: var(--kaznu-charcoal);
+    color: var(--kaznu-cream);
+    font-weight: 600;
+    padding: 0.3rem 0.75rem;
+    border-radius: 2px;
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 1rem;
+}
+
+.local-kaznu-pay h2 {
+    font-family: var(--kaznu-serif);
+    color: var(--kaznu-charcoal);
+    margin-top: 0.5rem;
+    font-size: 2rem;
+}
+
+.local-kaznu-pay-lead {
+    font-size: 1.1rem;
+    color: #4a453f;
+}
+
+.local-kaznu-pay-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 2rem 0;
+}
+
+@media (max-width: 768px) {
+    .local-kaznu-pay-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.local-kaznu-pay-card {
+    background: #fff;
+    border: 1px solid rgba(32, 38, 44, 0.1);
+    border-radius: 2px;
+    padding: 1.5rem 2rem;
+    box-shadow: 0 8px 24px rgba(32, 38, 44, 0.06);
+}
+
+.local-kaznu-pay-price {
+    font-family: var(--kaznu-serif);
+    font-size: 2.4rem;
+    font-weight: 600;
+    color: var(--kaznu-coral);
+    margin-bottom: 0.5rem;
+}
+
+.local-kaznu-pay-qr {
+    text-align: center;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: var(--kaznu-cream);
+    border-radius: 2px;
+}
+
+.local-kaznu-qr-link {
+    display: inline-block;
+}
+
+.local-kaznu-qr-link img {
+    display: block;
+    border-radius: 2px;
+}
+
+.local-kaznu-pay-steps-card ol {
+    padding-left: 1.25rem;
+    line-height: 1.7;
+}
+
+.local-kaznu-muted {
+    color: #6b645c;
+    font-size: 0.9rem;
+}
+
+.local-kaznu-pay-link {
+    word-break: break-all;
+    font-size: 0.8rem;
+}
+
+.local-kaznu-pay-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+}
+
+.local-kaznu-pay-feat {
+    background: var(--kaznu-cream);
+    border: 1px solid rgba(163, 146, 123, 0.35);
+    border-radius: 2px;
+    padding: 1rem;
+    text-align: center;
+    font-weight: 500;
+}
+
+.local-kaznu-btn.btn-primary,
+a.local-kaznu-btn {
+    display: inline-block;
+    background: var(--kaznu-coral) !important;
+    border-color: var(--kaznu-coral) !important;
+    color: #fff !important;
+    padding: 0.65rem 1.5rem;
+    border-radius: 2px;
+    font-weight: 600;
+    text-decoration: none !important;
+    margin-top: 1rem;
+}
+
+.local-kaznu-btn.btn-primary:hover,
+a.local-kaznu-btn:hover {
+    background: var(--kaznu-coral-deep) !important;
+    border-color: var(--kaznu-coral-deep) !important;
+}
+
+/* —— Student dashboard / my pages —— */
+body.path-my #page-header.kzn-hide-default-header,
+body.path-my .kzn-hide-default-header {
+    display: none !important;
+}
+
+body.path-my #region-main,
+body.path-user #region-main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1rem 3rem;
+}
+
+body.path-my .btn-primary,
+body.path-user .btn-primary,
+body.path-calendar .btn-primary,
+body.path-grade .btn-primary {
+    background: var(--kaznu-coral) !important;
+    border-color: var(--kaznu-coral) !important;
+    color: #fff !important;
+    border-radius: 2px !important;
+}
+
+body.path-my .btn-primary:hover,
+body.path-user .btn-primary:hover {
+    background: var(--kaznu-coral-deep) !important;
+    border-color: var(--kaznu-coral-deep) !important;
+}
+
+body.path-my .card,
+body.path-my .block,
+body.path-user .card {
+    border-radius: 2px !important;
+    border: 1px solid rgba(32, 38, 44, 0.08) !important;
+    box-shadow: 0 6px 18px rgba(32, 38, 44, 0.04) !important;
+}
+
+body.path-my .card-title,
+body.path-my h2,
+body.path-my h3,
+body.path-my .page-header-headings h1 {
+    font-family: var(--kaznu-serif) !important;
+    color: var(--kaznu-charcoal) !important;
+}
+
+body.path-my a:not(.btn):not(.nav-link):not(.dropdown-item) {
+    color: var(--kaznu-coral);
+}
+
+.local-kaznu-dash {
+    margin: 0 0 1.75rem;
+    font-family: var(--kaznu-sans);
+}
+
+.kzn-dash-hero {
+    background: linear-gradient(145deg, #20262C 0%, #3a2a24 55%, #F06543 140%);
+    color: var(--kaznu-cream);
+    padding: 1.75rem 1.5rem 1.5rem;
+    border-radius: 2px;
+    margin-bottom: 1.25rem;
+    animation: kaznu-rise 0.55s ease both;
+}
+
+.kzn-dash-hello {
+    margin: 0 0 0.35rem;
+    font-size: 0.9rem;
+    color: var(--kaznu-bronze-soft);
+    letter-spacing: 0.04em;
+}
+
+.kzn-dash-hero h1 {
+    font-family: var(--kaznu-serif) !important;
+    font-size: clamp(1.8rem, 4vw, 2.6rem) !important;
+    font-weight: 600 !important;
+    color: var(--kaznu-cream) !important;
+    margin: 0 0 0.5rem !important;
+}
+
+.kzn-dash-lead {
+    margin: 0 0 1.1rem;
+    opacity: 0.88;
+    max-width: 36rem;
+}
+
+.kzn-dash-xp {
+    max-width: 420px;
+    margin-bottom: 1rem;
+}
+
+.kzn-dash-xp-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.9rem;
+    margin-bottom: 0.4rem;
+}
+
+.kzn-dash-xp em {
+    display: block;
+    margin-top: 0.35rem;
+    font-style: normal;
+    font-size: 0.8rem;
+    opacity: 0.75;
+}
+
+.kzn-dash-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 900px) {
+    .kzn-dash-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.kzn-dash-panel {
+    background: #fff;
+    border: 1px solid rgba(32, 38, 44, 0.08);
+    border-radius: 2px;
+    padding: 1.15rem 1.2rem 1.25rem;
+}
+
+.kzn-dash-panel h2 {
+    font-family: var(--kaznu-serif);
+    font-size: 1.35rem;
+    margin: 0 0 0.9rem;
+    color: var(--kaznu-charcoal);
+}
+
+.kzn-dash-tiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 0.75rem;
+}
+
+.kzn-dash-tile {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    min-height: 120px;
+    padding: 0.9rem;
+    text-decoration: none !important;
+    color: var(--kaznu-cream) !important;
+    border-radius: 2px;
+    background: var(--kaznu-charcoal);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.kzn-dash-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(32, 38, 44, 0.18);
+    color: var(--kaznu-cream) !important;
+}
+
+.kzn-dash-tile.kzn-accent-1 { background: linear-gradient(145deg, #3a2a24, #F06543); }
+.kzn-dash-tile.kzn-accent-2 { background: linear-gradient(145deg, #20262C, #A3927B); }
+.kzn-dash-tile.kzn-accent-3 { background: linear-gradient(160deg, #2c333a, #8a5a48); }
+.kzn-dash-tile.kzn-accent-4 { background: linear-gradient(135deg, #1a1e22, #A3927B); }
+.kzn-dash-tile.kzn-accent-5 { background: linear-gradient(150deg, #20262C, #F06543); }
+
+.kzn-dash-tile-meta {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.8;
+}
+
+.kzn-dash-tile strong {
+    font-family: var(--kaznu-serif);
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.25;
+    flex: 1;
+}
+
+.kzn-dash-tile em {
+    font-style: normal;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 251, 247, 0.9);
+}
+
+.kzn-dash-empty {
+    margin: 0;
+    color: #6b645c;
+}
+
+.kzn-dash-lb ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.kzn-dash-lb li {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr auto;
+    gap: 0.5rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid rgba(32, 38, 44, 0.08);
+    font-size: 0.9rem;
+    color: var(--kaznu-charcoal);
+}
+
+.kzn-dash-lb li > span:first-child {
+    font-weight: 700;
+    color: var(--kaznu-coral);
+}
+
+.kzn-dash-lb li > span:last-child {
+    color: var(--kaznu-bronze);
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.kzn-dash-empty-li {
+    border: none !important;
+    color: #6b645c !important;
+    display: block !important;
+}
+
+body.path-my .navbar .navbar-brand,
+body.path-my .navbar .usermenu .dropdown-toggle {
+    color: var(--kaznu-cream) !important;
+}
+
+body.path-my .navbar .dropdown-menu .dropdown-item {
+    color: var(--kaznu-charcoal) !important;
+}
+
+body.path-my .navbar .dropdown-menu .dropdown-item:hover,
+body.path-my .navbar .dropdown-menu .dropdown-item:focus {
+    color: var(--kaznu-cream) !important;
+    background: var(--kaznu-charcoal) !important;
+}
+
+/* —— Debrand Moodle for students —— */
+body.local-kaznu-debrand #page-footer,
+body.local-kaznu-debrand .footer-popover,
+body.local-kaznu-debrand .footer-content-debugging,
+body.local-kaznu-debrand a[href*='moodle.org'],
+body.local-kaznu-debrand .footer-section {
+    display: none !important;
+}
+
+body.local-kaznu-debrand .editmode-switch-form,
+body.local-kaznu-debrand .navbar .editmode-switch-form {
+    display: none !important;
+}
+
+/* Keep Boost navbar one row: brand + moremenu + usermenu. */
+body.local-kaznu-debrand .navbar {
+    align-items: center !important;
+    flex-wrap: nowrap !important;
+    overflow: visible !important;
+    min-height: 60px;
+}
+
+body.local-kaznu-debrand .navbar .primary-navigation {
+    flex: 1 1 auto;
+    min-width: 0;
+    align-self: center;
+}
+
+body.local-kaznu-debrand .navbar .kzn-lang-dd {
+    flex-shrink: 0;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    margin: 0 0.5rem 0 0.25rem;
+}
+
+body.local-kaznu-debrand .kzn-nav-brand {
+    display: block;
+    line-height: 1.2;
+    color: var(--kaznu-cream);
+    text-decoration: none;
+}
+
+body.local-kaznu-debrand .kzn-nav-brand strong {
+    font-family: var(--kaznu-serif);
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+body.local-kaznu-debrand .navbar-brand img,
+body.local-kaznu-debrand .navbar-brand .logo {
+    display: none !important;
+}
+
+body.local-kaznu-debrand .nav-link[href*='admin'],
+body.local-kaznu-debrand .nav-link[href*='reportbuilder'] {
+    display: none !important;
+}
+
+/* My Univer cabinet */
+.local-kaznu-my-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.local-kaznu-my-section {
+    margin: 1.5rem 0 2rem;
+}
+
+.local-kaznu-my-section h3 {
+    font-family: var(--kaznu-serif);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--kaznu-charcoal);
+}
+
+.local-kaznu-my-dl {
+    display: grid;
+    grid-template-columns: minmax(8rem, 12rem) 1fr;
+    gap: 0.35rem 1rem;
+    margin: 0;
+}
+
+.local-kaznu-my-dl dt {
+    margin: 0;
+    font-weight: 600;
+    color: var(--kaznu-bronze);
+}
+
+.local-kaznu-my-dl dd {
+    margin: 0;
+}
+
+.local-kaznu-my-subjects {
+    width: 100%;
+}
+
+.local-kaznu-fresh {
+    margin: 0.5rem 0 1rem;
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid var(--kaznu-bronze);
+    background: rgba(163, 146, 123, 0.08);
+    font-size: 0.95rem;
+}
+
+.local-kaznu-fresh-fresh {
+    border-left-color: #2f6f4e;
+}
+
+.local-kaznu-fresh-stale,
+.local-kaznu-fresh-unavailable {
+    border-left-color: var(--kaznu-coral);
+}
+
+.local-kaznu-readonly {
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 640px) {
+    .local-kaznu-my-dl {
+        grid-template-columns: 1fr;
+    }
+
+    .local-kaznu-my-dl dt {
+        margin-top: 0.5rem;
+    }
+}
+
+/* �� Student AI chat �� */
+.local-kaznu-ai-chat {
+    max-width: 820px;
+    margin: 0 auto 2rem;
+}
+.local-kaznu-ai-lead {
+    color: var(--kaznu-charcoal);
+    margin-bottom: 1rem;
+}
+.local-kaznu-ai-panel {
+    background: #fff;
+    border: 1px solid rgba(32, 38, 44, 0.12);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(32, 38, 44, 0.06);
+}
+.local-kaznu-ai-messages {
+    height: min(60vh, 520px);
+    overflow-y: auto;
+    padding: 1rem 1.1rem;
+    background: linear-gradient(180deg, #FFFBF7 0%, #fff 40%);
+}
+.local-kaznu-ai-row {
+    display: flex;
+    margin-bottom: 0.75rem;
+}
+.local-kaznu-ai-row-user {
+    justify-content: flex-end;
+}
+.local-kaznu-ai-row-bot {
+    justify-content: flex-start;
+}
+.local-kaznu-ai-bubble {
+    max-width: min(92%, 560px);
+    padding: 0.7rem 0.95rem;
+    border-radius: 14px;
+    line-height: 1.45;
+    font-size: 0.98rem;
+    white-space: normal;
+    word-break: break-word;
+}
+.local-kaznu-ai-bubble-bot {
+    background: #f3efe9;
+    color: var(--kaznu-charcoal);
+    border-bottom-left-radius: 4px;
+}
+.local-kaznu-ai-bubble-user {
+    background: var(--kaznu-coral);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+.local-kaznu-ai-thinking {
+    opacity: 0.75;
+    font-style: italic;
+}
+.local-kaznu-ai-form {
+    display: flex;
+    gap: 0.65rem;
+    padding: 0.85rem;
+    border-top: 1px solid rgba(32, 38, 44, 0.1);
+    background: #fff;
+    align-items: flex-end;
+}
+.local-kaznu-ai-form textarea {
+    flex: 1;
+    resize: vertical;
+    min-height: 48px;
+    max-height: 160px;
+    border: 1px solid rgba(32, 38, 44, 0.18);
+    border-radius: 10px;
+    padding: 0.65rem 0.8rem;
+    font-family: var(--kaznu-sans);
+}
+.local-kaznu-ai-send {
+    white-space: nowrap;
+    background: var(--kaznu-coral) !important;
+    border-color: var(--kaznu-coral) !important;
+}
+.local-kaznu-ai-note {
+    margin-top: 0.75rem;
+    font-size: 0.85rem;
+    color: rgba(32, 38, 44, 0.65);
+}
+@media (max-width: 640px) {
+    .local-kaznu-ai-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .local-kaznu-ai-send {
+        width: 100%;
+    }
+}
+
+.local-kaznu-ai-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+.local-kaznu-ai-back {
+    color: var(--kaznu-charcoal);
+    text-decoration: none;
+    font-weight: 600;
+}
+.local-kaznu-ai-back:hover { color: var(--kaznu-coral); text-decoration: none; }
+.local-kaznu-ai-userpill {
+    background: rgba(240, 101, 67, 0.12);
+    color: var(--kaznu-charcoal);
+    border-radius: 999px;
+    padding: 0.25rem 0.75rem;
+    font-size: 0.9rem;
+}
+.local-kaznu-ai-suggestions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0 0.85rem 0.75rem;
+}
+.local-kaznu-ai-chip {
+    border: 1px solid rgba(32, 38, 44, 0.16);
+    background: #fff;
+    color: var(--kaznu-charcoal);
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.88rem;
+    cursor: pointer;
+}
+.local-kaznu-ai-chip:hover {
+    border-color: var(--kaznu-coral);
+    color: var(--kaznu-coral);
+}
+.local-kaznu-ai-open-btn {
+    background: var(--kaznu-coral) !important;
+    border-color: var(--kaznu-coral) !important;
+}
+
+/* ===== Thesis module (demo) ===== */
+.kz-thesis { max-width: 920px; margin: 0 auto 3rem; font-family: var(--kaznu-sans); color: var(--kaznu-charcoal); }
+.kz-thesis-top { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+.kz-thesis-h { font-family: var(--kaznu-serif); font-size: 2rem; margin: 0.25rem 0 0.5rem; }
+.kz-thesis-lead { color: rgba(32,38,44,.75); max-width: 62ch; }
+.kz-thesis-link, .kz-thesis-link-strong { color: var(--kaznu-coral); text-decoration: none; font-weight: 600; }
+.kz-thesis-link-strong { font-weight: 700; }
+.kz-thesis-pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.85rem; margin: 1.25rem 0; }
+.kz-thesis-pillar { background: #fff; border: 1px solid rgba(32,38,44,.1); border-radius: 14px; padding: 1rem 1.1rem; box-shadow: 0 8px 24px rgba(32,38,44,.04); }
+.kz-thesis-pillar-n { font-family: var(--kaznu-serif); color: var(--kaznu-coral); font-size: 1.4rem; font-weight: 700; }
+.kz-thesis-pillar h3 { margin: 0.2rem 0 0.35rem; font-size: 1.05rem; }
+.kz-thesis-pillar p { margin: 0; font-size: 0.9rem; color: rgba(32,38,44,.7); }
+.kz-thesis-alert { border-radius: 12px; padding: 0.85rem 1rem; margin: 1rem 0; font-size: 0.92rem; }
+.kz-thesis-alert-info { background: rgba(163,146,123,.15); color: var(--kaznu-charcoal); }
+.kz-thesis-alert-warn { background: rgba(240,101,67,.12); color: var(--kaznu-charcoal); }
+.kz-thesis-btn { display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; padding: 0.65rem 1.2rem; font-weight: 700; border: 1px solid transparent; text-decoration: none; cursor: pointer; }
+.kz-thesis-btn-primary { background: var(--kaznu-coral); color: #fff !important; border-color: var(--kaznu-coral); }
+.kz-thesis-btn-ghost { background: #fff; color: var(--kaznu-charcoal) !important; border-color: rgba(32,38,44,.18); }
+.kz-thesis-btn-danger { background: #fff; color: #b42318 !important; border-color: rgba(180,35,24,.35); }
+.kz-thesis-btn:disabled { opacity: .55; cursor: wait; }
+.kz-thesis-actions { display: flex; flex-wrap: wrap; gap: 0.65rem; margin: 1.25rem 0; }
+.kz-thesis-list { display: grid; gap: 0.85rem; }
+.kz-thesis-card { background: #fff; border: 1px solid rgba(32,38,44,.1); border-radius: 16px; padding: 1.1rem 1.2rem; }
+.kz-thesis-card-title { margin: 0 0 0.5rem; font-size: 1.15rem; }
+.kz-thesis-badge { display: inline-block; border-radius: 999px; padding: 0.2rem 0.7rem; font-size: 0.82rem; font-weight: 700; background: rgba(32,38,44,.08); margin-bottom: 0.6rem; }
+.kz-thesis-badge-submitted, .kz-thesis-badge-checked { background: rgba(240,101,67,.15); color: var(--kaznu-coral-deep); }
+.kz-thesis-badge-approved { background: rgba(25,135,84,.15); color: #146c43; }
+.kz-thesis-badge-rejected { background: rgba(180,35,24,.12); color: #b42318; }
+.kz-thesis-mini-steps { display: flex; flex-wrap: wrap; gap: 0.4rem; margin: 0.5rem 0; }
+.kz-thesis-mini { font-size: 0.78rem; border-radius: 999px; padding: 0.18rem 0.55rem; background: #f3efe9; }
+.kz-thesis-mini-done { background: rgba(25,135,84,.15); color: #146c43; }
+.kz-thesis-mini-active { background: rgba(240,101,67,.18); color: var(--kaznu-coral-deep); }
+.kz-thesis-meta { color: rgba(32,38,44,.6); font-size: 0.88rem; }
+.kz-thesis-empty { padding: 1.5rem; border: 1px dashed rgba(32,38,44,.2); border-radius: 14px; text-align: center; }
+.kz-thesis-form { display: grid; gap: 0.35rem; margin-top: 1rem; max-width: 640px; }
+.kz-thesis-label { font-weight: 700; margin-top: 0.75rem; margin-bottom: 0.25rem; }
+.kz-thesis .kz-thesis-input,
+.kz-thesis .kz-thesis-file,
+.kz-thesis .kz-thesis-form select,
+.kz-thesis .kz-thesis-form textarea,
+.kz-thesis select.kz-thesis-input,
+.kz-thesis input.kz-thesis-input,
+.kz-thesis textarea.kz-thesis-input {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-height: 48px;
+    height: auto !important;
+    line-height: 1.45 !important;
+    padding: 0.7rem 0.95rem !important;
+    border: 1px solid rgba(32, 38, 44, 0.18) !important;
+    border-radius: 12px !important;
+    background: #fff !important;
+    color: var(--kaznu-charcoal) !important;
+    font-size: 1rem !important;
+    box-shadow: none !important;
+    outline: none;
+    appearance: auto;
+    -webkit-appearance: auto;
+    overflow: visible;
+}
+.kz-thesis .kz-thesis-form select,
+.kz-thesis select.kz-thesis-input {
+    padding-right: 2.2rem !important;
+    background-image: none !important;
+}
+.kz-thesis .kz-thesis-form textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+.kz-thesis .kz-thesis-input:focus,
+.kz-thesis .kz-thesis-form select:focus,
+.kz-thesis .kz-thesis-form textarea:focus {
+    border-color: var(--kaznu-coral) !important;
+    box-shadow: 0 0 0 3px rgba(240, 101, 67, 0.18) !important;
+}
+.kz-thesis-help { font-size: 0.85rem; color: rgba(32,38,44,.6); margin: 0.35rem 0 0.6rem; }
+.kz-thesis-loader {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 0.85rem 0;
+    min-height: 1.5rem;
+    color: rgba(32,38,44,.75);
+}
+.kz-thesis-loader[hidden] { display: none !important; }
+.kz-thesis-spinner {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex: 0 0 1.25rem;
+    border-radius: 50%;
+    border: 2px solid rgba(32,38,44,.15);
+    border-top-color: var(--kaznu-coral);
+    animation: kz-spin 0.8s linear infinite;
+    transform-origin: center;
+    will-change: transform;
+}
+@keyframes kz-spin { to { transform: rotate(360deg); } }
+.kz-thesis-panel-body { min-height: 0.5rem; }
+.kz-thesis-stepper { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.6rem; margin: 1rem 0 1.25rem; }
+.kz-thesis-step { display: flex; align-items: center; gap: 0.55rem; padding: 0.75rem; border-radius: 12px; background: #f3efe9; border: 1px solid transparent; }
+.kz-thesis-step-done { background: rgba(25,135,84,.12); border-color: rgba(25,135,84,.2); }
+.kz-thesis-step-active { background: rgba(240,101,67,.12); border-color: rgba(240,101,67,.25); }
+.kz-thesis-step-num { width: 1.7rem; height: 1.7rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: #fff; font-weight: 800; }
+.kz-thesis-step-label { font-weight: 700; font-size: 0.92rem; }
+.kz-thesis-panel { background: #fff; border: 1px solid rgba(32,38,44,.1); border-radius: 16px; padding: 1.15rem 1.25rem; margin: 0.9rem 0; box-shadow: 0 10px 28px rgba(32,38,44,.04); }
+.kz-thesis-panel-head { display: flex; justify-content: space-between; gap: 0.75rem; align-items: center; }
+.kz-thesis-panel-head h3 { margin: 0; font-size: 1.15rem; }
+.kz-thesis-chip { font-size: 0.78rem; font-weight: 700; border-radius: 999px; padding: 0.2rem 0.65rem; background: #f3efe9; }
+.kz-thesis-panel-desc { color: rgba(32,38,44,.7); }
+.kz-thesis-score { font-size: 1.05rem; font-weight: 700; margin: 0.75rem 0; }
+.kz-thesis-score .ok, .kz-thesis-checks li.ok strong { color: #146c43; }
+.kz-thesis-score .bad, .kz-thesis-checks li.bad strong { color: #b42318; }
+.kz-thesis-demo { font-size: 0.75rem; background: rgba(163,146,123,.25); border-radius: 999px; padding: 0.1rem 0.45rem; margin-left: 0.35rem; }
+.kz-thesis-checks, .kz-thesis-hints, .kz-thesis-sources { list-style: none; padding: 0; margin: 0.5rem 0; }
+.kz-thesis-checks li, .kz-thesis-sources li { display: flex; justify-content: space-between; gap: 1rem; padding: 0.55rem 0; border-bottom: 1px solid rgba(32,38,44,.08); }
+.kz-thesis-eds-card { margin-top: 0.75rem; padding: 1rem; border-radius: 12px; background: rgba(25,135,84,.08); }
+.kz-thesis-eds-ok { font-weight: 800; color: #146c43; margin-bottom: 0.35rem; }
+.kz-thesis-filebar { margin: 0.75rem 0 1rem; }
+@media (max-width: 800px) {
+  .kz-thesis-pillars, .kz-thesis-stepper { grid-template-columns: 1fr; }
+}
+.kz-thesis-subh { font-size: 0.95rem; font-weight: 700; margin: 1rem 0 0.35rem; color: rgba(32,38,44,.9); }
+.kz-thesis-checklist li.warn { border-left: 3px solid #e9a23b; padding-left: 0.65rem; }
+.kz-thesis-checklist .kz-thesis-chip { font-size: 0.75rem; background: rgba(32,38,44,.08); border-radius: 999px; padding: 0.1rem 0.45rem; margin-left: 0.35rem; }
+.kz-thesis-eds-block { margin: 1rem 0; padding: 1rem; border-radius: 12px; background: rgba(32,38,44,.04); }
+.kz-thesis-eds-block .kz-thesis-btn { margin: 0.35rem 0.5rem 0.75rem 0; }
+.kz-thesis-eds-egov-qr { text-align: center; margin: 0.75rem 0 1rem; padding: 0.75rem; border-radius: 12px; background: rgba(32,38,44,.04); }
+.kz-thesis-eds-qr { border-radius: 8px; background: #fff; padding: 6px; }
+.kz-thesis-file { margin: 0.35rem 0 0.5rem; max-width: 100%; }
+.kz-thesis-modal[hidden] { display: none !important; }
+.kz-thesis-modal { position: fixed; inset: 0; z-index: 12000; display: flex; align-items: center; justify-content: center; padding: 1.25rem; }
+.kz-thesis-modal-backdrop { position: absolute; inset: 0; background: rgba(15,18,22,.55); }
+.kz-thesis-modal-panel {
+  position: relative; z-index: 1; width: min(560px, 100%); max-height: min(85vh, 720px); overflow: auto;
+  background: #fff; border-radius: 16px; padding: 1.25rem 1.35rem; box-shadow: 0 24px 48px rgba(15,18,22,.22);
+}
+.kz-thesis-modal-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; }
+.kz-thesis-modal-head h3 { margin: 0; font-size: 1.15rem; }
+.kz-thesis-modal-close {
+  border: none; background: transparent; font-size: 1.5rem; line-height: 1; cursor: pointer; color: rgba(32,38,44,.55); padding: 0.15rem 0.35rem;
+}
+.kz-thesis-modal-panel ul { margin: 0.35rem 0 0.85rem 1.1rem; padding: 0; }
+.kz-thesis-modal-panel li { margin: 0.25rem 0; font-size: 0.92rem; color: rgba(32,38,44,.85); }

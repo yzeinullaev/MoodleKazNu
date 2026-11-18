@@ -1,0 +1,23 @@
+<?php
+defined('MOODLE_INTERNAL') || die();
+
+$observers = [
+    [
+        'eventname' => '\mod_quiz\event\attempt_submitted',
+        'callback' => '\local_kaznu\observer::quiz_attempt_submitted',
+        'internal' => false,
+        'priority' => 999,
+    ],
+    [
+        'eventname' => '\mod_quiz\event\attempt_graded',
+        'callback' => '\local_kaznu\observer::quiz_attempt_graded',
+        'internal' => false,
+        'priority' => 999,
+    ],
+    [
+        'eventname' => '\core\event\user_deleted',
+        'callback' => '\local_kaznu\observer::user_deleted',
+        'internal' => false,
+        'priority' => 200,
+    ],
+];
