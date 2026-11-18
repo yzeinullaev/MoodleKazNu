@@ -52,11 +52,13 @@ $report = thesis_service::decode_report($sub->reportjson);
 $steps = thesis_service::step_state($report, $sub->status);
 $file = thesis_service::get_stored_file($id);
 $sig = thesis_service::get_signature($id);
-$canapproveeds = $sub->status === 'submitted'
-    && ($ismanage || ((int) $sub->supervisorid === (int) $USER->id && $cansupervise));
+$issupervisorfor = $ismanage || ($cansupervise && (int) $sub->supervisorid === (int) $USER->id);
+$canapproveeds = $sub->status === 'submitted' && $issupervisorfor;
 $sigvalid = $sig && !in_array((string) ($sig->sigtype ?? ''), ['stub'], true);
 $stublegacy = $sig && ($sig->sigtype ?? '') === 'stub';
-if ($canapproveeds || $stublegacy) {
+$cansigneds = $issupervisorfor && ($canapproveeds
+    || ($stublegacy && in_array($sub->status, ['submitted', 'approved'], true)));
+if ($cansigneds) {
     $PAGE->requires->js(new moodle_url('/local/kaznu/thesis/eds.js'));
 }
 $apiurl = (new moodle_url('/local/kaznu/thesis/api.php'))->out(false);
@@ -163,8 +165,8 @@ $edslabel = $sigvalid ? get_string('thesis_signed', 'local_kaznu') : get_string(
 echo html_writer::span($edslabel, 'kz-thesis-chip');
 echo html_writer::end_div();
 echo html_writer::tag('p', get_string('thesis_pillar_eds_desc', 'local_kaznu'), ['class' => 'kz-thesis-panel-desc']);
-if ($stublegacy) {
-    echo html_writer::div(get_string('thesis_eds_stub_replaced', 'local_kaznu'), 'kz-thesis-alert kz-thesis-alert-warn');
+if ($stublegacy && $issupervisorfor) {
+    echo html_writer::div(local_kaznu_thesis_str('thesis_eds_stub_replaced'), 'kz-thesis-alert kz-thesis-alert-warn');
 }
 if ($sigvalid) {
     echo html_writer::start_div('kz-thesis-eds-card');
@@ -173,9 +175,13 @@ if ($sigvalid) {
     echo html_writer::tag('p', s($siglabel . ' — ' . $sig->certsubject));
     echo html_writer::tag('p', userdate((int) $sig->timecreated));
     echo html_writer::end_div();
-} else if ($canapproveeds || $stublegacy) {
+} else if ($cansigneds) {
     $forcenew = $stublegacy;
     require __DIR__ . '/eds_block.php';
+} else if ($stublegacy && ($isowner || !$issupervisorfor)) {
+    echo html_writer::p(local_kaznu_thesis_str('thesis_eds_student_demo'), 'kz-thesis-help');
+} else if ($sub->status === 'submitted' && $isowner) {
+    echo html_writer::p(local_kaznu_thesis_str('thesis_eds_student_wait'), 'kz-thesis-help');
 } else if ($isowner) {
     echo html_writer::tag('p', get_string('thesis_eds_student_hint', 'local_kaznu'), ['class' => 'kz-thesis-help']);
 }

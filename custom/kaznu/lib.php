@@ -789,6 +789,36 @@ function local_kaznu_thesis_can_upload(): bool {
 }
 
 /**
+ * Thesis UI text with Russian fallback (avoids [[missing_key]] when lang cache lags).
+ */
+function local_kaznu_thesis_str(string $id, $a = null): string {
+    static $ru = [
+        'thesis_eds_howto' => 'Научный руководитель подписывает допуск: на компьютере через NCALayer (НУЦ) или в телефоне через eGov mobile.',
+        'thesis_eds_qr_lead' => 'eGov mobile: отсканируйте QR на телефоне (войдите в Farabi под тем же аккаунтом), скачайте XML и подпишите в приложении.',
+        'thesis_eds_qr_alt' => 'QR-код для скачивания файла допуска',
+        'thesis_eds_download_xml' => 'Скачать файл для подписи (XML)',
+        'thesis_eds_qr_phone' => 'После подписи в eGov вернитесь сюда и загрузите файл .p7s или .cms.',
+        'thesis_eds_nca_step' => 'На компьютере: запустите NCALayer, вставьте USB-токен ЭЦП, нажмите кнопку ниже.',
+        'thesis_eds_nca_btn' => 'Подписать ЭЦП и допустить (NCALayer)',
+        'thesis_eds_egov_step' => 'Через eGov: выберите файл электронной подписи после приложения.',
+        'thesis_eds_egov_btn' => 'Загрузить подпись eGov и допустить',
+        'thesis_eds_stub_replaced' => 'Демо-подпись больше не действует. Нужна настоящая ЭЦП научрука.',
+        'thesis_eds_resign_note' => 'Комментарий к допуску (необязательно)',
+        'thesis_eds_student_wait' => 'Работа у научного руководителя. Он подпишет допуск ЭЦП (NCALayer или eGov). Вам ничего делать не нужно.',
+        'thesis_eds_student_demo' => 'Раньше стояла тестовая подпись — сейчас научрук поставит настоящую ЭЦП. Дождитесь уведомления.',
+        'thesis_eds_supervisor_only' => 'Подписание доступно только научному руководителю этой работы.',
+        'thesis_loading_eds' => 'Отправляем подпись…',
+    ];
+    if (get_string_manager()->string_exists($id, 'local_kaznu')) {
+        $s = get_string($id, 'local_kaznu', $a);
+        if ($s !== '' && strpos($s, '[[') === false) {
+            return $s;
+        }
+    }
+    return $ru[$id] ?? $id;
+}
+
+/**
  * After admin toggles thesis_enabled — refresh portal role capabilities.
  */
 function local_kaznu_thesis_setting_updated(): void {
